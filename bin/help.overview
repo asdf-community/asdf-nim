@@ -1,0 +1,14 @@
+#!/usr/bin/env bash
+
+echo "This plugin installs the Nim compiler and tools (nimble, nimgrep, etc)."
+echo
+echo "Pre-compiled official binaries from https://nim-lang.org are installed if"
+echo "available for the current platform (Linux: x86_64 & x86)."
+echo
+echo "If no official binaries exist, unoffical binaries from "
+echo "https://github.com/elijahr/nim-builds are installed"
+echo "(macOS: x86_64, Linux: armv5, armv6, armv7, aarch64/arm64, & powerpc64le)."
+echo
+echo "If neither official nor unoffical binaries can be found for the platform,"
+echo "Nim is built from source."
+echo

@@ -1,0 +1,74 @@
+name: Build
+on:
+  pull_request:
+    paths-ignore:
+      - README.md
+  push:
+    paths-ignore:
+      - README.md
+
+# git over http should timeout after 60 seconds.
+# This causes macos builds to fail if they are having network issues.
+env:
+  GIT_HTTP_LOW_SPEED_LIMIT: 1000
+  GIT_HTTP_LOW_SPEED_TIME: 60
+
+jobs:
+  plugin_test:
+    name: asdf-nim plugin test
+    strategy:
+      fail-fast: false
+      matrix:
+        os:
+          - ubuntu-latest
+          - macos-latest
+        nim_version:
+          # Official build for linux, build from source for macOS
+          - 1.4.0
+          # Official builds for linux, unofficial builds for macOS
+          - latest
+          - 1.4.2
+          - 1.2.8
+          - 1.0.10
+          - 0.20.2
+          # Build via ref
+          - ref:876fa3e62e41cd366b89137cc3c4f6b5b8b2bee8
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Nim ${{ matrix.nim_version }}
+        uses: asdf-vm/actions/plugin-test@v1.1.0
+        with:
+          command: nimble install nimjson@1.2.8
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ matrix.nim_version }}
+
+  # TODO - replace below with Bats tests
+  assert_bootstrap_with_existing_nim_does_not_break:
+    name: assert that an existing Nim does not break bootstraping new builds
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v1.1.0
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install binary Nim 1.4.2
+        run: |
+          asdf plugin add nim .
+          asdf install nim 1.4.2
+      - name: Build Nim HEAD
+        run: asdf install nim ref:HEAD
+
+  assert_keep_downloads_works:
+    name: assert that --keep-download is supported
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v1.1.0
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name: Install binary Nim 1.4.2
+        run: |
+          asdf plugin add nim .
+          asdf install nim 1.4.2 --keep-download
+          test -f "${HOME}/.asdf/downloads/nim/1.4.2/bin/nim"
