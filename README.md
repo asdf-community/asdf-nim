@@ -14,7 +14,7 @@ If there are no binaries for the platform, Nim is built from source.
 
 CI tests the plugin with Nim versions 0.20.x, 1.0.x, 1.2.x, and 1.4.x.
 
-Nimble packages are installed in `~/.asdf/installs/nim/{nim_version}/nimble/pkgs`.
+Nimble packages are installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`.
 
 ## Installation
 
@@ -62,7 +62,7 @@ ruby 3.0.0
 nodejs 15.5.0
 ```
 
-The `.tool-versions` will be installed simply by running `asdf install`.
+The versions in `.tool-versions` will be installed simply by running `asdf install`. You can create a `.tool-versions` for your project with `asdf local nim <nim-version>`.
 
 For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
 
