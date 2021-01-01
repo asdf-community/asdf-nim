@@ -7,45 +7,79 @@ on:
     paths-ignore:
       - README.md
 
-# git over http should timeout after 60 seconds.
-# This causes macos builds to fail if they are having network issues.
-env:
-  GIT_HTTP_LOW_SPEED_LIMIT: 1000
-  GIT_HTTP_LOW_SPEED_TIME: 60
-
 jobs:
-  plugin_test:
+  test:
     name: asdf-nim plugin test
     strategy:
       fail-fast: false
       matrix:
-        os:
-          - ubuntu-latest
-          - macos-latest
-        nim_version:
-          # Official build for linux, build from source for macOS
-          - 1.4.0
-          # Official builds for linux, unofficial builds for macOS
-          - latest
-          - 1.4.2
-          - 1.2.8
-          - 1.0.10
-          - 0.20.2
-          # Build via ref
-          - ref:876fa3e62e41cd366b89137cc3c4f6b5b8b2bee8
+        include:
+          # Test installation of official Linux binaries from nim-lang.org
+          - os: ubuntu-latest
+            nim-version: 1.4.2
+          - os: ubuntu-latest
+            nim-version: 1.2.8
+          - os: ubuntu-latest
+            nim-version: 1.0.10
+          - os: ubuntu-latest
+            nim-version: 0.20.2
+
+          # Test building from git checkout
+          - os: ubuntu-latest
+            nim-version: ref:876fa3e62e41cd366b89137cc3c4f6b5b8b2bee8
+
+          # 2020-01-01 - macOS builds across repos on Github Actions are timing out, so disabling for now
+          ## Test installation of unoffical macOS binaries from elijahr/nim-builds
+          # - os: macos-latest
+          #   nim-version: 1.4.2
 
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Nim ${{ matrix.nim_version }}
+      - name: Test nimble ${{ matrix.nim-version }}
         uses: asdf-vm/actions/plugin-test@v1.1.0
         with:
-          command: nimble install nimjson@1.2.8
+          command: nim -v
           github_token: ${{ secrets.GITHUB_TOKEN }}
-          version: ${{ matrix.nim_version }}
+          version: ${{ matrix.nim-version }}
 
   # TODO - replace below with Bats tests
-  assert_bootstrap_with_existing_nim_does_not_break:
-    name: assert that an existing Nim does not break bootstraping new builds
+  assert_nimble_configuration:
+    name: assert that nimble is configured correctly
+    runs-on: ubuntu-latest
+    steps:
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v1.1.0
+      - name: Checkout repo
+        uses: actions/checkout@v2
+      - name:
+        shell: bash
+        run: |
+          set -uex
+
+          asdf plugin add nim .
+          asdf install nim 1.4.2
+          asdf local nim 1.4.2
+
+          ASDF_INSTALL_PATH="${HOME}/.asdf/installs/nim/1.4.2"
+
+          # Assert package index is placed in the correct location
+          nimble refresh -y
+          test -f "${ASDF_INSTALL_PATH}/nimble/packages_official.json"
+
+          # Assert package installs to correct location
+          nimble install -y nimjson@1.2.8
+          test -x "${ASDF_INSTALL_PATH}/nimble/bin/nimjson"
+          test -f "${ASDF_INSTALL_PATH}/nimble/pkgs/nimjson-1.2.8/nimjson.nimble"
+
+          # Assert that shim was created for package binary
+          test "$(which nimjson)" != ""
+
+          # Assert that nim finds nimble packages
+          echo "import nimjson" >test.nim
+          nim c -r test.nim
+
+  assert_multiple_nims:
+    name: assert that multiple nims can be installed side-by-side
     runs-on: ubuntu-latest
     steps:
       - name: Install asdf
@@ -57,18 +91,6 @@ jobs:
           asdf plugin add nim .
           asdf install nim 1.4.2
       - name: Build Nim HEAD
-        run: asdf install nim ref:HEAD
-
-  assert_keep_downloads_works:
-    name: assert that --keep-download is supported
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install asdf
-        uses: asdf-vm/actions/setup@v1.1.0
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Install binary Nim 1.4.2
         run: |
-          asdf plugin add nim .
-          asdf install nim 1.4.2 --keep-download
-          test -f "${HOME}/.asdf/downloads/nim/1.4.2/bin/nim"
+          # Building from source will bootstrap with the existing nim
+          asdf install nim ref:HEAD

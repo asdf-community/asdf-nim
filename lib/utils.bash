@@ -523,45 +523,6 @@ build() {
   log cd -
 }
 
-# Replace bin/nimble with a wrapper script which passes explicit --nim and
-# --nimbleDir arguments for a specific version of Nim. This ensures that
-# each asdf-installed Nim uses independent nimble packages.
-wrap_nimble() {
-  log mv "${TEMP}/install/bin/nimble" "${TEMP}/install/bin/nimble.original"
-
-  echo "+ cat >${TEMP}/install/bin/nimble" >>"$LOG"
-  case "${ASDF_INSTALL_VERSION}" in
-    # nimble packaged with 0.20.2 doesn't accept --nim arg, use PATH instead
-    0.*)
-      cat >"${TEMP}/install/bin/nimble" <<EOF
-#!/bin/sh
-set -ue
-nim_dir="\$( cd "\$(dirname "\$0")/.." >/dev/null 2>&1 ; pwd -P )"
-PATH="\${nim_dir}/bin:\${PATH}" exec "\${nim_dir}/bin/nimble.original" \
-  --nimbleDir:"\${nim_dir}/nimble" \
-  \$@
-EOF
-      ;;
-    *)
-      cat >"${TEMP}/install/bin/nimble" <<EOF
-#!/bin/sh
-set -ue
-nim_dir="\$( cd "\$(dirname "\$0")/.." >/dev/null 2>&1 ; pwd -P )"
-exec "\${nim_dir}/bin/nimble.original" \
-  --nimbleDir:"\${nim_dir}/nimble" \
-  --nim:"\${nim_dir}/bin/nim" \
-  \$@
-EOF
-      ;;
-  esac
-
-  # Verify nimble wrapper
-  log chmod +x "${TEMP}/install/bin/nimble"
-  log "${TEMP}/install/bin/nimble" refresh
-
-  log test -f "${TEMP}/install/nimble/packages_official.json"
-}
-
 # Install Nim using the best available method, either from a binary or building
 # from source.
 # The installation will be placed in ASDF_INSTALL_PATH when complete.
@@ -601,21 +562,12 @@ install() {
   log cp -R "${DOWNLOAD_PATH}/bin/"* "${TEMP}/install/bin"
   step_success
 
-  step_start "Updating nim.cfg"
-  local nimblepath="${TEMP}/install/nimble/pkgs/"
-  log mkdir -p "$nimblepath"
-
-  # Update nimblepath in config
-
-  echo "+ echo >>${TEMP}/install/config/nim.cfg" >>"$LOG"
-  echo >>"${TEMP}/install/config/nim.cfg"
-  echo "+ nimblepath=\"${nimblepath}\" >>${TEMP}/install/config/nim.cfg" >>"$LOG"
-  echo "nimblepath=\"${nimblepath}\"" >>"${TEMP}/install/config/nim.cfg"
-  step_success
-
-  step_start "Wrapping nimble"
-  wrap_nimble
-  step_success
+  step_start "Configuring nimble"
+  # Create nimble.ini
+  log mkdir -p "${TEMP}/install/userconfig/nimble"
+  echo "+ echo \"nimbleDir = r\\\"${ASDF_INSTALL_PATH}/nimble\\\"\" >> \"${TEMP}/install/userconfig/nimble/nimble.ini\"" >>"$LOG"
+  # Tell nimble where to put package metadata & packages
+  echo "nimbleDir = r\"${ASDF_INSTALL_PATH}/nimble\"" >>"${TEMP}/install/userconfig/nimble/nimble.ini"
 
   # Finalize installation
   step_start "Moving installation files to ${ASDF_INSTALL_PATH}"

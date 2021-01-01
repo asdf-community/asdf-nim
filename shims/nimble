@@ -1,0 +1,13 @@
+#!/usr/bin/env bash
+
+set -ueo pipefail
+
+"${NIM_BIN_DIR}/nimble" "$@" || NIMBLE_STATUS=$?
+NIMBLE_STATUS=${NIMBLE_STATUS:-$?}
+
+# After a nimble operation, regenerate nim shims to find new package binaries
+echo
+echo "[asdf-nim] Regenerating shims"
+asdf reshim nim || echo "[asdf-nim] Failed to regenerate shims"
+echo
+exit $NIMBLE_STATUS
