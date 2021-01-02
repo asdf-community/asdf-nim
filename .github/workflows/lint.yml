@@ -1,11 +1,7 @@
 name: Lint
 on:
-  pull_request:
-    paths-ignore:
-      - "**.md"
-  push:
-    paths-ignore:
-      - "**.md"
+  - pull_request
+  - push
   schedule:
     - cron: "0 0 * * *" # daily at midnight
 
