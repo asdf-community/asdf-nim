@@ -9,6 +9,9 @@ LINUX_X64_URL="https://nim-lang.org/download/nim-{version}-linux_x64.tar.xz"
 LINUX_X32_URL="https://nim-lang.org/download/nim-{version}-linux_x32.tar.xz"
 NIM_BUILDS_REPO="https://github.com/elijahr/nim-builds.git"
 
+# hub uses GITHUB_TOKEN for auth, asdf uses GITHUB_API_TOKEN
+export GITHUB_TOKEN="${GITHUB_TOKEN:-${GITHUB_API_TOKEN:-}}"
+
 # Create a temporary directory and echo its path (cross-platform).
 mktmpdir() {
   mktemp -d 2>/dev/null || mktemp -d -t 'asdf-nim'
@@ -129,6 +132,17 @@ list_all_versions() {
     sed 's/^v//'
 }
 
+normalize_os() {
+  local os
+  os="$(uname)"
+  case "$os" in
+    Darwin) echo macos ;;
+    *) echo "$os" | tr '[:upper:]' '[:lower:]' ;;
+  esac
+}
+
+OS="$(normalize_os)"
+
 # Detect the platform's architecture, normalize it to one of the following, and
 # echo it:
 # - x86_64
@@ -174,17 +188,6 @@ normalize_arch() {
 }
 
 ARCH="$(normalize_arch)"
-
-normalize_os() {
-  local os
-  os="$(uname)"
-  case "$os" in
-    Darwin) echo macos ;;
-    *) echo "$os" | tr '[:upper:]' '[:lower:]' ;;
-  esac
-}
-
-OS="$(normalize_os)"
 
 # List dependencies of this plugin, as package names for use with the system
 # package manager.
@@ -326,23 +329,33 @@ official_tarball_url() {
   esac
 }
 
-# Echo the unofficial binary tarball URL (from github.com/elijahr/nim-builds)
-# for the current architecture.
-unofficial_tarball_url() {
+# Verify that the user has provided some means to authenticate with github
+assert_github_auth() {
+  if [ "${GITHUB_USER:-}" != "" ] && [ "${GITHUB_PASSWORD:-}" != "" ]; then
+    return 0
+  elif [ "$GITHUB_TOKEN" != "" ]; then
+    return 0
+  elif [ -f "${HOME}/.config/hub" ]; then
+    return 0
+  fi
+  return 1
+}
+
+unofficial_tarball_url_via_hub() {
   local nim_builds_repo="${TEMP}/nim-builds"
   log mkdir -p "$nim_builds_repo"
   log cd "$nim_builds_repo"
   log git init .
   log git remote add origin "$NIM_BUILDS_REPO"
 
-  local releases=($(hub release -L 500 || echo ""))
+  local releases=($(yes | hub release -L 100 || echo ""))
   local tarball="nim-${ASDF_INSTALL_VERSION}--${ARCH}-${OS}-$(lib_suffix).tar.xz"
   local url=""
-  # Search through first 500 releases looking for a matching binary
+  # Search through releases looking for a matching binary
   for release in "${releases[@]}"; do
     case "$release" in
       nim-${ASDF_INSTALL_VERSION}--*)
-        url="$(hub release show "$release" --show-downloads | grep -F "$tarball" || echo "")"
+        url="$(yes | hub release show "$release" --show-downloads | grep -F "$tarball" || echo "")"
         ;;
     esac
     if [ "$url" != "" ]; then
@@ -350,6 +363,21 @@ unofficial_tarball_url() {
     fi
   done
   log cd -
+  echo "$url"
+}
+
+unofficial_tarball_url_via_cache() {
+  local tarball="nim-${ASDF_INSTALL_VERSION}--${ARCH}-${OS}-$(lib_suffix).tar.xz"
+  echo "$(cat "${ASDF_DIR}/plugins/nim/lib/cached_unofficial_binaries.txt" 2>/dev/null | grep -F "$tarball" || echo "")"
+}
+
+# Echo the unofficial binary tarball URL (from github.com/elijahr/nim-builds)
+# for the current architecture.
+unofficial_tarball_url() {
+  local url="$(unofficial_tarball_url_via_cache)"
+  if [ "$url" = "" ]; then
+    assert_github_auth && url="$(unofficial_tarball_url_via_hub)" || true
+  fi
   echo "$url"
 }
 
@@ -396,7 +424,11 @@ download() {
         step_start "Searching nim-builds"
         url="$(unofficial_tarball_url)"
         tarball_source_name="github.com/elijahr/nim-builds"
-        step_success
+        if [ "$url" = "" ]; then
+          step_skip
+        else
+          step_success
+        fi
       }
 
       case "$OS" in
@@ -427,17 +459,17 @@ download() {
 
       case "$url" in
         *github.com*)
-          local token="${GITHUB_API_TOKEN:-$GITHUB_TOKEN}"
-          if [ -n "$token" ]; then
+          if [ -n "$GITHUB_TOKEN" ]; then
             # Use a github personal access token to avoid API rate limiting
-            curl_opts+=("-H" "Authorization: token ${token}")
+            curl_opts+=("-H" "Authorization: token ${GITHUB_TOKEN}")
           fi
           ;;
       esac
-      step_start "Downloading & unpacking $(basename "$url") from ${tarball_source_name}"
-      echo "+ curl ${curl_opts[@]} $url | tar -xJ -C $DOWNLOAD_PATH --strip-components=1" >>"$LOG"
-      curl "${curl_opts[@]}" "$url" |
-        tar -xJ -C "$DOWNLOAD_PATH" --strip-components=1
+      step_start "Downloading from ${tarball_source_name}"
+      log curl "${curl_opts[@]}" "$url" -o "${TEMP}/$(basename $url)"
+      step_success
+      step_start "Unpacking $(basename "$url")"
+      log tar -xJf "${TEMP}/$(basename $url)" -C "$DOWNLOAD_PATH" --strip-components=1
       step_success
       ;;
   esac

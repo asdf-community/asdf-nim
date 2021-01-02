@@ -3,9 +3,11 @@ on:
   pull_request:
     paths-ignore:
       - README.md
+      - .github/workflows/build-latest-nightly.yml
   push:
     paths-ignore:
       - README.md
+      - .github/workflows/build-latest-nightly.yml
 
 jobs:
   test:
@@ -36,10 +38,9 @@ jobs:
     runs-on: ${{ matrix.os }}
     steps:
       - name: Test nimble ${{ matrix.nim-version }}
-        uses: asdf-vm/actions/plugin-test@v1.1.0
+        uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ matrix.nim-version }}
 
   # TODO - replace below with Bats tests
@@ -48,7 +49,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install asdf
-        uses: asdf-vm/actions/setup@v1.1.0
+        uses: asdf-vm/actions/setup@v1
       - name: Checkout repo
         uses: actions/checkout@v2
       - name:
@@ -83,7 +84,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
       - name: Install asdf
-        uses: asdf-vm/actions/setup@v1.1.0
+        uses: asdf-vm/actions/setup@v1
       - name: Checkout repo
         uses: actions/checkout@v2
       - name: Install binary Nim 1.4.2
