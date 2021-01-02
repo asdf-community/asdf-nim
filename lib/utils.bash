@@ -51,7 +51,7 @@ dump_log_and_fail() {
 # If the command fails, dump the build log and exit the script with status 1.
 log() {
   echo "+ $@" >>"$LOG"
-  $@ >>"$LOG" 2>&1 || dump_log_and_fail
+  eval "$@" >>"$LOG" 2>&1 || dump_log_and_fail
 }
 
 # On user cancel, print a fail icon and dump the build log.
@@ -196,24 +196,12 @@ list_deps() {
 
   echo hub
 
-  case "$OS" in
-    linux)
-      echo bash
-      distro="$(lsb_release -is || echo unknown)"
-      distro="$(echo $distro | tr '[:upper:]' '[:lower:]')"
-      case "$distro" in
-        ubuntu | debian)
-          echo xz-utils
-          ;;
-        *)
-          echo xz
-          ;;
-      esac
-      ;;
-    *)
-      echo xz
-      ;;
-  esac
+  if [ "$(which apt || true)" != "" ]; then
+    # debian/ubuntu
+    echo xz-utils
+  else
+    echo xz
+  fi
 }
 
 # Generate the command to install dependencies via the system package manager.
@@ -368,7 +356,7 @@ unofficial_tarball_url_via_hub() {
 
 unofficial_tarball_url_via_cache() {
   local tarball="nim-${ASDF_INSTALL_VERSION}--${ARCH}-${OS}-$(lib_suffix).tar.xz"
-  echo "$(cat "${ASDF_DIR}/plugins/nim/lib/cached_unofficial_binaries.txt" 2>/dev/null | grep -F "$tarball" || echo "")"
+  echo "$(cat "${ASDF_DIR}/plugins/nim/share/unofficial-binaries.txt" 2>/dev/null | grep -F "$tarball" || echo "")"
 }
 
 # Echo the unofficial binary tarball URL (from github.com/elijahr/nim-builds)
@@ -397,9 +385,6 @@ download() {
   echo "+ download" >>"$LOG"
 
   local url=""
-  local curl_opts
-  declare -a curl_opts=("-fsSL")
-
   echo
   echo "# Downloading"
 
@@ -457,16 +442,23 @@ download() {
         tarball_source_name="nim-lang.org"
       fi
 
-      case "$url" in
-        *github.com*)
-          if [ -n "$GITHUB_TOKEN" ]; then
+      local curl_opts="-fvsSL "
+      if [ -n "$GITHUB_TOKEN" ]; then
+        case "$url" in
+          *github.com*)
             # Use a github personal access token to avoid API rate limiting
-            curl_opts+=("-H" "Authorization: token ${GITHUB_TOKEN}")
-          fi
-          ;;
-      esac
+            curl_opts="$curl_opts -H 'Authorization: token ${GITHUB_TOKEN}'"
+            case "$ARCH" in
+              armv*)
+                # Debian arms seem to have out of date ca certs, so use a newer one from mozilla
+                curl_opts="$curl_opts --cacert '${ASDF_DIR}/plugins/nim/share/cacert.pem'"
+                ;;
+            esac
+            ;;
+        esac
+      fi
       step_start "Downloading from ${tarball_source_name}"
-      log curl "${curl_opts[@]}" "$url" -o "${TEMP}/$(basename $url)"
+      curl "$curl_opts" "$url" -o "${TEMP}/$(basename $url)" ||
       step_success
       step_start "Unpacking $(basename "$url")"
       log tar -xJf "${TEMP}/$(basename $url)" -C "$DOWNLOAD_PATH" --strip-components=1
