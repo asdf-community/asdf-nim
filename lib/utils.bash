@@ -443,22 +443,25 @@ download() {
       fi
 
       local curl_opts="-fvsSL "
+      # Use a github personal access token to avoid API rate limiting
       if [ -n "$GITHUB_TOKEN" ]; then
         case "$url" in
           *github.com*)
-            # Use a github personal access token to avoid API rate limiting
             curl_opts="$curl_opts -H 'Authorization: token ${GITHUB_TOKEN}'"
-            case "$ARCH" in
-              armv*)
-                # Debian arms seem to have out of date ca certs, so use a newer one from mozilla
-                curl_opts="$curl_opts --cacert '${ASDF_DIR}/plugins/nim/share/cacert.pem'"
-                ;;
-            esac
             ;;
         esac
       fi
+
+      # Debian ARMv7 at least seem to have out of date ca certs, so use a newer
+      # one from Mozilla.
+      case "$ARCH" in
+        armv*)
+          curl_opts="$curl_opts --cacert '${ASDF_DIR}/plugins/nim/share/cacert.pem'"
+          ;;
+      esac
+
       step_start "Downloading from ${tarball_source_name}"
-      curl "$curl_opts" "$url" -o "${TEMP}/$(basename $url)" ||
+      log curl "$curl_opts" "$url" -o "${TEMP}/$(basename $url)"
       step_success
       step_start "Unpacking $(basename "$url")"
       log tar -xJf "${TEMP}/$(basename $url)" -C "$DOWNLOAD_PATH" --strip-components=1
@@ -482,8 +485,8 @@ build() {
     # If possible, bootstrap with an existing nim rather than building csources
     nim="$(
       PATH="$(echo "$PATH" | sed 's/\.asdf\//.no-asdf-shims/')" which nim ||
-        find ../../../installs/nim -type f -perm +111 -name nim -print -quit ||
-        find ../../../installs/nim -type f -executable -name nim -print -quit ||
+        find ../../../installs/nim -type f -perm +111 -name nim -print -quit &2>/dev/null ||
+        find ../../../installs/nim -type f -executable -name nim -print -quit &2>/dev/null ||
         echo
     )"
     if [ "$nim" != "" ]; then
