@@ -12,11 +12,6 @@ NIM_BUILDS_REPO="https://github.com/elijahr/nim-builds.git"
 # hub uses GITHUB_TOKEN for auth, asdf uses GITHUB_API_TOKEN
 export GITHUB_TOKEN="${GITHUB_TOKEN:-${GITHUB_API_TOKEN:-}}"
 
-# Create a temporary directory and echo its path (cross-platform).
-mktmpdir() {
-  mktemp -d 2>/dev/null || mktemp -d -t 'asdf-nim'
-}
-
 # Path to a temporary directory used by the download/build/install functions.
 # This path is set in the init_temp function.
 TEMP=""
@@ -62,7 +57,7 @@ init_temp() {
   if [ "$TEMP" = "" ]; then
     cleanup_temp
 
-    TEMP="$(mktmpdir)"
+    TEMP="$(mktemp -d -t asdf-nim.XXXX)"
     LOG="${TEMP}/asdf-nim.log"
     DOWNLOAD_PATH="${ASDF_DOWNLOAD_PATH:-${TEMP}/download}"
 
@@ -82,7 +77,7 @@ cleanup_temp() {
   fi
 
   # Allow asdf to cleanup the various .git directories in ASDF_DOWNLOAD_PATH
-  if [ -d "$ASDF_DOWNLOAD_PATH" ]; then
+  if [ -d "${ASDF_DOWNLOAD_PATH:-}" ]; then
     chmod -R 766 "$ASDF_DOWNLOAD_PATH"
   fi
 }
@@ -146,8 +141,6 @@ normalize_os() {
   esac
 }
 
-OS="$(normalize_os)"
-
 # Detect the platform's architecture, normalize it to one of the following, and
 # echo it:
 # - x86_64
@@ -175,7 +168,7 @@ normalize_arch() {
       echo i686
       ;;
     *aarch64* | *arm64* | armv8b | armv8l)
-      case "$OS" in
+      case "$(normalize_os)" in
         macos) echo arm64 ;;
         *) echo aarch64 ;;
       esac
@@ -192,89 +185,91 @@ normalize_arch() {
   esac
 }
 
-ARCH="$(normalize_arch)"
+pkg_mgr() {
+  (which brew >/dev/null 2>&1 && echo "brew") ||
+    (which apt-get >/dev/null 2>&1 && echo "apt-get") ||
+    (which apk >/dev/null 2>&1 && echo "apk") ||
+    (which pacman >/dev/null 2>&1 && echo "pacman") ||
+    (which dnf >/dev/null 2>&1 && echo "dnf") ||
+    echo ""
+}
 
 # List dependencies of this plugin, as package names for use with the system
 # package manager.
 list_deps() {
-  local distro
-
   echo hub
-
-  if [ "$(which apt || true)" != "" ]; then
-    # debian/ubuntu
-    echo xz-utils
-  else
-    echo xz
-  fi
+  case "$(pkg_mgr)" in
+    apt-get)
+      echo xz-utils
+      echo build-essential
+      ;;
+    apk)
+      echo xz
+      echo build-base
+      ;;
+    brew) echo xz ;;
+    *)
+      echo xz
+      echo gcc
+      ;;
+  esac
 }
 
 # Generate the command to install dependencies via the system package manager.
-install_cmd() {
-  (which brew >/dev/null 2>&1 && echo "brew install") ||
-    (which apt-get >/dev/null 2>&1 && echo "apt-get update -q -y && apt-get -qq install -y") ||
-    (which apk >/dev/null 2>&1 && echo "apk add --update") ||
-    (which pacman >/dev/null 2>&1 && echo "pacman -Syu --noconfirm") ||
-    (which dnf >/dev/null 2>&1 && echo "dnf install -y") ||
-    echo ""
-}
-
-# List dependencies which are not installed.
-list_deps_missing() {
-  local deps
-  declare -a deps=($(list_deps))
-  for dep in ${deps[@]}; do
-    case "$dep" in
-      xz-utils)
-        which xz >/dev/null 2>&1 || echo "$dep"
-        ;;
-      *)
-        which "$dep" >/dev/null 2>&1 || echo "$dep"
-        ;;
-    esac
-  done
+install_deps_cmds() {
+  local deps="$(list_deps | xargs)"
+  case "$(pkg_mgr)" in
+    brew) echo "brew install $deps" ;;
+    apt-get) echo "apt-get update -q -y && apt-get -qq install -y $deps" ;;
+    apk)
+      printf "%s" "apk add --update $(echo $deps | sed 's/hub //') && "
+      printf "%s" "apk add --update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing hub"
+      echo
+      ;;
+    pacman) echo "pacman -Syu --noconfirm $deps" ;;
+    dnf) echo "dnf install -y $deps" ;;
+    *) echo "" ;;
+  esac
 }
 
 # Install missing dependencies using the system package manager.
 # Note - this is interactive, so in CI use `yes | cmd-that-calls-install_deps`.
 install_deps() {
-  local missing="$(list_deps_missing | xargs)"
+  local deps="$(list_deps | xargs)"
+  local input=""
+  echo
+  echo "[asdf-nim:install-deps] additional packages are required: ${deps}"
+  echo
+  if [ "${ASDF_NIM_INSTALL_DEPS_ACCEPT:-no}" = "no" ]; then
+    read -r -p "[asdf-nim:install-deps] Install them now? [Y/n] " input
+  else
+    echo "[asdf-nim:install-deps] --yes passed, installing…"
+    input="yes"
+  fi
 
-  if [ "$missing" != "" ]; then
-    local input=""
-    echo
-    echo "[asdf-nim:install-deps] additional packages are required: ${missing}"
-    echo
-    read -r -p "Install them now? [Y/n] " input
-
-    case "$input" in
-      [yY][eE][sS] | [yY] | "")
-        local cmd="$(install_cmd)"
-        if [ "$cmd" = "" ]; then
-          echo
-          echo "[asdf-nim:install-deps] could not find a package manager"
-          echo
-          exit 1
-        else
-          eval "${cmd} ${missing}"
-          echo
-          echo "[asdf-nim:install-deps] installed: ${missing}"
-          echo
-        fi
-        ;;
-      *)
+  case "$input" in
+    [yY][eE][sS] | [yY] | "")
+      local cmds="$(install_deps_cmds)"
+      if [ "$cmds" = "" ]; then
         echo
-        echo "[asdf-nim:install-deps] plugin will not function without ${missing}"
+        echo "[asdf-nim:install-deps] no package managers recognized, install the packages manually."
         echo
         exit 1
-        ;;
-    esac
-    echo
-  else
-    echo
-    echo "[asdf-nim:install-deps] packages already installed: $(list_deps)"
-    echo
-  fi
+      else
+        eval "$cmds"
+        echo
+        echo "[asdf-nim:install-deps] installed: ${deps}"
+        echo
+      fi
+      ;;
+    *)
+      echo
+      echo "[asdf-nim:install-deps] plugin will not function without: ${deps}"
+      echo
+      exit 1
+      ;;
+  esac
+  echo
 }
 
 # Detect if the standard C library on the system is musl or not.
@@ -287,7 +282,7 @@ is_musl() {
 # Echo the suffix for a gcc toolchain triple, e.g. `musleabihf` for a
 # `arm-unknown-linux-musleabihf` toolchain.
 lib_suffix() {
-  case "$OS" in
+  case "$(normalize_os)" in
     linux)
       local libc
       case "$(is_musl)" in
@@ -315,7 +310,7 @@ lib_suffix() {
 # Echo the official binary tarball URL (from nim-lang.org) for the current
 # architecture.
 official_tarball_url() {
-  case "$ARCH" in
+  case "$(normalize_arch)" in
     x86_64) echo "$LINUX_X64_URL" | sed "s/{version}/${ASDF_INSTALL_VERSION}/" ;;
     i686) echo "$LINUX_X32_URL" | sed "s/{version}/${ASDF_INSTALL_VERSION}/" ;;
     *) echo "" ;;
@@ -420,13 +415,13 @@ download() {
         fi
       }
 
-      case "$OS" in
+      case "$(normalize_os)" in
         linux)
           case "$(is_musl)" in
             # Distros using musl can't use official Nim binaries
             yes) search_nim_builds ;;
             no)
-              case "$ARCH" in
+              case "$(normalize_arch)" in
                 x86_64 | i686)
                   # Linux with glibc has official x86_64 & x86 binaries
                   url=$(official_tarball_url)
@@ -458,7 +453,7 @@ download() {
 
       # Debian ARMv7 at least seem to have out of date ca certs, so use a newer
       # one from Mozilla.
-      case "$ARCH" in
+      case "$(normalize_arch)" in
         armv*)
           curl_opts="$curl_opts --cacert '${ASDF_DIR}/plugins/nim/share/cacert.pem'"
           ;;

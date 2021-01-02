@@ -10,8 +10,8 @@ on:
       - .github/workflows/build-latest-nightly.yml
 
 jobs:
-  test_x86:
-    name: Test / Nim ${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
+  plugin_test_x86:
+    name: Test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
     strategy:
       fail-fast: false
       matrix:
@@ -66,8 +66,50 @@ jobs:
           command: nim -v
           version: ${{ matrix.nim-version }}
 
-  test_non_x86_glibc:
-    name: Test / Nim ${{ matrix.nim-version }} / linux-glibc / ${{ matrix.arch }}
+  plugin_test_x86_musl:
+    name: Test nim-${{ matrix.nim-version }} / linux-musl / x86_64
+    strategy:
+      fail-fast: false
+      matrix:
+        nim-version: [1.4.2]
+
+    container: alpine:latest
+    runs-on: ubuntu-latest
+    steps:
+      # Optimization: re-use cached Nim->C compilation
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache
+          key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
+
+      - name: Install asdf dependencies
+        run: apk add --update bash git curl coreutils tar
+
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v1
+
+      - name: Install asdf-nim
+        shell: bash
+        run: |
+          set -uexo pipefail
+          mkdir -p asdf-nim
+          cd asdf-nim
+          git init
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git fetch origin "$GITHUB_SHA" --depth 1
+          git reset --hard FETCH_HEAD
+          asdf plugin add nim .
+          asdf nim install-deps -y
+
+      - name: Test plugin
+        uses: asdf-vm/actions/plugin-test@v1
+        with:
+          command: nim -v
+          version: ${{ matrix.nim-version }}
+
+  plugin_test_non_x86_glibc:
+    name: Test nim-${{ matrix.nim-version }} / linux-glibc / ${{ matrix.arch }}
     strategy:
       fail-fast: false
       matrix:
@@ -92,7 +134,7 @@ jobs:
           path: ~/.cache
           key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
 
-      - name: Checkout Nim project
+      - name: Checkout plugin
         uses: actions/checkout@v2
 
       # Install & run tests on non-x86
@@ -121,36 +163,6 @@ jobs:
             . $HOME/.asdf/asdf.sh
             asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
 
-  test_musl:
-    name: Test / Nim ${{ matrix.nim-version }} / linux-musl / x86_64
-    strategy:
-      fail-fast: false
-      matrix:
-        nim-version: [ 1.4.2 ]
-
-    container: alpine:latest
-    runs-on: ubuntu-latest
-    steps:
-      # Optimization: re-use cached Nim->C compilation
-      - name: Restore cache
-        uses: actions/cache@v2
-        with:
-          path: ~/.cache
-          key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
-
-      - name: Checkout Nim project
-        uses: actions/checkout@v2
-
-      - name: Install dependencies
-        run: apk add --update build-base bash git curl xz hub
-
-      - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v1
-        with:
-          command: nim -v
-          version: ${{ matrix.nim-version }}
-
-  # TODO - replace below with Bats tests
   assert_nimble_configuration:
     name: Assert nimble configuration
     runs-on: ubuntu-latest
@@ -187,7 +199,7 @@ jobs:
           nim c -r testnimble.nim
 
   assert_multiple_nims:
-    name: Assert subsequent nim installation
+    name: Assert subsequent Nim installation
     runs-on: ubuntu-latest
     steps:
       - name: Install asdf

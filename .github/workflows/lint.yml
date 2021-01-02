@@ -1,9 +1,9 @@
 name: Lint
 on:
   pull_request:
-    brances: [ '*' ]
+    brances: ["*"]
   push:
-    brances: [ '*' ]
+    brances: ["*"]
   schedule:
     - cron: "0 0 * * *" # daily at midnight
 

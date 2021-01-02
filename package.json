@@ -1,16 +1,5 @@
 {
   "devDependencies": {
-    "husky": "^5.0.6",
-    "prettier": "^2.2.1",
-    "pretty-quick": "^3.1.0"
-  },
-  "scripts": {
-    "pretty-quick": "pretty-quick",
-    "postinstall": "husky install"
-  },
-  "husky": {
-    "hooks": {
-      "pre-commit": "pretty-quick --staged && shfmt -d -i 2 -ci -w ."
-    }
+    "prettier": "^2.2.1"
   }
 }

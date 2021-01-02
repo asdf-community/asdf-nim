@@ -94,7 +94,16 @@ macOS:
 
 ## Contributing
 
-Pull requests are welcome! One idea: unit tests with [Bats](https://github.com/sstephenson/bats).
+Pull requests are welcome!
+
+One idea: unit tests with [Bats](https://github.com/sstephenson/bats).
+
+This project uses various linters, they can be enabled to auto-fix any commits via:
+
+```
+npm install --include=dev
+git config --local core.hooksPath .githooks
+```
 
 ## Changelog
 
@@ -104,6 +113,7 @@ Pull requests are welcome! One idea: unit tests with [Bats](https://github.com/s
 - Bugfix: perms issue where asdf cleanup handler would block on rm of fusion/.git/\* files
 - Workaround for CI: disable TCP offloading so can run tests again macOS again
 - Add pre-commit git hooks for shfmt and prettier
+- Test on CI: Alpine / musl
 
 ### v0.1.0 - 2021-01-01
 

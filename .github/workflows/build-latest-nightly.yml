@@ -5,7 +5,7 @@ on:
 
 jobs:
   test:
-    name: Test / Nim ${{ matrix.nim-version }} / ${{ matrix.os }} / x86_64
+    name: Test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
     strategy:
       fail-fast: false
       matrix:
@@ -13,10 +13,12 @@ jobs:
           # Test installation of official Linux binaries from nim-lang.org
           - os: ubuntu-latest
             nim-version: latest
+            libc: linux-glibc
 
           # Test installation of unofficial macOS binaries from elijahr/nim-builds
           - os: macos-latest
             nim-version: latest
+            libc: macOS
 
     runs-on: ${{ matrix.os }}
     steps:
