@@ -406,7 +406,7 @@ download() {
       local tarball_source_name=""
 
       search_nim_builds() {
-        step_start "Searching nim-builds"
+        step_start "Searching nim-builds releases for binaries"
         url="$(unofficial_tarball_url)"
         tarball_source_name="github.com/elijahr/nim-builds"
         if [ "$url" = "" ]; then
