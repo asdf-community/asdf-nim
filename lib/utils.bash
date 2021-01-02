@@ -446,7 +446,7 @@ download() {
         tarball_source_name="nim-lang.org"
       fi
 
-      local curl_opts="-fvsSL "
+      local curl_opts="-fvsSL --connect-timeout 10"
       # Use a github personal access token to avoid API rate limiting
       if [ -n "$GITHUB_TOKEN" ]; then
         case "$url" in

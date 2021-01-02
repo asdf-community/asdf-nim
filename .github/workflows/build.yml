@@ -30,14 +30,31 @@ jobs:
           - os: ubuntu-latest
             nim-version: ref:HEAD
 
-          # 2020-01-01 - macOS builds across repos on Github Actions are timing out, so disabling for now
-          ## Test installation of unoffical macOS binaries from elijahr/nim-builds
-          # - os: macos-latest
-          #   nim-version: 1.4.2
+          # Test installation of unoffical macOS binaries from elijahr/nim-builds
+          - os: macos-latest
+            nim-version: 1.4.2
 
     runs-on: ${{ matrix.os }}
     steps:
-      - name: Test nimble ${{ matrix.nim-version }}
+      # Prevent network slowness
+      # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
+      # and https://github.com/enso-org/enso/pull/1159
+      - name: Disable TCP/UDP Offloading (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          sudo sysctl -w net.link.generic.system.hwcksum_tx=0
+          sudo sysctl -w net.link.generic.system.hwcksum_rx=0
+      - name: Disable TCP/UDP Offloading (Linux)
+        if: runner.os == 'Linux'
+        run: sudo ethtool -K eth0 tx off rx off
+      - name: Disable TCP/UDP Offloading (Windows)
+        if: runner.os == 'Windows'
+        shell: powershell
+        run: >
+          Disable-NetAdapterChecksumOffload -Name * -TcpIPv4 -UdpIPv4 -TcpIPv6
+          -UdpIPv6
+
+      - name: Test plugin
         uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
@@ -100,7 +117,7 @@ jobs:
 
   # TODO - replace below with Bats tests
   assert_nimble_configuration:
-    name: assert that nimble is configured correctly
+    name: Assert nimble configuration
     runs-on: ubuntu-latest
     steps:
       - name: Install asdf
@@ -135,7 +152,7 @@ jobs:
           nim c -r testnimble.nim
 
   assert_multiple_nims:
-    name: assert that multiple nims can be installed side-by-side
+    name: Assert subsequent nim installation
     runs-on: ubuntu-latest
     steps:
       - name: Install asdf
