@@ -131,8 +131,8 @@ jobs:
           test "$(which nimjson)" != ""
 
           # Assert that nim finds nimble packages
-          echo "import nimjson" >test-nimble.nim
-          nim c -r test-nimble.nim
+          echo "import nimjson" >testnimble.nim
+          nim c -r testnimble.nim
 
   assert_multiple_nims:
     name: assert that multiple nims can be installed side-by-side
