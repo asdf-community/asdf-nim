@@ -15,7 +15,6 @@ jobs:
             nim-version: latest
 
           # 2020-01-01 - macOS builds across repos on Github Actions are timing out, so disabling for now
-          ## Test installation of unoffical macOS binaries from elijahr/nim-builds
           # - os: macos-latest
           #   nim-version: latest
 

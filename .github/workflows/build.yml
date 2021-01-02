@@ -3,9 +3,11 @@ on:
   pull_request:
     paths-ignore:
       - README.md
+      - .github/workflows/build-latest-nightly.yml
   push:
     paths-ignore:
       - README.md
+      - .github/workflows/build-latest-nightly.yml
 
 jobs:
   test:
