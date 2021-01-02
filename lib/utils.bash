@@ -398,7 +398,8 @@ download() {
       log git remote add origin "$SOURCE_REPO"
       log git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
       log git reset --hard FETCH_HEAD
-      log rm -rf .git
+      # Allow asdf to cleanup the various .git directories here on exit
+      chmod -R 766 .
       log cd -
       step_success
       ;;
