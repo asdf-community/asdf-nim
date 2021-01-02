@@ -485,8 +485,8 @@ build() {
     # If possible, bootstrap with an existing nim rather than building csources
     nim="$(
       PATH="$(echo "$PATH" | sed 's/\.asdf\//.no-asdf-shims/')" which nim ||
-        find ../../../installs/nim -type f -perm +111 -name nim -print -quit &2>/dev/null ||
         find ../../../installs/nim -type f -executable -name nim -print -quit &2>/dev/null ||
+        find ../../../installs/nim -type f -perm +111 -name nim -print -quit &2>/dev/null ||
         echo
     )"
     if [ "$nim" != "" ]; then
