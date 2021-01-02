@@ -24,5 +24,4 @@ jobs:
         uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
-          github_token: ${{ secrets.GITHUB_TOKEN }}
           version: ${{ matrix.nim-version }}
