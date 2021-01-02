@@ -1,2 +1,4 @@
 /.vscode
 testnimble*
+/node_modules
+/.tool-versions

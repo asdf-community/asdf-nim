@@ -38,3 +38,19 @@ jobs:
 
       - name: Run shfmt
         run: shfmt -d -i 2 -ci .
+
+  prettier:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v2
+
+      - name: Install shfmt
+        run: brew install shfmt
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "15"
+
+      - name: Run prettier
+        run: yes | npx prettier --check .
