@@ -36,7 +36,7 @@ dump_log() {
     echo -e
     echo -e "Build log:"
     echo -e
-    cat >&2 "$LOG"
+    cat 1>&2 "$LOG"
   fi
 }
 
@@ -55,7 +55,7 @@ log() {
 }
 
 # On user cancel, print a fail icon and dump the build log.
-trap 'step_fail; dump_log' INT
+trap dump_log_and_fail INT
 
 # Create the temp directories used by the download/build/install functions.
 init_temp() {
@@ -486,8 +486,8 @@ build() {
     # If possible, bootstrap with an existing nim rather than building csources
     nim="$(
       PATH="$(echo "$PATH" | sed 's/\.asdf\//.no-asdf-shims/')" which nim ||
-        find ../../../installs/nim -type f -executable -name nim -print -quit &2>/dev/null ||
-        find ../../../installs/nim -type f -perm +111 -name nim -print -quit &2>/dev/null ||
+        find ../../../installs/nim -type f -executable -name nim -print -quit 2>/dev/null ||
+        find ../../../installs/nim -type f -perm +111 -name nim -print -quit 2>/dev/null ||
         echo
     )"
     if [ "$nim" != "" ]; then
