@@ -1,0 +1,29 @@
+name: Build latest nightly
+on:
+  schedule:
+    - cron: "0 0 * * *" # daily at midnight
+
+jobs:
+  test:
+    name: asdf-nim plugin test
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Test installation of official Linux binaries from nim-lang.org
+          - os: ubuntu-latest
+            nim-version: latest
+
+          # 2020-01-01 - macOS builds across repos on Github Actions are timing out, so disabling for now
+          ## Test installation of unoffical macOS binaries from elijahr/nim-builds
+          # - os: macos-latest
+          #   nim-version: latest
+
+    runs-on: ${{ matrix.os }}
+    steps:
+      - name: Test nimble ${{ matrix.nim-version }}
+        uses: asdf-vm/actions/plugin-test@v1
+        with:
+          command: nim -v
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          version: ${{ matrix.nim-version }}
