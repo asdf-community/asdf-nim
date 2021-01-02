@@ -10,7 +10,7 @@ on:
       - .github/workflows/build-latest-nightly.yml
 
 jobs:
-  test:
+  test_x86:
     name: asdf-nim plugin test
     strategy:
       fail-fast: false
@@ -42,6 +42,61 @@ jobs:
         with:
           command: nim -v
           version: ${{ matrix.nim-version }}
+
+  test_non_x86:
+    name: Test / Nim ${{ matrix.nim-version }} / debian-buster / ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          # Test on non-x86 Linux using run-on-arch-action
+          - runs-on: ubuntu-latest
+            nim-version: 1.4.2
+            arch: armv7
+          - runs-on: ubuntu-latest
+            nim-version: 1.2.8
+            arch: aarch64
+          - runs-on: ubuntu-latest
+            nim-version: 1.0.10
+            arch: ppc64le
+
+    runs-on: ubuntu-latest
+    steps:
+      # Optimization: re-use cached Nim->C compilation
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache
+          key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
+
+      - name: Checkout Nim project
+        uses: actions/checkout@v2
+
+      # Install & run tests on non-x86
+      - uses: uraimo/run-on-arch-action@v2.0.8
+        name: Install Nim & run tests
+        with:
+          arch: ${{ matrix.arch }}
+          distro: buster
+
+          dockerRunArgs: |
+            --volume "${HOME}/.cache:/root/.cache"
+
+          setup: mkdir -p "${HOME}/.cache"
+
+          shell: /usr/bin/env bash
+
+          install: |
+            apt-get update -q -y
+            apt-get -qq install -y build-essential curl git hub xz-utils
+            git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+
+          env: |
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          run: |
+            . $HOME/.asdf/asdf.sh
+            asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
 
   # TODO - replace below with Bats tests
   assert_nimble_configuration:
@@ -76,8 +131,8 @@ jobs:
           test "$(which nimjson)" != ""
 
           # Assert that nim finds nimble packages
-          echo "import nimjson" >test.nim
-          nim c -r test.nim
+          echo "import nimjson" >test-nimble.nim
+          nim c -r test-nimble.nim
 
   assert_multiple_nims:
     name: assert that multiple nims can be installed side-by-side
