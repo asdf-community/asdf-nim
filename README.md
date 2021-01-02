@@ -100,10 +100,10 @@ Pull requests are welcome! One idea: unit tests with [Bats](https://github.com/s
 
 ### v0.2.0 - 2021-01-02
 
-* Bugfix: armv7 could not curl even with update-ca-certificates. Bundle latests cacert.pem.
-* Bugfix: perms issue where asdf cleanup handler would block on rm of fusion/.git/* files
-* Workaround for CI: disable TCP offloading so can run tests again macOS again
-* Add pre-commit git hooks for shfmt and prettier
+- Bugfix: armv7 could not curl even with update-ca-certificates. Bundle latests cacert.pem.
+- Bugfix: perms issue where asdf cleanup handler would block on rm of fusion/.git/\* files
+- Workaround for CI: disable TCP offloading so can run tests again macOS again
+- Add pre-commit git hooks for shfmt and prettier
 
 ### v0.1.0 - 2021-01-01
 
