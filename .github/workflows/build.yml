@@ -28,7 +28,7 @@ jobs:
 
           # Test building from git checkout
           - os: ubuntu-latest
-            nim-version: ref:876fa3e62e41cd366b89137cc3c4f6b5b8b2bee8
+            nim-version: ref:HEAD
 
           # 2020-01-01 - macOS builds across repos on Github Actions are timing out, so disabling for now
           ## Test installation of unoffical macOS binaries from elijahr/nim-builds

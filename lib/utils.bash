@@ -80,6 +80,11 @@ cleanup_temp() {
     DOWNLOAD_PATH=""
     LOG=""
   fi
+
+  # Allow asdf to cleanup the various .git directories in ASDF_DOWNLOAD_PATH
+  if [ -d "$ASDF_DOWNLOAD_PATH" ]; then
+    chmod -R 766 "$ASDF_DOWNLOAD_PATH"
+  fi
 }
 
 # On script exit, remove temp directory.
@@ -398,8 +403,6 @@ download() {
       log git remote add origin "$SOURCE_REPO"
       log git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
       log git reset --hard FETCH_HEAD
-      # Allow asdf to cleanup the various .git directories here on exit
-      chmod -R 766 .
       log cd -
       step_success
       ;;
