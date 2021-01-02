@@ -333,7 +333,7 @@ official_tarball_url() {
 assert_github_auth() {
   if [ "${GITHUB_USER:-}" != "" ] && [ "${GITHUB_PASSWORD:-}" != "" ]; then
     return 0
-  elif [ "${GITHUB_TOKEN:-}" != "" ]; then
+  elif [ "$GITHUB_TOKEN" != "" ]; then
     return 0
   elif [ -f "${HOME}/.config/hub" ]; then
     return 0
