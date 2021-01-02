@@ -396,7 +396,7 @@ download() {
       log cd "$DOWNLOAD_PATH"
       log git init
       log git remote add origin "$SOURCE_REPO"
-      log git fetch origin "$ASDF_INSTALL_VERSION"
+      log git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
       log git reset --hard FETCH_HEAD
       log rm -rf .git
       log cd -
