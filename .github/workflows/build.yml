@@ -11,7 +11,7 @@ on:
 
 jobs:
   test_x86:
-    name: Test / Nim ${{ matrix.nim-version }} / ${{ matrix.os }} / x86_64
+    name: Test / Nim ${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
     strategy:
       fail-fast: false
       matrix:
@@ -19,20 +19,26 @@ jobs:
           # Test installation of official Linux binaries from nim-lang.org
           - os: ubuntu-latest
             nim-version: 1.4.2
+            libc: linux-glibc
           - os: ubuntu-latest
             nim-version: 1.2.8
+            libc: linux-glibc
           - os: ubuntu-latest
             nim-version: 1.0.10
+            libc: linux-glibc
           - os: ubuntu-latest
             nim-version: 0.20.2
+            libc: linux-glibc
 
           # Test building from git checkout
           - os: ubuntu-latest
             nim-version: ref:HEAD
+            libc: linux-glibc
 
           # Test installation of unoffical macOS binaries from elijahr/nim-builds
           - os: macos-latest
             nim-version: 1.4.2
+            libc: macOS
 
     runs-on: ${{ matrix.os }}
     steps:
@@ -60,8 +66,8 @@ jobs:
           command: nim -v
           version: ${{ matrix.nim-version }}
 
-  test_non_x86:
-    name: Test / Nim ${{ matrix.nim-version }} / debian-buster / ${{ matrix.arch }}
+  test_non_x86_glibc:
+    name: Test / Nim ${{ matrix.nim-version }} / linux-glibc / ${{ matrix.arch }}
     strategy:
       fail-fast: false
       matrix:
@@ -115,6 +121,32 @@ jobs:
             . $HOME/.asdf/asdf.sh
             asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
 
+  test_musl:
+    name: Test / Nim ${{ matrix.nim-version }} / linux-musl / x86_64
+    strategy:
+      fail-fast: false
+      matrix:
+        nim-version: [ 1.4.2 ]
+
+    container: alpine:latest
+    runs-on: ubuntu-latest
+    steps:
+      # Optimization: re-use cached Nim->C compilation
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache
+          key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
+
+      - name: Checkout Nim project
+        uses: actions/checkout@v2
+
+      - name: Test plugin
+        uses: asdf-vm/actions/plugin-test@v1
+        with:
+          command: nim -v
+          version: ${{ matrix.nim-version }}
+          
   # TODO - replace below with Bats tests
   assert_nimble_configuration:
     name: Assert nimble configuration
