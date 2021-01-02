@@ -1,8 +1,10 @@
 name: Lint
 on:
-  - pull_request
-  - push
-  - schedule:
+  pull_request:
+    brances: [ '*' ]
+  push:
+    brances: [ '*' ]
+  schedule:
     - cron: "0 0 * * *" # daily at midnight
 
 jobs:
