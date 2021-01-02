@@ -141,12 +141,15 @@ jobs:
       - name: Checkout Nim project
         uses: actions/checkout@v2
 
+      - name: Install dependencies
+        run: apk add --update build-base bash git curl xz hub
+
       - name: Test plugin
         uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
           version: ${{ matrix.nim-version }}
-          
+
   # TODO - replace below with Bats tests
   assert_nimble_configuration:
     name: Assert nimble configuration
