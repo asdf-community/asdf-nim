@@ -6,6 +6,9 @@ on:
 jobs:
   test:
     name: Test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 10
+
     strategy:
       fail-fast: false
       matrix:
@@ -20,28 +23,38 @@ jobs:
             nim-version: latest
             libc: macOS
 
-    runs-on: ${{ matrix.os }}
     steps:
-      # Prevent network slowness
-      # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-      # and https://github.com/enso-org/enso/pull/1159
-      - name: Disable TCP/UDP Offloading (macOS)
-        if: runner.os == 'macOS'
+      - name: Disable tcp/udp offloading
         run: |
-          sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-          sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-      - name: Disable TCP/UDP Offloading (Linux)
-        if: runner.os == 'Linux'
-        run: sudo ethtool -K eth0 tx off rx off
-      - name: Disable TCP/UDP Offloading (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: >
-          Disable-NetAdapterChecksumOffload -Name * -TcpIPv4 -UdpIPv4 -TcpIPv6
-          -UdpIPv6
+          # Prevent network slowness
+          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
+          # and https://github.com/enso-org/enso/pull/1159
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
+            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
+          else
+            sudo ethtool -K eth0 tx off rx off
+          fi
 
-      - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v1
+      # Optimization: re-use cached Nim->C compilation
+      - name: Restore cache
+        if: matrix.nim-version != 'ref:HEAD'
+        uses: actions/cache@v2
         with:
-          command: nim -v
-          version: ${{ matrix.nim-version }}
+          path: ~/.cache
+          key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
+
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v1
+
+      - name: Install asdf-nim & test
+        shell: bash
+        run: |
+          set -ueo pipefail
+          mkdir -p asdf-nim
+          cd asdf-nim
+          git init
+          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
+          git fetch origin "$GITHUB_SHA" --depth 1
+          git reset --hard FETCH_HEAD
+          asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}

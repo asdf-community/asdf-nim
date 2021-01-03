@@ -1,5 +1,3 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-
 echo "bin nimble/bin"

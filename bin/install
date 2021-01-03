@@ -1,8 +1,78 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -ueo pipefail
+shopt -s dotglob
 
 # shellcheck source=../lib/utils.bash
 source "$(dirname "$0")/../lib/utils.bash"
 
-install
+asdf_nim_init "install"
+asdf_nim_init_traps
+exec {ASDF_NIM_STDOUT}<&1 {ASDF_NIM_STDERR}<&2
+
+# Install Nim using the best available method, either from a binary or building
+# from source.
+# The installation will be placed in ASDF_INSTALL_PATH when complete.
+asdf_nim_install() {
+  if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
+    set -x
+  fi
+
+  if [ "$(asdf_nim_needs_download)" = "yes" ]; then
+    return $ASDF_NIM_EXIT_STATUS_NEEDS_DOWNLOAD
+  fi
+
+  if [ "$(asdf_nim_needs_build)" = "yes" ]; then
+    if [ "$ASDF_NIM_REQUIRE_BINARY" = "yes" ]; then
+      echo -e "Requested ASDF_NIM_REQUIRE_BINARY=yes, and no binaries available."
+      return 1
+    fi
+    asdf_nim_build
+  fi
+
+  section_start "Installing"
+
+  mkdir -p "$ASDF_NIM_INSTALL_PATH"
+  # Use nim's install.sh to install to the custom path
+  step_start "Running install.sh"
+  cd "$ASDF_DOWNLOAD_PATH"
+  sh install.sh "$ASDF_NIM_INSTALL_PATH"
+  cd -
+  step_end "done"
+
+  step_start "Copying installation"
+  # Un-nest installed files
+  mv -v "${ASDF_NIM_INSTALL_PATH}/nim/"* "$ASDF_NIM_INSTALL_PATH"
+  rm -vrf "${ASDF_NIM_INSTALL_PATH}/nim"
+
+  # Copy additional tools
+  cp -vR "${ASDF_DOWNLOAD_PATH}/bin/"* "${ASDF_NIM_INSTALL_PATH}/bin"
+  step_end "done"
+
+  step_start "Configuring nimble"
+  # Create nimble.ini to tell nimble where to put metadata & packages
+  mkdir -p "${ASDF_NIM_INSTALL_PATH}/userconfig/nimble"
+  echo "nimbleDir = r\"${ASDF_INSTALL_PATH}/nimble\"" >"${ASDF_NIM_INSTALL_PATH}/userconfig/nimble/nimble.ini"
+
+  # Replace nimble with a shim (not an asdf shim)
+  # mv "${ASDF_NIM_INSTALL_PATH}/bin/nimble" "${ASDF_NIM_INSTALL_PATH}/bin/._nimble"
+  # cp "${ASDF_DATA_DIR}/plugins/nim/altshims/nimble" "${ASDF_NIM_INSTALL_PATH}/bin"
+  step_end "done"
+
+  # Finalize installation
+  step_start "Moving installation to ${ASDF_INSTALL_PATH}"
+  rm -rf "$ASDF_INSTALL_PATH"
+  mv -v "$ASDF_NIM_INSTALL_PATH" "$ASDF_INSTALL_PATH"
+  step_end "done"
+
+  out
+  out "👑 Installed Nim ${ASDF_INSTALL_VERSION}$(asdf_nim_time) 👑"
+  out
+  if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
+    set +x
+  fi
+}
+
+{
+  asdf_nim_install
+} 1>>"$(asdf_nim_log)" 2>>"$(asdf_nim_log)"

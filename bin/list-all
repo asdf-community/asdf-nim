@@ -1,8 +1,9 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -ueo pipefail
+shopt -s dotglob
 
 # shellcheck source=../lib/utils.bash
 source "$(dirname "$0")/../lib/utils.bash"
 
-list_all_versions | sort_versions | xargs echo
+asdf_nim_list_all_versions | xargs echo

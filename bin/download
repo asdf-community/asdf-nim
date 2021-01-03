@@ -1,8 +1,15 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
+set -ueo pipefail
+shopt -s dotglob
 
 # shellcheck source=../lib/utils.bash
 source "$(dirname "$0")/../lib/utils.bash"
 
-download
+asdf_nim_init "download"
+asdf_nim_init_traps
+exec {ASDF_NIM_STDOUT}<&1 {ASDF_NIM_STDERR}<&2
+
+{
+  asdf_nim_download
+} 1>>"$(asdf_nim_log)" 2>>"$(asdf_nim_log)"

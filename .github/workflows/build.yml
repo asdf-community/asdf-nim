@@ -10,106 +10,154 @@ on:
       - .github/workflows/build-latest-nightly.yml
 
 jobs:
+  # Run tests with bats
+  bats_tests:
+    name: Bats tests
+    runs-on: ubuntu-latest
+
+    env:
+      GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+    steps:
+      - name: Disable tcp/udp offloading
+        run: |
+          # Prevent network slowness
+          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
+          # and https://github.com/enso-org/enso/pull/1159
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
+            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
+          else
+            sudo ethtool -K eth0 tx off rx off
+          fi
+
+      - name: Checkout plugin
+        uses: actions/checkout@v2
+
+      - uses: actions/setup-node@v2
+        with:
+          node-version: "15"
+
+      - name: Run tests
+        run: |
+          npm install --include=dev
+          npx bats test --tap
+
   plugin_test_x86:
-    name: Test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
+    name: Plugin test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
+    runs-on: ${{ matrix.os }}
+
     strategy:
       fail-fast: false
       matrix:
         include:
           # Test installation of official Linux binaries from nim-lang.org
           - os: ubuntu-latest
+            nim-version: latest
+            libc: linux-glibc
+            require-binary: yes
+          - os: ubuntu-latest
             nim-version: 1.4.2
             libc: linux-glibc
+            require-binary: yes
           - os: ubuntu-latest
             nim-version: 1.2.8
             libc: linux-glibc
+            require-binary: yes
           - os: ubuntu-latest
             nim-version: 1.0.10
             libc: linux-glibc
+            require-binary: yes
           - os: ubuntu-latest
             nim-version: 0.20.2
             libc: linux-glibc
+            require-binary: yes
 
           # Test building from git checkout
           - os: ubuntu-latest
             nim-version: ref:HEAD
             libc: linux-glibc
+            require-binary: no
 
           # Test installation of unoffical macOS binaries from elijahr/nim-builds
           - os: macos-latest
-            nim-version: 1.4.2
+            nim-version: latest
             libc: macOS
+            require-binary: yes
 
-    runs-on: ${{ matrix.os }}
+    env:
+      ASDF_NIM_REQUIRE_BINARY: ${{ matrix.require-binary }}
+
     steps:
-      # Prevent network slowness
-      # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-      # and https://github.com/enso-org/enso/pull/1159
-      - name: Disable TCP/UDP Offloading (macOS)
-        if: runner.os == 'macOS'
+      - name: Disable tcp/udp offloading
         run: |
-          sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-          sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-      - name: Disable TCP/UDP Offloading (Linux)
-        if: runner.os == 'Linux'
-        run: sudo ethtool -K eth0 tx off rx off
-      - name: Disable TCP/UDP Offloading (Windows)
-        if: runner.os == 'Windows'
-        shell: powershell
-        run: >
-          Disable-NetAdapterChecksumOffload -Name * -TcpIPv4 -UdpIPv4 -TcpIPv6
-          -UdpIPv6
+          # Prevent network slowness
+          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
+          # and https://github.com/enso-org/enso/pull/1159
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
+            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
+          else
+            sudo ethtool -K eth0 tx off rx off
+          fi
 
-      - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v1
-        with:
-          command: nim -v
-          version: ${{ matrix.nim-version }}
-
-  plugin_test_x86_musl:
-    name: Test nim-${{ matrix.nim-version }} / linux-musl / x86_64
-    strategy:
-      fail-fast: false
-      matrix:
-        nim-version: [1.4.2]
-
-    container: alpine:latest
-    runs-on: ubuntu-latest
-    steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
+        if: matrix.nim-version != 'ref:HEAD'
         uses: actions/cache@v2
         with:
           path: ~/.cache
-          key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
-
-      - name: Install asdf dependencies
-        run: apk add --update bash git curl coreutils tar
+          key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
 
       - name: Install asdf
         uses: asdf-vm/actions/setup@v1
 
-      - name: Install asdf-nim
+      - name: Install asdf-nim & test
         shell: bash
         run: |
-          set -uexo pipefail
+          set -ueo pipefail
           mkdir -p asdf-nim
           cd asdf-nim
           git init
           git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git fetch origin "$GITHUB_SHA" --depth 1
           git reset --hard FETCH_HEAD
-          asdf plugin add nim .
-          asdf nim install-deps -y
+          asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
+
+  # Test musl binary installation
+  plugin_test_x86_musl:
+    name: Plugin test nim-1.4.2 / linux-musl / x86_64
+    runs-on: ubuntu-latest
+    container: alpine:latest
+
+    env:
+      ASDF_NIM_REQUIRE_BINARY: yes
+
+    steps:
+      # Optimization: re-use cached Nim->C compilation
+      - name: Restore cache
+        uses: actions/cache@v2
+        with:
+          path: ~/.cache
+          key: cache-ubuntu-latest-${{ matrix.nim-version }}
+
+      - name: Install asdf dependencies
+        run: apk add --update bash git curl coreutils tar
+
+      # - name: Install asdf
+      #   uses: asdf-vm/actions/setup@v1
 
       - name: Test plugin
         uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
-          version: ${{ matrix.nim-version }}
+          version: 1.4.2
 
-  plugin_test_non_x86_glibc:
-    name: Test nim-${{ matrix.nim-version }} / linux-glibc / ${{ matrix.arch }}
+  # Test binary installation for a few non-x86 architectures
+  plugin_test_non_x86:
+    name: Plugin test nim-${{ matrix.nim-version }} / linux-glibc / ${{ matrix.arch }}
+    runs-on: ubuntu-latest
+
     strategy:
       fail-fast: false
       matrix:
@@ -125,8 +173,19 @@ jobs:
             nim-version: 1.0.10
             arch: ppc64le
 
-    runs-on: ubuntu-latest
     steps:
+      - name: Disable tcp/udp offloading
+        run: |
+          # Prevent network slowness
+          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
+          # and https://github.com/enso-org/enso/pull/1159
+          if [ "${{ runner.os }}" == "macOS" ]; then
+            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
+            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
+          else
+            sudo ethtool -K eth0 tx off rx off
+          fi
+
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         uses: actions/cache@v2
@@ -154,63 +213,12 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get -qq install -y build-essential curl git hub xz-utils
-            git clone https://github.com/asdf-vm/asdf.git ~/.asdf
+            git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
 
           env: |
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+            ASDF_NIM_REQUIRE_BINARY: yes
 
           run: |
-            . $HOME/.asdf/asdf.sh
+            . "${HOME}/.asdf/asdf.sh"
             asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
-
-  assert_nimble_configuration:
-    name: Assert nimble configuration
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install asdf
-        uses: asdf-vm/actions/setup@v1
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name:
-        shell: bash
-        run: |
-          set -uex
-
-          asdf plugin add nim .
-          asdf install nim 1.4.2
-          asdf local nim 1.4.2
-
-          ASDF_INSTALL_PATH="${HOME}/.asdf/installs/nim/1.4.2"
-
-          # Assert package index is placed in the correct location
-          nimble refresh -y
-          test -f "${ASDF_INSTALL_PATH}/nimble/packages_official.json"
-
-          # Assert package installs to correct location
-          nimble install -y nimjson@1.2.8
-          test -x "${ASDF_INSTALL_PATH}/nimble/bin/nimjson"
-          test -f "${ASDF_INSTALL_PATH}/nimble/pkgs/nimjson-1.2.8/nimjson.nimble"
-
-          # Assert that shim was created for package binary
-          test "$(which nimjson)" != ""
-
-          # Assert that nim finds nimble packages
-          echo "import nimjson" >testnimble.nim
-          nim c -r testnimble.nim
-
-  assert_multiple_nims:
-    name: Assert subsequent Nim installation
-    runs-on: ubuntu-latest
-    steps:
-      - name: Install asdf
-        uses: asdf-vm/actions/setup@v1
-      - name: Checkout repo
-        uses: actions/checkout@v2
-      - name: Install binary Nim 1.4.2
-        run: |
-          asdf plugin add nim .
-          asdf install nim 1.4.2
-      - name: Build Nim HEAD
-        run: |
-          # Building from source will bootstrap with the existing nim
-          asdf install nim ref:HEAD

@@ -1,5 +1,7 @@
 {
   "devDependencies": {
+    "bats": "^1.2.1",
+    "bats-assert": "^2.0.0",
     "prettier": "^2.2.1"
   }
 }

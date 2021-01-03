@@ -22,4 +22,4 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
-install_deps @POSITIONAL
+asdf_nim_install_deps @POSITIONAL

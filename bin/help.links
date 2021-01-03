@@ -1,5 +1,4 @@
 #!/usr/bin/env bash
 
-
 echo "https://github.com/asdf-community/asdf-nim"
 echo

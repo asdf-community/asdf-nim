@@ -12,10 +12,6 @@ If no official binaries exist, [unoffical binaries](#unofficial-binaries) are in
 
 If there are no binaries for the platform, Nim is built from source.
 
-CI tests the plugin with Nim versions 0.20.x, 1.0.x, 1.2.x, and 1.4.x.
-
-Nimble packages are installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`.
-
 ## Installation
 
 If not already installed, [install asdf](https://asdf-vm.com/#/core-manage-asdf?id=install).
@@ -27,10 +23,10 @@ asdf plugin add nim https://github.com/asdf-community/asdf-nim
 asdf nim install-deps
 ```
 
-For the latest fixes and improvements to the plugin, updating is easy:
+Updating the plugin later is easy:
 
 ```sh
-asdf plugin update nim devel
+asdf plugin update nim main
 ```
 
 ## Managing Nim Versions
@@ -53,18 +49,19 @@ Or even a specific git ref:
 asdf install nim ref:17992fca1dc0b3674dce123296b277551bbca1db
 ```
 
-A `.tool-versions` file can be used to specify various project requirements in one place, such as:
+To specify a version of Nim for a project:
 
-```
-nim 1.4.2
-python 3.9.1
-ruby 3.0.0
-nodejs 15.5.0
+```sh
+asdf local nim <nim-version>
 ```
 
-The versions in `.tool-versions` will be installed simply by running `asdf install`. You can create a `.tool-versions` for your project with `asdf local nim <nim-version>`.
+To have multiple of the same version of Nim installed, each with their own nimble packages, see [asdf-alias](https://github.com/andrewthauer/asdf-alias).
 
 For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
+
+## Nimble
+
+Nimble packages are version-specific and installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`.
 
 ## Official binaries
 
@@ -72,21 +69,21 @@ For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/c
 
 Linux:
 
-- `x86_64` (glibc)
-- `x86` (glibc)
+- `x86_64` (gnu libc)
+- `x86` (gnu libc)
 
 ## Unofficial binaries
 
-[nim-builds](https://github.com/elijahr/nim-builds) supplies binaries for:
+[nim-builds](https://github.com/elijahr/nim-builds) supplies binaries for other platforms, including macOS, non-x86 CPUs, and Linux distros that use the musl C standard library instead of GNU libc, such as Alpine Linux.
 
 Linux:
 
 - `x86_64` (musl)
-- `armv5` (glibc)
+- `armv5` (gnu libc)
 - `armv6` (musl)
-- `armv7` (glibc & musl)
-- `aarch64`/`arm64`/`armv8` (glibc & musl)
-- `powerpc64le` (glibc)
+- `armv7` (gnu libc & musl)
+- `aarch64`/`arm64`/`armv8` (gnu libc & musl)
+- `powerpc64le` (gnu libc)
 
 macOS:
 
@@ -96,16 +93,38 @@ macOS:
 
 Pull requests are welcome!
 
-One idea: unit tests with [Bats](https://github.com/sstephenson/bats).
+Dev dependencies for linting and unit tests are installed via:
 
-This project uses various linters, they can be enabled to auto-fix any commits via:
+```shell
+npm install --include=dev
+```
+
+This project uses [bats](https://github.com/bats-core/bats-core) for unit testing. Tests are found in the `test` directory and can be run with:
+
+```shell
+npx bats test
+```
+
+This project uses various linters, they can be enabled to auto-format code via:
 
 ```
-npm install --include=dev
 git config --local core.hooksPath .githooks
 ```
 
+Note: `asdf plugin add nim .` will install the plugin from git HEAD. Any uncommitted changes won't be installed. I suggest instead installing via a symlink, so asdf uses your code exactly as it is during development: `ln -s "$(pwd)" ~/.asdf/plugins/nim`.
+
+A few ideas for contributions:
+
+- Shell completion
+- Windows support (does asdf support Windows?)
+
 ## Changelog
+
+### v1.0.0 - 2020-01-06
+
+- Refactor
+- Fix issues with nimble shim
+- Add unit & integration tests
 
 ### v0.2.1 - 2021-01-02
 

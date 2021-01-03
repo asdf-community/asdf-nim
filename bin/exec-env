@@ -1,7 +1,5 @@
 #!/usr/bin/env bash
 
-set -euo pipefail
-
 # Override PATH so this nim is found first
 export PATH="${ASDF_INSTALL_PATH}/bin:${PATH}"
 
@@ -13,6 +11,3 @@ export APPDATA="${ASDF_INSTALL_PATH}/userconfig"
 
 # Tell nim where to find nimble package metadata and packages
 export NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
-
-# Used by shims/nimble
-export NIM_BIN_DIR="${ASDF_INSTALL_PATH}/bin"
