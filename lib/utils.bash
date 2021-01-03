@@ -329,6 +329,10 @@ assert_github_auth() {
   return 1
 }
 
+tarball_name() {
+  echo "nim-${ASDF_INSTALL_VERSION}--$(normalize_arch)-$(normalize_os)-$(lib_suffix).tar.xz"
+}
+
 unofficial_tarball_url_via_hub() {
   local nim_builds_repo="${TEMP}/nim-builds"
   log mkdir -p "$nim_builds_repo"
@@ -337,7 +341,7 @@ unofficial_tarball_url_via_hub() {
   log git remote add origin "$NIM_BUILDS_REPO"
 
   local releases=($(yes | hub release -L 100 || echo ""))
-  local tarball="nim-${ASDF_INSTALL_VERSION}--${ARCH}-${OS}-$(lib_suffix).tar.xz"
+  local tarball="$(tarball_name)"
   local url=""
   # Search through releases looking for a matching binary
   for release in "${releases[@]}"; do
@@ -355,7 +359,7 @@ unofficial_tarball_url_via_hub() {
 }
 
 unofficial_tarball_url_via_cache() {
-  local tarball="nim-${ASDF_INSTALL_VERSION}--${ARCH}-${OS}-$(lib_suffix).tar.xz"
+  local tarball="$(tarball_name)"
   echo "$(cat "${ASDF_DIR}/plugins/nim/share/unofficial-binaries.txt" 2>/dev/null | grep -F "$tarball" || echo "")"
 }
 

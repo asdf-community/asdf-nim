@@ -107,6 +107,10 @@ git config --local core.hooksPath .githooks
 
 ## Changelog
 
+### v0.2.1 - 2021-01-02
+
+- Bugfix: issue with tarball name generation causing unnecessary building from source.
+
 ### v0.2.0 - 2021-01-02
 
 - Bugfix: armv7 could not curl even with update-ca-certificates. Bundle latests cacert.pem.
@@ -117,4 +121,4 @@ git config --local core.hooksPath .githooks
 
 ### v0.1.0 - 2021-01-01
 
-Initial release
+- Initial release
