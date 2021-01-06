@@ -59,9 +59,142 @@ To have multiple of the same version of Nim installed, each with their own nimbl
 
 For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
 
-## Nimble
+## Nimble packages
 
 Nimble packages are version-specific and installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`.
+
+## Continuous Integration
+
+### A simple example using GitHub Actions:
+
+```yaml
+name: Build
+on:
+  pull_request:
+    paths-ignore:
+      - README.md
+  push:
+    paths-ignore:
+      - README.md
+  schedule:
+    - cron: "0 0 * * *" # daily at midnight
+
+env:
+  GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+jobs:
+  build:
+    name: Test nim-${{ matrix.nim-version }} / ${{ matrix.runs-on }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - runs-on: ubuntu-latest
+            nim-version: latest
+          - runs-on: macos-latest
+            nim-version: latest
+
+    runs-on: ${{ matrix.runs-on }}
+    steps:
+      - name: Checkout Nim project
+        uses: actions/checkout@v2
+
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v1
+
+      - name: Install asdf-nim
+        run: |
+          git clone \
+            --branch main --depth 1
+            https://github.com/asdf-community/asdf-nim.git \
+            "${HOME}/asdf-nim
+          asdf plugin add nim "${HOME}/asdf-nim"
+          asdf nim install-deps -y
+
+      - name: Install Nim
+        run: |
+          asdf install nim ${{ matrix.nim-version }}
+          asdf local nim ${{ matrix.nim-version }}
+
+      - name: Run tests
+        run: |
+          nimble develop -y
+          nimble test
+          nimble examples
+```
+
+### An example using GitHub Actions to test on non-x86 architectures:
+
+```yaml
+name: Build
+on:
+  pull_request:
+    paths-ignore:
+      - README.md
+  push:
+    paths-ignore:
+      - README.md
+
+jobs:
+  test_non_x86:
+    name: Test nim-${{ matrix.nim-version }} / debian-buster / ${{ matrix.arch }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - nim-version: 1.4.2
+            arch: armv7
+          - nim-version: 1.2.8
+            arch: aarch64
+          - nim-version: 1.4.2
+            arch: ppc64le
+
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Nim project
+        uses: actions/checkout@v2
+
+      - uses: uraimo/run-on-arch-action@v2.0.8
+        name: Install Nim & run tests
+        with:
+          arch: ${{ matrix.arch }}
+          distro: buster
+
+          dockerRunArgs: |
+            --volume "${HOME}/.cache:/root/.cache"
+
+          setup: mkdir -p "${HOME}/.cache"
+
+          shell: /usr/bin/env bash
+
+          install: |
+            set -uexo pipefail
+            # Install asdf and dependencies
+            apt-get update -q -y
+            apt-get -qq install -y build-essential curl git
+            git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf" --branch v0.8.0
+
+          env: |
+            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+          run: |
+            set -uexo pipefail
+            . "${HOME}/.asdf/asdf.sh"
+
+            # Install asdf-nim and dependencies
+            git clone https://github.com/asdf-community/asdf-nim.git ~/asdf-nim --branch main --depth 1
+            asdf plugin add nim ~/asdf-nim
+            asdf nim install-deps -y
+
+            # Install Nim
+            asdf install nim ${{ matrix.nim-version }}
+            asdf local nim ${{ matrix.nim-version }}
+
+            # Run tests
+            nimble develop -y
+            nimble test
+            nimble examples
+```
 
 ## Official binaries
 
