@@ -55,8 +55,6 @@ To specify a version of Nim for a project:
 asdf local nim <nim-version>
 ```
 
-To have multiple of the same version of Nim installed, each with their own nimble packages, see [asdf-alias](https://github.com/andrewthauer/asdf-alias).
-
 For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
 
 ## Nimble packages
