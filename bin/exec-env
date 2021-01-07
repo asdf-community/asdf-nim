@@ -1,13 +1,17 @@
 #!/usr/bin/env bash
 
 # Override PATH so this nim is found first
-export PATH="${ASDF_INSTALL_PATH}/bin:${PATH}"
+export PATH
+PATH="${ASDF_INSTALL_PATH}/bin:${PATH}"
 
 # Override UNIX config path to find nimble.ini, etc
-export XDG_CONFIG_HOME="${ASDF_INSTALL_PATH}/userconfig"
+export XDG_CONFIG_HOME
+XDG_CONFIG_HOME="${ASDF_INSTALL_PATH}/userconfig"
 
 # Override Windows config path to find nimble.ini, etc
-export APPDATA="${ASDF_INSTALL_PATH}/userconfig"
+export APPDATA
+APPDATA="${ASDF_INSTALL_PATH}/userconfig"
 
 # Tell nim where to find nimble package metadata and packages
-export NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
+export NIMBLE_DIR
+NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"

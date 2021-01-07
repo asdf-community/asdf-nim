@@ -2,9 +2,9 @@
 
 set -ueo pipefail
 
-# shellcheck source=SCRIPTDIR/../lint/utils.bash
-source "$(dirname "${BASH_SOURCE[0]}")/../lint/utils.bash"
+# shellcheck source=SCRIPTDIR/../lint/lib/lint_utils.bash
+source "$(dirname "${BASH_SOURCE[0]}")/../lint/lib/lint_utils.bash"
 
-while read path; do
+while read -r path; do
   lint "$path" "yes"
 done <<<"$(git diff --name-only --staged)"

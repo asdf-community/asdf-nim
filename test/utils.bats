@@ -568,8 +568,10 @@ teardown() {
 }
 
 @test "asdf_nim_download_ref" {
-  export ASDF_INSTALL_TYPE="ref"
-  export ASDF_INSTALL_VERSION="HEAD"
+  export ASDF_INSTALL_TYPE
+  ASDF_INSTALL_TYPE="ref"
+  export ASDF_INSTALL_VERSION
+  ASDF_INSTALL_VERSION="HEAD"
   asdf_nim_init "download"
   run asdf_nim_download
   assert_success

@@ -26,21 +26,32 @@ ASDF_DATA_DIR="${ASDF_DATA_DIR:-${ASDF_DIR:-$(normpath "${ASDF_INSTALL_PATH}/../
 
 # Create the temp directories used by the download/build/install functions.
 asdf_nim_init() {
-  export ASDF_NIM_ACTION="$1"
+  export ASDF_NIM_ACTION
+  ASDF_NIM_ACTION="$1"
 
   # Configuration options
-  export ASDF_NIM_REMOVE_TEMP="${ASDF_NIM_REMOVE_TEMP:-yes}"                            # If no, asdf-nim's temporary directory won't be deleted on exit
-  export ASDF_NIM_REQUIRE_BINARY="${ASDF_NIM_REQUIRE_BINARY:-no}"                       # If yes, Nim will never be built from source. The script will exit with status 1 if a binary cannot be found.
-  export ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="${ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE:-no}" # If yes, Nim will always be built from source, even if a binary is available.
-  export ASDF_NIM_DEBUG="${ASDF_NIM_DEBUG:-no}"                                         # If yes, extra information will be logged to the console and every command executed will be logged to the logfile.
-  export ASDF_NIM_STDOUT="${ASDF_NIM_STDOUT:-1}"                                        # The file descriptor where the script's standard output should be directed.
-  export ASDF_NIM_STDERR="${ASDF_NIM_STDERR:-2}"                                        # The file descriptor where the script's standard error output should be directed.
-  export ASDF_NIM_SILENT="${ASDF_NIM_SILENT:-no}"                                       # If yes, asdf-nim will not echo build steps to stdout.
+  export ASDF_NIM_REMOVE_TEMP
+  ASDF_NIM_REMOVE_TEMP="${ASDF_NIM_REMOVE_TEMP:-yes}" # If no, asdf-nim's temporary directory won't be deleted on exit
+  export ASDF_NIM_REQUIRE_BINARY
+  ASDF_NIM_REQUIRE_BINARY="${ASDF_NIM_REQUIRE_BINARY:-no}" # If yes, Nim will never be built from source. The script will exit with status 1 if a binary cannot be found.
+  export ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE
+  ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="${ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE:-no}" # If yes, Nim will always be built from source, even if a binary is available.
+  export ASDF_NIM_DEBUG
+  ASDF_NIM_DEBUG="${ASDF_NIM_DEBUG:-no}" # If yes, extra information will be logged to the console and every command executed will be logged to the logfile.
+  export ASDF_NIM_STDOUT
+  ASDF_NIM_STDOUT="${ASDF_NIM_STDOUT:-1}" # The file descriptor where the script's standard output should be directed.
+  export ASDF_NIM_STDERR
+  ASDF_NIM_STDERR="${ASDF_NIM_STDERR:-2}" # The file descriptor where the script's standard error output should be directed.
+  export ASDF_NIM_SILENT
+  ASDF_NIM_SILENT="${ASDF_NIM_SILENT:-no}" # If yes, asdf-nim will not echo build steps to stdout.
   # End configuration options
 
-  export ASDF_NIM_TEMP="${ASDF_DATA_DIR}/tmp/nim/${ASDF_INSTALL_VERSION}"
-  export ASDF_NIM_DOWNLOAD_PATH="${ASDF_NIM_TEMP}/download" # Temporary directory where downloads are placed
-  export ASDF_NIM_INSTALL_PATH="${ASDF_NIM_TEMP}/install"   # Temporary directory where installation is prepared
+  export ASDF_NIM_TEMP
+  ASDF_NIM_TEMP="${ASDF_DATA_DIR}/tmp/nim/${ASDF_INSTALL_VERSION}"
+  export ASDF_NIM_DOWNLOAD_PATH
+  ASDF_NIM_DOWNLOAD_PATH="${ASDF_NIM_TEMP}/download" # Temporary directory where downloads are placed
+  export ASDF_NIM_INSTALL_PATH
+  ASDF_NIM_INSTALL_PATH="${ASDF_NIM_TEMP}/install" # Temporary directory where installation is prepared
 
   mkdir -p "$ASDF_NIM_TEMP"
   rm -f "$(asdf_nim_log)"

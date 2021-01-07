@@ -7,14 +7,12 @@ ASDF_INSTALL_PATH="$("${ASDF_BIN}/asdf" where nim)"
 
 regenerate() {
   # After a nimble operation, regenerate nim shims to find new package binaries
-  (
-    "${ASDF_BIN}/asdf" reshim nim
-  ) && (
+  if "${ASDF_BIN}/asdf" reshim nim; then
     echo "  asdf-nim: regenerated shims"
-  ) || (
+  else
     echo "  asdf-nim: failed to regenerate shims"
     exit 1
-  )
+  fi
   echo
 }
 
@@ -22,17 +20,12 @@ trap 'trap - HUP; SIGNAL=SIGHUP; regenerate; kill -HUP $$' HUP
 trap 'trap - INT; SIGNAL=SIGINT; regenerate; kill -INT $$' INT
 trap 'trap - TERM; SIGNAL=SIGTERM; regenerate; kill -TERM $$' TERM
 
-status=0
-(
-  "${ASDF_INSTALL_PATH}/bin/nimble" "$@"
-) && (
-  status=$?
+if "${ASDF_INSTALL_PATH}/bin/nimble" "$@"; then
   case "$1" in
     install | develop | uninstall)
       regenerate
       ;;
   esac
-) || (
-  status=$?
-)
-exit $status
+else
+  exit $?
+fi

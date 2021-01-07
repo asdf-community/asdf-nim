@@ -1,11 +1,9 @@
 #!/usr/bin/env bash
 
 lint_prettier() {
-  local path status
+  local path
   path="$1"
-  status=0
-  npx prettier -u -w "$path" 1>/dev/null 2>&1 || status=$?
-  if [ "$status" = 0 ]; then
+  if npx prettier -u -w "$path" 1>/dev/null 2>&1; then
     echo "↳ prettier     ok"
   else
     echo "↳ prettier     wrote"
@@ -13,28 +11,25 @@ lint_prettier() {
 }
 
 lint_bash() {
-  local path status
+  local path
   path="$1"
-  status=0
-  shfmt -d -i 2 -ci -ln bash -w "$path" >/dev/null || status=$?
-  if [ "$status" = 0 ]; then
+  if shfmt -d -i 2 -ci -ln bash -w "$path" >/dev/null; then
     echo "↳ shfmt        ok"
   else
     git add "$path"
     echo "↳ shfmt        wrote"
   fi
   patchfile="$(mktemp)"
-  status=0
-  shellcheck \
+  errfile="$(mktemp)"
+  if shellcheck \
     --format=diff \
     --external-sources \
     --shell=bash \
     --severity=style \
     --exclude=SC2164 \
     "$path" \
-    2>/dev/null >"$patchfile" ||
-    status=$?
-  if [ "$status" = 0 ]; then
+    >"$patchfile" \
+    2>"$errfile"; then
     if [ -n "$(cat "$patchfile")" ]; then
       git apply "$patchfile" >/dev/null
       git add "$path"
@@ -43,18 +38,16 @@ lint_bash() {
       echo "↳ shellcheck   ok"
     fi
   else
-    echo "↳ shellcheck couldn't apply patch"
-    cat "$patchfile"
+    echo "↳ shellcheck   $(cat "$errfile")"
   fi
   rm "$patchfile"
+  rm "$errfile"
 }
 
 lint_bats() {
-  local path status
+  local path
   path="$1"
-  status=0
-  shfmt -d -i 2 -ci -ln bats -w "$path" >/dev/null || status=$?
-  if [ "$status" = 0 ]; then
+  if shfmt -d -i 2 -ci -ln bats -w "$path" >/dev/null; then
     echo "↳ shfmt        ok"
   else
     echo "↳ shfmt        wrote"
