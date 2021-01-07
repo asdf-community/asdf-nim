@@ -67,10 +67,10 @@ teardown() {
 
 @test "asdf_nim_cleanup" {
   original="$ASDF_NIM_TEMP"
-  run asdf_nim_init && \
-    asdf_nim_cleanup && \
-    [ -z "$ASDF_NIM_TEMP" ] && \
-    [ ! -d "$original" ] && \
+  run asdf_nim_init &&
+    asdf_nim_cleanup &&
+    [ -z "$ASDF_NIM_TEMP" ] &&
+    [ ! -d "$original" ] &&
     [ "$ASDF_NIM_INITIALIZED" = "no" ]
   assert_success
   # TODO ASDF_NIM_STDOUT/ASDF_NIM_STDERR redirection test

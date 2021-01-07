@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+set -ueo pipefail
+
+# shellcheck source=SCRIPTDIR/utils.bash
+source "$(dirname "${BASH_SOURCE[0]}")/utils.bash"
+
+while read path; do
+  lint "$path" "yes"
+done <<<"$(find . -type f \( -not -path '*/\.git/*' \) -a \( -not -path "*/node_modules/*" \))"
