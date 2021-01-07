@@ -1,39 +1,40 @@
 #!/usr/bin/env bash
 
 lint_prettier() {
-  local path
+  local path status
   path="$1"
-  (
-    npx prettier -u -w "$path" 2>&1 1>/dev/null
-  ) && (
+  status=0
+  npx prettier -u -w "$path" 1>/dev/null 2>&1 || status=$?
+  if [ "$status" = 0 ]; then
     echo "↳ prettier     ok"
-  ) || (
+  else
     echo "↳ prettier     wrote"
-  )
+  fi
 }
 
 lint_bash() {
-  local path
+  local path status
   path="$1"
-  (
-    shfmt -d -i 2 -ci -ln bash -w "$path" >/dev/null
-  ) && (
+  status=0
+  shfmt -d -i 2 -ci -ln bash -w "$path" >/dev/null || status=$?
+  if [ "$status" = 0 ]; then
     echo "↳ shfmt        ok"
-  ) || (
+  else
     git add "$path"
     echo "↳ shfmt        wrote"
-  )
+  fi
   patchfile="$(mktemp)"
-  (
-    shellcheck \
-      --format=diff \
-      --external-sources \
-      --shell=bash \
-      --severity=style \
-      --exclude=SC2164 \
-      "$path" \
-      2>/dev/null >"$patchfile"
-
+  status=0
+  shellcheck \
+    --format=diff \
+    --external-sources \
+    --shell=bash \
+    --severity=style \
+    --exclude=SC2164 \
+    "$path" \
+    2>/dev/null >"$patchfile" ||
+    status=$?
+  if [ "$status" = 0 ]; then
     if [ -n "$(cat "$patchfile")" ]; then
       git apply "$patchfile" >/dev/null
       git add "$path"
@@ -41,24 +42,24 @@ lint_bash() {
     else
       echo "↳ shellcheck   ok"
     fi
-  ) || (
+  else
     echo "↳ shellcheck couldn't apply patch"
     cat "$patchfile"
-  )
+  fi
   rm "$patchfile"
 }
 
 lint_bats() {
-  local path
+  local path status
   path="$1"
-  (
-    shfmt -d -i 2 -ci -ln bats -w "$path" >/dev/null
-  ) && (
+  status=0
+  shfmt -d -i 2 -ci -ln bats -w "$path" >/dev/null || status=$?
+  if [ "$status" = 0 ]; then
     echo "↳ shfmt        ok"
-  ) || (
+  else
     echo "↳ shfmt        wrote"
     git add "$path"
-  )
+  fi
 }
 
 lint() {
@@ -67,12 +68,13 @@ lint() {
   local fully_staged_only
   fully_staged_only="${2:-no}"
   echo "# $path"
-  if [ "$fully_staged_only" = "yes" ] &&
-    [ -n "$(git diff --name-only | grep -F "$path")" ]; then
-    # path has unstaged changes, so don't modify it
-    echo "↳ unstaged changes, skipping"
-    echo
-    continue
+  if [ "$fully_staged_only" = "yes" ]; then
+    if git diff --name-only | grep -qF "$path"; then
+      # path has unstaged changes, so don't modify it
+      echo "↳ unstaged changes, skipping"
+      echo
+      return
+    fi
   fi
   case "$path" in
     *.md | *.yml) lint_prettier "$path" ;;
