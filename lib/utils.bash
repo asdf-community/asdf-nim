@@ -7,15 +7,13 @@ LINUX_X64_URL="https://nim-lang.org/download/nim-{version}-linux_x64.tar.xz"
 LINUX_X32_URL="https://nim-lang.org/download/nim-{version}-linux_x32.tar.xz"
 WINDOWS_X64_URL="https://nim-lang.org/download/nim-{version}_x64.zip"
 WINDOWS_X32_URL="https://nim-lang.org/download/nim-{version}_x32.zip"
-WINDOWS_DLLS_URL="https://nim-lang.org/download/dlls.zip"
 NIM_BUILDS_REPO="https://github.com/elijahr/nim-builds.git"
 NIM_ARGS=("--parallelBuild:${ASDF_CONCURRENCY:-0}" "-d:release") # Args to pass to koch/nim
 
-ASDF_NIM_EXIT_STATUS_NEEDS_DOWNLOAD=2
-
 normpath() {
   # Remove all /./ sequences.
-  local path="${1//\/.\//\/}"
+  local path
+  path="${1//\/.\//\/}"
   # Remove dir/.. sequences.
   while [[ "$path" =~ ([^/][^/]*/\.\./?) ]]; do
     path="${path/${BASH_REMATCH[0]}/}"
@@ -73,7 +71,7 @@ out() {
 outf() {
   # To screen
   if [ "$ASDF_NIM_SILENT" = "no" ]; then
-    printf "$@" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+    printf "%s" "$@" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
   fi
 }
 
@@ -166,7 +164,8 @@ asdf_nim_on_exit() {
 
 # Log file path. Most command output gets redirected here.
 asdf_nim_log() {
-  local path="${ASDF_NIM_TEMP}/${1:-$ASDF_NIM_ACTION}.log"
+  local path
+  path="${ASDF_NIM_TEMP}/${1:-$ASDF_NIM_ACTION}.log"
   touch "$path"
   echo "$path"
 }
@@ -293,11 +292,12 @@ asdf_nim_list_deps() {
 
 # Generate the command to install dependencies via the system package manager.
 asdf_nim_install_deps_cmds() {
-  local deps="$(asdf_nim_list_deps | xargs)"
+  local deps
+  deps="$(asdf_nim_list_deps | xargs)"
   case "$(asdf_nim_pkg_mgr)" in
     apt-get) echo "apt-get update -q -y && apt-get -qq install -y $deps" ;;
     apk)
-      printf "%s" "apk add --update $(echo "$deps" | sed 's/hub //') && "
+      printf "%s" "apk add --update ${deps//hub /} && "
       printf "%s" "apk add --update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing hub"
       echo
       ;;
@@ -312,8 +312,10 @@ asdf_nim_install_deps_cmds() {
 # Install missing dependencies using the system package manager.
 # Note - this is interactive, so in CI use `yes | cmd-that-calls-asdf_nim_install_deps`.
 asdf_nim_install_deps() {
-  local deps="$(asdf_nim_list_deps | xargs)"
-  local input=""
+  local deps
+  deps="$(asdf_nim_list_deps | xargs)"
+  local input
+  input=""
   echo
   echo "[asdf-nim:install-deps] additional packages are required: ${deps}"
   echo
@@ -327,7 +329,8 @@ asdf_nim_install_deps() {
 
   case "$input" in
     [yY][eE][sS] | [yY] | "")
-      local cmds="$(asdf_nim_install_deps_cmds)"
+      local cmds
+      cmds="$(asdf_nim_install_deps_cmds)"
       if [ -z "$cmds" ]; then
         echo
         echo "[asdf-nim:install-deps] no package managers recognized, install the packages manually."
@@ -354,8 +357,17 @@ asdf_nim_install_deps() {
 # Echoes "yes" or "no"
 asdf_nim_is_musl() {
   echo "${ASDF_NIM_MOCK_IS_MUSL:-$(
-    local libc_path=$(ldconfig -p 2>/dev/null | grep -F "libc.so." | tr ' ' '\n' | grep -F "/" | head -n 1 || ls /lib/libc.so.* 2>/dev/null || true)
-    ([ -n "$(${libc_path} | grep musl)" ] && echo yes) || echo no
+    local libc_path
+    libc_path=$(
+      ldconfig -p 2>/dev/null |
+        grep -F "libc.so." |
+        tr ' ' '\n' |
+        grep -F "/" |
+        head -n 1 ||
+        ls /lib/libc.so.* 2>/dev/null ||
+        true
+    )
+    (echo "$libc_path" | grep -q musl && echo yes) || echo no
   )}"
 }
 
@@ -392,14 +404,14 @@ asdf_nim_official_archive_url() {
   case "$(asdf_nim_normalize_os)" in
     linux)
       case "$(asdf_nim_normalize_arch)" in
-        x86_64) echo "$LINUX_X64_URL" | sed "s/{version}/${ASDF_INSTALL_VERSION}/" ;;
-        i686) echo "$LINUX_X32_URL" | sed "s/{version}/${ASDF_INSTALL_VERSION}/" ;;
+        x86_64) echo "${LINUX_X64_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
+        i686) echo "${LINUX_X32_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
       esac
       ;;
     windows)
       case "$(asdf_nim_normalize_arch)" in
-        x86_64) echo "$WINDOWS_X64_URL" | sed "s/{version}/${ASDF_INSTALL_VERSION}/" ;;
-        i686) echo "$WINDOWS_X32_URL" | sed "s/{version}/${ASDF_INSTALL_VERSION}/" ;;
+        x86_64) echo "${WINDOWS_X64_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
+        i686) echo "${WINDOWS_X32_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
       esac
       ;;
   esac
@@ -427,64 +439,75 @@ asdf_nim_unofficial_archive_name() {
 }
 
 asdf_nim_unofficial_archive_url_via_hub() {
-  local nim_builds_repo="${ASDF_NIM_TEMP}/nim-builds"
+  local nim_builds_repo
+  nim_builds_repo="${ASDF_NIM_TEMP}/nim-builds"
   mkdir -p "$nim_builds_repo"
-  cd "$nim_builds_repo"
-  git init . 1>/dev/null 2>&1
-  git remote add origin "$NIM_BUILDS_REPO" 1>/dev/null 2>&1
+  (
+    cd "$nim_builds_repo"
+    git init . 1>/dev/null 2>&1
+    git remote add origin "$NIM_BUILDS_REPO" 1>/dev/null 2>&1
 
-  local releases=($(yes | GITHUB_TOKEN=$(asdf_nim_github_token) hub release -L 100 || echo ""))
-  local archive="$(asdf_nim_unofficial_archive_name)"
-  local url=""
-  # Search through releases looking for a matching binary
-  for release in "${releases[@]}"; do
-    case "$release" in
-      nim-${ASDF_INSTALL_VERSION}--*)
-        url="$(yes | GITHUB_TOKEN=$(asdf_nim_github_token) hub release show "$release" --show-downloads | grep -F "$archive" || echo "")"
-        ;;
-    esac
-    if [ -n "$url" ]; then
-      break
-    fi
-  done
-  cd - 1>/dev/null 2>&1
-  echo "$url"
+    local releases
+    releases="$(yes | GITHUB_TOKEN=$(asdf_nim_github_token) hub release -L 100 || true)"
+    local archive
+    archive="$(asdf_nim_unofficial_archive_name)"
+    local url
+    url=""
+    # Search through releases looking for a matching binary
+    while read -r release; do
+      case "$release" in
+        nim-${ASDF_INSTALL_VERSION}--*)
+          url="$(yes | GITHUB_TOKEN=$(asdf_nim_github_token) hub release show "$release" --show-downloads | grep -F "$archive" || echo "")"
+          ;;
+      esac
+      if [ -n "$url" ]; then
+        break
+      fi
+    done <<<"$releases"
+    echo "$url"
+  )
 }
 
 asdf_nim_unofficial_archive_url_via_cache() {
-  local archive="$(asdf_nim_unofficial_archive_name)"
-  echo "$(cat "${ASDF_DATA_DIR}/plugins/nim/share/unofficial-binaries.txt" 2>/dev/null | grep -F "$archive" | head -n 1 || echo "")"
+  local archive
+  archive="$(asdf_nim_unofficial_archive_name)"
+  grep -F "$archive" \
+    <"${ASDF_DATA_DIR}/plugins/nim/share/unofficial-binaries.txt" 2>/dev/null |
+    head -n 1 ||
+    true
 }
 
 # Echo the unofficial binary archive URL (from github.com/elijahr/nim-builds)
 # for the current architecture.
 asdf_nim_unofficial_archive_url() {
-  local url="$(asdf_nim_unofficial_archive_url_via_cache)"
+  local url
+  url="$(asdf_nim_unofficial_archive_url_via_cache)"
   if [ -z "$url" ]; then
-    asdf_nim_assert_github_auth && url="$(asdf_nim_unofficial_archive_url_via_hub)" || true
+    if asdf_nim_assert_github_auth; then
+      url="$(asdf_nim_unofficial_archive_url_via_hub)"
+    fi
   fi
   echo "$url"
 }
 
 # Echo the source archive URL (from nim-lang.org).
 asdf_nim_source_url() {
-  echo "$SOURCE_URL" | sed "s/{version}/${ASDF_INSTALL_VERSION}/"
+  echo "${SOURCE_URL//{version/}/$ASDF_INSTALL_VERSION}"
 }
 
 asdf_nim_needs_download() {
-  (
-    # No download path
-    [ ! -d "$ASDF_DOWNLOAD_PATH" ]
-  ) && (
+  # No download path
+  if [ ! -d "$ASDF_DOWNLOAD_PATH" ]; then
     echo "yes"
-  ) || (
+  else
     echo "no"
-  )
+  fi
 }
 
 asdf_nim_search_nim_builds() {
   step_start "Searching for a binary build"
-  local url="$(asdf_nim_unofficial_archive_url)"
+  local url
+  url="$(asdf_nim_unofficial_archive_url)"
   if [ -z "$url" ]; then
     step_end "not found"
   else
@@ -545,7 +568,7 @@ asdf_nim_download_urls() {
 # use by the build or install functions, then move it to ASDF_DOWNLOAD_PATH.
 asdf_nim_download() {
   {
-    echo "$(date +%s)" >"${ASDF_NIM_TEMP}/download.start"
+    date +%s >"${ASDF_NIM_TEMP}/download.start"
 
     if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
       set -x
@@ -558,20 +581,22 @@ asdf_nim_download() {
     case "$ASDF_INSTALL_TYPE" in
       ref)
         step_start "Cloning repo"
-        cd "$ASDF_NIM_DOWNLOAD_PATH"
-        git init
-        git remote add origin "$SOURCE_REPO"
-        git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
-        git reset --hard FETCH_HEAD
-        chmod -R 700 . # For asdf cleanup
-        cd -
+        (
+          cd "$ASDF_NIM_DOWNLOAD_PATH"
+          git init
+          git remote add origin "$SOURCE_REPO"
+          git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
+          git reset --hard FETCH_HEAD
+          chmod -R 700 . # For asdf cleanup
+        )
         step_end "done"
         ;;
       version)
-        local urls=($(asdf_nim_download_urls))
-
-        local url=""
-        local archive_path=""
+        local urls url archive_path archive_name archive_ext
+        # shellcheck disable=SC2207
+        urls=($(asdf_nim_download_urls))
+        url=""
+        archive_path=""
         for i in "${!urls[@]}"; do
           url="${urls[$i]}"
           step_start "Downloading ${url}"
@@ -580,7 +605,7 @@ asdf_nim_download() {
             step_end "done"
             break
           else
-            if [ "$(($i + 1))" -ge "${#urls[@]}" ]; then
+            if [ "$((i + 1))" -ge "${#urls[@]}" ]; then
               step_end "failed, no more URLs to try"
               return 1
             else
@@ -588,8 +613,8 @@ asdf_nim_download() {
             fi
           fi
         done
-        local archive_name="$(basename "$url")"
-        local archive_ext="${archive_name##*.}"
+        archive_name="$(basename "$url")"
+        archive_ext="${archive_name##*.}"
         step_start "Unpacking"
         case "$archive_ext" in
           xz) tar -xJf "${ASDF_NIM_TEMP}/${archive_name}" -C "$ASDF_NIM_DOWNLOAD_PATH" --strip-components=1 ;;
@@ -616,7 +641,8 @@ asdf_nim_download() {
 }
 
 asdf_nim_fetch() {
-  local url="$1"
+  local url
+  url="$1"
   declare -a curl_args
   curl_args=("-fsSL" "--connect-timeout" "10")
 
@@ -636,40 +662,38 @@ asdf_nim_fetch() {
       curl_args+=("--cacert" "${ASDF_DATA_DIR}/plugins/nim/share/cacert.pem")
       ;;
   esac
-  local archive_name="$(basename "$url")"
-  local archive_path="${ASDF_NIM_TEMP}/${archive_name}"
+  local archive_name
+  archive_name="$(basename "$url")"
+  local archive_path
+  archive_path="${ASDF_NIM_TEMP}/${archive_name}"
 
   curl_args+=("$url" "-o" "$archive_path")
 
+  # shellcheck disable=SC2046
   eval curl $(printf ' "%s" ' "${curl_args[@]}") && echo "$archive_path" || echo ""
 }
 
 asdf_nim_needs_build() {
-  (
-    [ -f "${ASDF_DOWNLOAD_PATH}/bin/nim$(asdf_nim_exe_ext)" ] &&
-      [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimgrep$(asdf_nim_exe_ext)" ] &&
-      [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimble$(asdf_nim_exe_ext)" ] &&
-      (
-        [ -f "${ASDF_DOWNLOAD_PATH}/install.sh" ] ||
-          [ "$(asdf_nim_normalize_os)" = "windows" ]
-      )
-  ) && ( 
-    (
-      [ "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" = "yes" ]
-    ) && (
-      echo "yes"
-    ) || (
+  if [ -f "${ASDF_DOWNLOAD_PATH}/bin/nim$(asdf_nim_exe_ext)" ] &&
+    [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimgrep$(asdf_nim_exe_ext)" ] &&
+    [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimble$(asdf_nim_exe_ext)" ]; then
+    if [ "$(asdf_nim_normalize_os)" = "windows" ]; then
       echo "no"
-    )
-  ) || (
+    elif [ -f "${ASDF_DOWNLOAD_PATH}/install.sh" ]; then
+      echo "no"
+    else
+      echo "yes"
+    fi
+  else
     echo "yes"
-  )
+  fi
 }
 
 asdf_nim_bootstrap_nim() {
   cd "$ASDF_DOWNLOAD_PATH"
 
-  local nim="./bin/nim$(asdf_nim_exe_ext)"
+  local nim
+  nim="./bin/nim$(asdf_nim_exe_ext)"
   if [ ! -f "$nim" ]; then
     if [ -f "build.sh" ]; then
       # source directory has build.sh to build koch, nim, and tools.
@@ -687,50 +711,50 @@ asdf_nim_bootstrap_nim() {
   [ -f "$nim" ] # A nim executable must exist at this point to proceed
   [ -f "./koch" ] || asdf_nim_build_koch "$nim"
   [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || asdf_nim_build_nim
-  cd -
 }
 
 asdf_nim_build_koch() {
-  local nim="$1"
+  local nim
+  nim="$1"
   step_start "Building koch"
   cd "$ASDF_DOWNLOAD_PATH"
+  # shellcheck disable=SC2046
   eval "$nim" c --skipParentCfg:on $(printf ' %q ' "${NIM_ARGS[@]}") koch
-  cd -
   step_end "done"
 }
 
 asdf_nim_build_nim() {
   step_start "Building nim"
   cd "$ASDF_DOWNLOAD_PATH"
+  # shellcheck disable=SC2046
   eval ./koch boot $(printf ' %q ' "${NIM_ARGS[@]}")
-  cd -
   step_end "done"
 }
 
 asdf_nim_build_tools() {
   step_start "Building tools"
   cd "$ASDF_DOWNLOAD_PATH"
+  # shellcheck disable=SC2046
   eval ./koch tools $(printf ' %q ' "${NIM_ARGS[@]}")
-  cd -
   step_end "done"
 }
 
 asdf_nim_build_nimble() {
   step_start "Building nimble"
   cd "$ASDF_DOWNLOAD_PATH"
+  # shellcheck disable=SC2046
   eval ./koch nimble $(printf ' %q ' "${NIM_ARGS[@]}")
-  cd -
   step_end "done"
 }
 
 asdf_nim_generate_install_sh() {
   step_start "Building niminst"
   cd "$ASDF_DOWNLOAD_PATH"
+  # shellcheck disable=SC2046
   "./bin/nim$(asdf_nim_exe_ext)" c $(printf ' %q ' "${NIM_ARGS[@]}") tools/niminst/niminst
   step_end "done"
   step_start "Generating install.sh"
   eval ./tools/niminst/niminst scripts ./compiler/installer.ini
-  cd -
   step_end "done"
 }
 
@@ -744,17 +768,21 @@ asdf_nim_build() {
   if [ "$(asdf_nim_normalize_os)" != "windows" ]; then
     [ -f "./install.sh" ] || asdf_nim_generate_install_sh
   fi
-  cd -
 }
 
 asdf_nim_time() {
-  local start="$(cat "${ASDF_NIM_TEMP}/download.start" 2>/dev/null || true)"
+  local start
+  start="$(cat "${ASDF_NIM_TEMP}/download.start" 2>/dev/null || true)"
   if [ -n "$start" ]; then
-    local now="$(date +%s)"
-    local secs="$(($now - $start))"
-    local mins="0"
+    local now
+    now="$(date +%s)"
+    local secs
+    secs="$((now - start))"
+    local mins
+    mins="0"
     if [[ "$secs" -ge 60 ]]; then
-      local time_mins="$(echo "scale=2; ${secs}/60" | bc)"
+      local time_mins
+      time_mins="$(echo "scale=2; ${secs}/60" | bc)"
       mins="$(echo "${time_mins}" | cut -d'.' -f1)"
       secs="0.$(echo "${time_mins}" | cut -d'.' -f2)"
       secs="$(echo "${secs}"*60 | bc | awk '{print int($1+0.5)}')"

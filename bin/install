@@ -19,7 +19,7 @@ asdf_nim_install() {
   fi
 
   if [ "$(asdf_nim_needs_download)" = "yes" ]; then
-    return $ASDF_NIM_EXIT_STATUS_NEEDS_DOWNLOAD
+    return 1
   fi
 
   if [ "$(asdf_nim_needs_build)" = "yes" ]; then
@@ -35,9 +35,10 @@ asdf_nim_install() {
   mkdir -p "$ASDF_NIM_INSTALL_PATH"
   # Use nim's install.sh to install to the custom path
   step_start "Running install.sh"
-  cd "$ASDF_DOWNLOAD_PATH"
-  sh install.sh "$ASDF_NIM_INSTALL_PATH"
-  cd -
+  (
+    cd "$ASDF_DOWNLOAD_PATH"
+    sh install.sh "$ASDF_NIM_INSTALL_PATH"
+  )
   step_end "done"
 
   step_start "Copying installation"

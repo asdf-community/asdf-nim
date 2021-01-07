@@ -17,7 +17,6 @@ setup_file() {
 
 teardown_file() {
   rm -rf "${ASDF_NIM_TEST_TEMP}"
-  cd -
 }
 
 teardown() {

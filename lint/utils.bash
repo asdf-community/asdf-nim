@@ -1,7 +1,8 @@
 #!/usr/bin/env bash
 
 lint_prettier() {
-  local path="$1"
+  local path
+  path="$1"
   (
     npx prettier -u -w "$path" 2>&1 1>/dev/null
   ) && (
@@ -12,7 +13,8 @@ lint_prettier() {
 }
 
 lint_bash() {
-  local path="$1"
+  local path
+  path="$1"
   (
     shfmt -d -i 2 -ci -ln bash -w "$path" >/dev/null
   ) && (
@@ -31,6 +33,7 @@ lint_bash() {
       --exclude=SC2164 \
       "$path" \
       2>/dev/null >"$patchfile"
+
     if [ -n "$(cat "$patchfile")" ]; then
       git apply "$patchfile" >/dev/null
       git add "$path"
@@ -46,7 +49,8 @@ lint_bash() {
 }
 
 lint_bats() {
-  local path="$1"
+  local path
+  path="$1"
   (
     shfmt -d -i 2 -ci -ln bats -w "$path" >/dev/null
   ) && (
@@ -58,8 +62,10 @@ lint_bats() {
 }
 
 lint() {
-  local path="$1"
-  local fully_staged_only="${2:-no}"
+  local path
+  path="$1"
+  local fully_staged_only
+  fully_staged_only="${2:-no}"
   echo "# $path"
   if [ "$fully_staged_only" = "yes" ] &&
     [ -n "$(git diff --name-only | grep -F "$path")" ]; then
