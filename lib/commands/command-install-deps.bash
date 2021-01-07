@@ -2,8 +2,8 @@
 
 set -euo pipefail
 
-# shellcheck source=../utils.bash
-source "$(dirname "$0")/../utils.bash"
+# shellcheck source=SCRIPTDIR/../utils.bash
+source "$(dirname "${BASH_SOURCE[0]}")/../utils.bash"
 
 ASDF_NIM_INSTALL_DEPS_ACCEPT="no"
 POSITIONAL=()

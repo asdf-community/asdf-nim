@@ -51,7 +51,7 @@ asdf_nim_init() {
     out
     out "# Environment:"
     out
-    env | grep "^ASDF_" | sort | xargs printf "#  %s\n" 1>&$ASDF_NIM_STDOUT 2>&$ASDF_NIM_STDERR || true
+    env | grep "^ASDF_" | sort | xargs printf "#  %s\n" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR" || true
   fi
 }
 
@@ -66,14 +66,14 @@ asdf_nim_init_traps() {
 out() {
   # To screen
   if [ "$ASDF_NIM_SILENT" = "no" ]; then
-    echo "$@" 1>&$ASDF_NIM_STDOUT 2>&$ASDF_NIM_STDERR
+    echo "$@" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
   fi
 }
 
 outf() {
   # To screen
   if [ "$ASDF_NIM_SILENT" = "no" ]; then
-    printf "$@" 1>&$ASDF_NIM_STDOUT 2>&$ASDF_NIM_STDERR
+    printf "$@" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
   fi
 }
 
@@ -111,7 +111,9 @@ asdf_nim_on_exit() {
       else
         out "# ASDF_NIM_REMOVE_TEMP=${ASDF_NIM_REMOVE_TEMP}, keeping temp dir ${ASDF_NIM_TEMP}"
       fi
+
     fi
+
   }
 
   case "$ASDF_NIM_ACTION" in
@@ -148,8 +150,8 @@ asdf_nim_on_exit() {
           out
           out "# 😱 Exited with status ${ASDF_NIM_EXIT_STATUS}:"
           out
-          cat "$(asdf_nim_log download)" >&$ASDF_NIM_STDOUT 2>&$ASDF_NIM_STDERR
-          cat "$(asdf_nim_log install)" >&$ASDF_NIM_STDOUT 2>&$ASDF_NIM_STDERR
+          cat "$(asdf_nim_log download)" >&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+          cat "$(asdf_nim_log install)" >&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
           # cleanup everything
           out
           asdf_nim_cleanup_asdf_install_path
@@ -295,7 +297,7 @@ asdf_nim_install_deps_cmds() {
   case "$(asdf_nim_pkg_mgr)" in
     apt-get) echo "apt-get update -q -y && apt-get -qq install -y $deps" ;;
     apk)
-      printf "%s" "apk add --update $(echo $deps | sed 's/hub //') && "
+      printf "%s" "apk add --update $(echo "$deps" | sed 's/hub //') && "
       printf "%s" "apk add --update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing hub"
       echo
       ;;
@@ -586,7 +588,7 @@ asdf_nim_download() {
             fi
           fi
         done
-        local archive_name="$(basename $url)"
+        local archive_name="$(basename "$url")"
         local archive_ext="${archive_name##*.}"
         step_start "Unpacking"
         case "$archive_ext" in
@@ -634,7 +636,7 @@ asdf_nim_fetch() {
       curl_args+=("--cacert" "${ASDF_DATA_DIR}/plugins/nim/share/cacert.pem")
       ;;
   esac
-  local archive_name="$(basename $url)"
+  local archive_name="$(basename "$url")"
   local archive_path="${ASDF_NIM_TEMP}/${archive_name}"
 
   curl_args+=("$url" "-o" "$archive_path")
@@ -753,9 +755,9 @@ asdf_nim_time() {
     local mins="0"
     if [[ "$secs" -ge 60 ]]; then
       local time_mins="$(echo "scale=2; ${secs}/60" | bc)"
-      mins="$(echo ${time_mins} | cut -d'.' -f1)"
-      secs="0.$(echo ${time_mins} | cut -d'.' -f2)"
-      secs="$(echo ${secs}*60 | bc | awk '{print int($1+0.5)}')"
+      mins="$(echo "${time_mins}" | cut -d'.' -f1)"
+      secs="0.$(echo "${time_mins}" | cut -d'.' -f2)"
+      secs="$(echo "${secs}"*60 | bc | awk '{print int($1+0.5)}')"
     fi
     echo " in ${mins}m${secs}s"
   fi

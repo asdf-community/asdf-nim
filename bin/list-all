@@ -3,7 +3,7 @@
 set -ueo pipefail
 shopt -s dotglob
 
-# shellcheck source=../lib/utils.bash
-source "$(dirname "$0")/../lib/utils.bash"
+# shellcheck source=SCRIPTDIR/../lib/utils.bash
+source "$(dirname "${BASH_SOURCE[0]}")/../lib/utils.bash"
 
 asdf_nim_list_all_versions | xargs echo
