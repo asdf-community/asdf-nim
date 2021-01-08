@@ -2,9 +2,11 @@
 
 set -ueo pipefail
 
+SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
+
 # shellcheck source=SCRIPTDIR/lib/lint_utils.bash
-source "$(dirname "${BASH_SOURCE[0]}")/lib/lint_utils.bash"
+source "${SCRIPTDIR}/lib/lint_utils.bash"
 
 while read -r path; do
   check "$path" "yes"
-done <<<"$(find . -type f \( -not -path '*/\.git/*' \) -a \( -not -path "*/node_modules/*" \))"
+done <<<"$(find "$SCRIPTDIR" -type f \( -not -path '*/\.git/*' \) -a \( -not -path "*/node_modules/*" \))"
