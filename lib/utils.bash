@@ -685,7 +685,9 @@ asdf_nim_fetch() {
 }
 
 asdf_nim_needs_build() {
-  if [ -f "${ASDF_DOWNLOAD_PATH}/bin/nim$(asdf_nim_exe_ext)" ] &&
+  if [ "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" = "yes" ]; then
+    echo "yes"
+  elif [ -f "${ASDF_DOWNLOAD_PATH}/bin/nim$(asdf_nim_exe_ext)" ] &&
     [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimgrep$(asdf_nim_exe_ext)" ] &&
     [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimble$(asdf_nim_exe_ext)" ]; then
     if [ "$(asdf_nim_normalize_os)" = "windows" ]; then
