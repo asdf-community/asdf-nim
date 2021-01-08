@@ -2,11 +2,11 @@
 
 # Constants
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
-SOURCE_URL="https://nim-lang.org/download/nim-{version}.tar.xz"
-LINUX_X64_URL="https://nim-lang.org/download/nim-{version}-linux_x64.tar.xz"
-LINUX_X32_URL="https://nim-lang.org/download/nim-{version}-linux_x32.tar.xz"
-WINDOWS_X64_URL="https://nim-lang.org/download/nim-{version}_x64.zip"
-WINDOWS_X32_URL="https://nim-lang.org/download/nim-{version}_x32.zip"
+SOURCE_URL="https://nim-lang.org/download/nim-VERSION.tar.xz"
+LINUX_X64_URL="https://nim-lang.org/download/nim-VERSION-linux_x64.tar.xz"
+LINUX_X32_URL="https://nim-lang.org/download/nim-VERSION-linux_x32.tar.xz"
+WINDOWS_X64_URL="https://nim-lang.org/download/nim-VERSION_x64.zip"
+WINDOWS_X32_URL="https://nim-lang.org/download/nim-VERSION_x32.zip"
 NIM_BUILDS_REPO="https://github.com/elijahr/nim-builds.git"
 NIM_ARGS=("--parallelBuild:${ASDF_CONCURRENCY:-0}" "-d:release") # Args to pass to koch/nim
 
@@ -415,14 +415,14 @@ asdf_nim_official_archive_url() {
   case "$(asdf_nim_normalize_os)" in
     linux)
       case "$(asdf_nim_normalize_arch)" in
-        x86_64) echo "${LINUX_X64_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
-        i686) echo "${LINUX_X32_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
+        x86_64) echo "${LINUX_X64_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
+        i686) echo "${LINUX_X32_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
       esac
       ;;
     windows)
       case "$(asdf_nim_normalize_arch)" in
-        x86_64) echo "${WINDOWS_X64_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
-        i686) echo "${WINDOWS_X32_URL//{version/}/$ASDF_INSTALL_VERSION}" ;;
+        x86_64) echo "${WINDOWS_X64_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
+        i686) echo "${WINDOWS_X32_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
       esac
       ;;
   esac
@@ -503,7 +503,7 @@ asdf_nim_unofficial_archive_url() {
 
 # Echo the source archive URL (from nim-lang.org).
 asdf_nim_source_url() {
-  echo "${SOURCE_URL//{version/}/$ASDF_INSTALL_VERSION}"
+  echo "${SOURCE_URL//VERSION/$ASDF_INSTALL_VERSION}"
 }
 
 asdf_nim_needs_download() {
