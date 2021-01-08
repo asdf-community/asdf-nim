@@ -7,6 +7,7 @@ SCRIPTDIR="$(dirname "${BASH_SOURCE[0]}")"
 # shellcheck source=SCRIPTDIR/lib/lint_utils.bash
 source "${SCRIPTDIR}/lib/lint_utils.bash"
 
+cd "${SCRIPTDIR}/.."
 while read -r path; do
   lint "$path" "yes"
-done <<<"$(find "$SCRIPTDIR" -type f \( -not -path '*/\.git/*' \) -a \( -not -path "*/node_modules/*" \))"
+done <<<"$(find . -type f \( -not -path '*/\.git/*' \) -a \( -not -path "*/node_modules/*" \))"
