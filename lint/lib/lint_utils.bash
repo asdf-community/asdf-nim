@@ -10,6 +10,17 @@ lint_prettier() {
   fi
 }
 
+check_prettier() {
+  local path prettier_status
+  path="$1"
+  echo ">>>> prettier $path"
+  prettier_status=0
+  npx prettier --check -u "$path" || prettier_status=$?
+  echo "<<<< prettier"
+
+  [ "$prettier_status" = 0 ]
+}
+
 lint_bash() {
   local path
   path="$1"
@@ -44,6 +55,29 @@ lint_bash() {
   rm "$errfile"
 }
 
+check_bash() {
+  local path shfmt_status shellcheck_status
+  path="$1"
+  shfmt_status=0
+
+  echo ">>>> shfmt $path"
+  shfmt -d -i 2 -ci -ln bash "$path" || shfmt_status=$?
+  echo "<<<< shfmt"
+
+  echo ">>>> shellcheck $path"
+  shellcheck_status=0
+  shellcheck \
+    --external-sources \
+    --shell=bash \
+    --severity=style \
+    --exclude=SC2164 \
+    "$path" || shellcheck_status=$?
+  echo "<<<< shellcheck"
+
+  [ "$shfmt_status" = 0 ]
+  [ "$shellcheck_status" = 0 ]
+}
+
 lint_bats() {
   local path
   path="$1"
@@ -53,6 +87,17 @@ lint_bats() {
     echo "↳ shfmt        wrote"
     git add "$path"
   fi
+}
+
+check_bats() {
+  local path bats_status
+  path="$1"
+  echo ">>>> shfmt $path"
+  bats_status=0
+  shfmt -d -i 2 -ci -ln bats "$path" || prettier_status=$?
+  echo "<<<< shfmt"
+
+  [ "$bats_status" = 0 ]
 }
 
 lint() {
@@ -83,4 +128,21 @@ lint() {
       ;;
   esac
   echo
+}
+
+check() {
+  local path
+  path="$1"
+  case "$path" in
+    *.md | *.yml) check_prettier "$path" ;;
+    *.bats) check_bats "$path" ;;
+    *.sh | *.bash) check_bash "$path" ;;
+    *)
+      # Inspect hashbang
+      case "$(head -n1 "$path")" in
+        */bash | *env\ bash | "/bin/sh") check_bash "$path" ;;
+        */bats | *env\ bats) check_bats "$path" ;;
+      esac
+      ;;
+  esac
 }
