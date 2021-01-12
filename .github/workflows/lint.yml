@@ -1,3 +1,5 @@
+# yamllint disable rule:line-length
+
 name: Lint
 on:
   pull_request:
@@ -21,8 +23,11 @@ jobs:
         with:
           python-version: "3.9"
 
+      - name: Install lintball
+        run: curl -o- https://raw.githubusercontent.com/elijahr/lintball/v0.3.0/install.sh | bash
+
       - name: Install deps
-        run: ./install.sh --deps
+        run: ${HOME}/.lintball/install.sh --deps
 
       - name: check
         run: ./bin/lintball .
