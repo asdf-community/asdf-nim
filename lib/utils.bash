@@ -1,15 +1,15 @@
 #!/usr/bin/env bash
 
 # shellcheck disable=SC2001
-if [ "$(echo "$BASH_VERSION" | sed 's/\([0-9]\{1,\}\).*/\1/')" -lt 4 ]; then
-  echo -e "bash $BASH_VERSION is not supported, bash >= 4 is required."
-  if [ "$(uname)" = "Darwin" ]; then
-    echo -e
-    echo -e "The default macOS bash is ancient. Consider installing bash with homebrew."
-    echo -e
-  fi
-  exit 1
-fi
+# if [ "$(echo "$BASH_VERSION" | sed 's/\([0-9]\{1,\}\).*/\1/')" -lt 4 ]; then
+#   echo -e "bash $BASH_VERSION is not supported, bash >= 4 is required."
+#   if [ "$(uname)" = "Darwin" ]; then
+#     echo -e
+#     echo -e "The default macOS bash is ancient. Consider installing bash with homebrew."
+#     echo -e
+#   fi
+#   exit 1
+# fi
 
 # Constants
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
