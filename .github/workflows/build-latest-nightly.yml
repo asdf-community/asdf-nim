@@ -1,7 +1,10 @@
+# yamllint disable rule:line-length
+
 name: Build latest nightly
 on:
   schedule:
-    - cron: "0 0 * * *" # daily at midnight
+    # daily at midnight
+    - cron: "0 0 * * *"
 
 jobs:
   test:
@@ -13,12 +16,12 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Test installation of official Linux binaries from nim-lang.org
+          # Test installation of official Linux binaries (nim-lang.org)
           - os: ubuntu-latest
             nim-version: latest
             libc: linux-glibc
 
-          # Test installation of unofficial macOS binaries from elijahr/nim-builds
+          # Test installation of unofficial macOS binaries (elijahr/nim-builds)
           - os: macos-latest
             nim-version: latest
             libc: macOS

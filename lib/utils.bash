@@ -1,5 +1,6 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2001
 if [ "$(echo "$BASH_VERSION" | sed 's/\([0-9]\{1,\}\).*/\1/')" -lt 4 ]; then
   echo -e "bash $BASH_VERSION is not supported, bash >= 4 is required."
   if [ "$(uname)" = "Darwin" ]; then
@@ -25,7 +26,7 @@ normpath() {
   local path
   path="${1//\/.\//\/}"
   # Remove dir/.. sequences.
-  while [[ "$path" =~ ([^/][^/]*/\.\./?) ]]; do
+  while [[ $path =~ ([^/][^/]*/\.\./?) ]]; do
     path="${path/${BASH_REMATCH[0]}/}"
   done
   echo "$path" | sed 's/\/$//'
@@ -803,7 +804,7 @@ asdf_nim_time() {
     secs="$((now - start))"
     local mins
     mins="0"
-    if [[ "$secs" -ge 60 ]]; then
+    if [[ $secs -ge 60 ]]; then
       local time_mins
       time_mins="$(echo "scale=2; ${secs}/60" | bc)"
       mins="$(echo "${time_mins}" | cut -d'.' -f1)"

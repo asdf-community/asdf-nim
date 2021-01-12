@@ -4,8 +4,6 @@ on:
     brances: ["*"]
   push:
     brances: ["*"]
-  schedule:
-    - cron: "0 0 * * *" # daily at midnight
 
 jobs:
   lint:
@@ -15,21 +13,16 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Install prettier
       - uses: actions/setup-node@v2
         with:
           node-version: "15"
 
-      - name: Install shfmt
-        run: brew install shfmt
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.9"
 
-      - name: Update Shellcheck
-        run: |
-          sudo apt install xz-utils
-          scversion="stable"
-          wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${scversion?}/shellcheck-${scversion?}.linux.x86_64.tar.xz" | tar -xJv
-          sudo cp "shellcheck-${scversion}/shellcheck" /usr/bin/
-          shellcheck --version
+      - name: Install deps
+        run: ./install.sh --deps
 
       - name: check
-        run: ./lint/check-all
+        run: ./bin/lintball .
