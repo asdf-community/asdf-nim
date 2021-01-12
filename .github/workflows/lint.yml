@@ -30,4 +30,4 @@ jobs:
         run: ${HOME}/.lintball/install.sh --deps
 
       - name: check
-        run: ./bin/lintball .
+        run: lintball .
