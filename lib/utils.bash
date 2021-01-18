@@ -90,13 +90,6 @@ out() {
   fi
 }
 
-outf() {
-  # To screen
-  if [ "$ASDF_NIM_SILENT" = "no" ]; then
-    printf "%s" "$@" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
-  fi
-}
-
 asdf_nim_on_exit() {
   asdf_nim_cleanup_asdf_install_path() {
     if [ -d "$ASDF_INSTALL_PATH" ]; then
@@ -193,15 +186,21 @@ asdf_nim_log() {
 }
 
 section_start() {
-  outf "\n%s\n" "# $1"
+  if [ "$ASDF_NIM_SILENT" = "no" ]; then
+    printf "\n# %s\n" "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+  fi
 }
 
 step_start() {
-  outf "# %s%s" "↳ $1" "… "
+  if [ "$ASDF_NIM_SILENT" = "no" ]; then
+    printf "# ↳ %s … " "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+  fi
 }
 
 step_end() {
-  outf "%s\n" "$1"
+  if [ "$ASDF_NIM_SILENT" = "no" ]; then
+    printf "%s\n" "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+  fi
 }
 
 # Sort semantic version numbers.
