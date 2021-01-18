@@ -100,7 +100,7 @@ jobs:
           git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git fetch origin "$GITHUB_SHA" --depth 1
           git reset --hard FETCH_HEAD
-          asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
+          asdf plugin test nim . --asdf-tool-version "${{ matrix.nim-version }}" --asdf-plugin-gitref "${GITHUB_SHA}" nim -v
 
   # Test musl binary installation
   plugin_test_x86_musl:
@@ -184,4 +184,4 @@ jobs:
 
           run: |
             . "${HOME}/.asdf/asdf.sh"
-            asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
+            asdf plugin test nim . --asdf-tool-version "${{ matrix.nim-version }}" --asdf-plugin-gitref "${GITHUB_SHA}" nim -v
