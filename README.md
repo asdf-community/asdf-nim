@@ -224,7 +224,7 @@ macOS:
 
 Pull requests are welcome!
 
-Dev dependencies for linting and unit tests are installed via:
+Dev dependencies for unit tests are installed via:
 
 ```shell
 npm install --include=dev
@@ -233,10 +233,10 @@ npm install --include=dev
 This project uses [bats](https://github.com/bats-core/bats-core) for unit testing. Tests are found in the `test` directory and can be run with:
 
 ```shell
-npx bats test
+npm run test
 ```
 
-This project uses various linters, they can be enabled to auto-format code via:
+This project uses various linters (via [lintball](https://github.com/elijahr/lintball)), they can be enabled to auto-format code via:
 
 ```
 git config --local core.hooksPath .githooks
@@ -251,7 +251,14 @@ A few ideas for contributions:
 
 ## Changelog
 
-### v1.0.0 - 2020-01-06
+### v1.1.0 - 2021-01-18
+
+- Support for bash 3
+- Remove hard dependency on gcc for determining ARM version
+- Fix build issues on GitHub Actions
+- Reformat code with [lintball](https://github.com/elijahr/lintball)
+
+### v1.0.0 - 2021-01-06
 
 - Refactor
 - Fix issues with nimble shim
