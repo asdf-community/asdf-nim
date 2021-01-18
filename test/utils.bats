@@ -228,7 +228,7 @@ teardown() {
   assert_equal "$output" "$expected_arch"
 }
 
-@test "asdf_nim_normalize_arch_arm32" {
+@test "asdf_nim_normalize_arch_arm32_via_gcc" {
   ASDF_NIM_MOCK_MACHINE_NAME="arm"
   for arm_version in {5..7}; do
     ASDF_NIM_MOCK_GCC_DEFINES="#define __ARM_ARCH ${arm_version}"
@@ -236,6 +236,36 @@ teardown() {
     output="$(asdf_nim_normalize_arch)"
     assert_equal "$output" "$expected_arch"
   done
+}
+
+@test "asdf_nim_normalize_arch_armel_via_dpkg" {
+  ASDF_NIM_MOCK_MACHINE_NAME="arm"
+  ASDF_NIM_MOCK_DPKG_ARCHITECTURE="armel"
+  expected_arch="armv5"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
+}
+
+@test "asdf_nim_normalize_arch_armhf_via_dpkg" {
+  ASDF_NIM_MOCK_MACHINE_NAME="arm"
+  ASDF_NIM_MOCK_DPKG_ARCHITECTURE="armhf"
+  expected_arch="armv7"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
+}
+
+@test "asdf_nim_normalize_arch_arm_no_dpkg_no_gcc" {
+  ASDF_NIM_MOCK_MACHINE_NAME="arm"
+  expected_arch="armv5"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
+}
+
+@test "asdf_nim_normalize_arch_armv7l_no_dpkg_no_gcc" {
+  ASDF_NIM_MOCK_MACHINE_NAME="armv7l"
+  expected_arch="armv7"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
 }
 
 @test "asdf_nim_normalize_arch_arm64" {

@@ -280,17 +280,22 @@ asdf_nim_normalize_arch() {
         fi
       fi
       if [ -z "$arm_arch" ]; then
-        if [ -n "$(which dpkg)" ]; then
+        if [ -n "$(which dpkg)" ] || [ -n "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-}" ]; then
           # Detect arm32 version using dpkg
-          case "$(dpkg --print-architecture)" in
+          case "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-"$(dpkg --print-architecture)"}" in
             armel) arm_arch="armv5" ;;
             armhf) arm_arch="armv7" ;;
           esac
         fi
       fi
       if [ -z "$arm_arch" ]; then
-        # If couldn't detect, go low
-        arm_arch="armv5"
+        if [ "$arch" = "arm" ]; then
+          # If couldn't detect, go low
+          arm_arch="armv5"
+        else
+          # Something like armv7l -> armv7
+          arm_arch="$(echo "$arch" | sed 's/^\(armv[0-9]\{1,\}\).*$/\1/')"
+        fi
       fi
       echo "$arm_arch"
       ;;
