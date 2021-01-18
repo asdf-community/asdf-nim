@@ -143,11 +143,8 @@ jobs:
           path: ~/.cache
           key: cache-ubuntu-latest-${{ matrix.nim-version }}
 
-      - name: Install asdf dependencies
-        run: apk add --update bash git curl coreutils tar
-
-      # - name: Install asdf
-      #   uses: asdf-vm/actions/setup@v1
+      - name: Install dependencies
+        run: apk add --update bash git curl coreutils tar xz
 
       - name: Test plugin
         uses: asdf-vm/actions/plugin-test@v1
@@ -214,7 +211,7 @@ jobs:
 
           install: |
             apt-get update -q -y
-            apt-get -qq install -y build-essential curl git hub xz-utils
+            apt-get -qq install -y curl git hub xz-utils
             git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
 
           env: |

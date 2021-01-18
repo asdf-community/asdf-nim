@@ -406,19 +406,19 @@ asdf_nim_install_deps() {
 # Detect if the standard C library on the system is musl or not.
 # Echoes "yes" or "no"
 asdf_nim_is_musl() {
-  echo "${ASDF_NIM_MOCK_IS_MUSL:-$(
-    local libc_path
-    libc_path=$(
-      ldconfig -p 2>/dev/null |
-        grep -F "libc.so." |
-        tr ' ' '\n' |
-        grep -F "/" |
-        head -n 1 ||
-        ls /lib/libc.so.* 2>/dev/null ||
-        true
-    )
-    (echo "$libc_path" | grep -q musl && echo yes) || echo no
-  )}"
+  if [ -n "${ASDF_NIM_MOCK_IS_MUSL:-}" ]; then
+    echo "$ASDF_NIM_MOCK_IS_MUSL"
+  else
+    if [ -n "$(which ldd)" ]; then
+      if ldd --version | grep -qF "musl"; then
+        echo "yes"
+      else
+        echo "no"
+      fi
+    else
+      echo "no"
+    fi
+  fi
 }
 
 # Echo the suffix for a gcc toolchain triple, e.g. `musleabihf` for a
