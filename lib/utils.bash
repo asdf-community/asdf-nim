@@ -1,16 +1,5 @@
 #!/usr/bin/env bash
 
-# shellcheck disable=SC2001
-# if [ "$(echo "$BASH_VERSION" | sed 's/\([0-9]\{1,\}\).*/\1/')" -lt 4 ]; then
-#   echo -e "bash $BASH_VERSION is not supported, bash >= 4 is required."
-#   if [ "$(uname)" = "Darwin" ]; then
-#     echo -e
-#     echo -e "The default macOS bash is ancient. Consider installing bash with homebrew."
-#     echo -e
-#   fi
-#   exit 1
-# fi
-
 # Constants
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
 SOURCE_URL="https://nim-lang.org/download/nim-VERSION.tar.xz"
@@ -293,6 +282,7 @@ asdf_nim_normalize_arch() {
           arm_arch="armv5"
         else
           # Something like armv7l -> armv7
+          # shellcheck disable=SC2001
           arm_arch="$(echo "$arch" | sed 's/^\(armv[0-9]\{1,\}\).*$/\1/')"
         fi
       fi
@@ -580,18 +570,26 @@ asdf_nim_download_urls() {
             # Distros using musl can't use official Nim binaries
             yes)
               asdf_nim_search_nim_builds
-              asdf_nim_source_url
+              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                asdf_nim_source_url
+              fi
               ;;
             no)
               case "$(asdf_nim_normalize_arch)" in
                 x86_64 | i686)
                   # Linux with glibc has official x86_64 & x86 binaries
                   asdf_nim_official_archive_url
-                  asdf_nim_source_url
+
+                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                    asdf_nim_source_url
+                  fi
                   ;;
                 *)
                   asdf_nim_search_nim_builds
-                  asdf_nim_source_url
+
+                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                    asdf_nim_source_url
+                  fi
                   ;;
               esac
               ;;
@@ -599,19 +597,33 @@ asdf_nim_download_urls() {
           ;;
         macos)
           asdf_nim_search_nim_builds
-          asdf_nim_source_url
+
+          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+            asdf_nim_source_url
+          fi
           ;;
         windows)
           case "$(asdf_nim_normalize_arch)" in
             x86_64 | i686)
               # Windows has official x86_64 & x86 binaries
               asdf_nim_official_archive_url
-              asdf_nim_source_url
+
+              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                asdf_nim_source_url
+              fi
               ;;
-            *) asdf_nim_source_url ;;
+            *)
+              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                asdf_nim_source_url
+              fi
+              ;;
           esac
           ;;
-        *) asdf_nim_source_url ;;
+        *)
+          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+            asdf_nim_source_url
+          fi
+          ;;
       esac
       ;;
   esac

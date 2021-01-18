@@ -394,6 +394,16 @@ teardown() {
   assert_equal "$output" "$expected"
 }
 
+@test "asdf_nim_download_urls_require_binary_does_not_echo_source_url" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
+  ASDF_NIM_REQUIRE_BINARY="yes"
+  asdf_nim_init "install"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-gnu.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
+}
+
 @test "asdf_nim_download_urls_aarch64_linux_gnu" {
   ASDF_NIM_MOCK_OS_NAME="Linux"
   ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
