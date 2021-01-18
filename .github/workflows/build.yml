@@ -21,18 +21,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Disable tcp/udp offloading
-        run: |
-          # Prevent network slowness
-          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-          # and https://github.com/enso-org/enso/pull/1159
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-          else
-            sudo ethtool -K eth0 tx off rx off
-          fi
-
       - name: Checkout plugin
         uses: actions/checkout@v2
 
@@ -43,7 +31,7 @@ jobs:
       - name: Run tests
         run: |
           npm install --include=dev
-          npx bats test --tap
+          npx run test
 
   plugin_test_x86:
     name: Plugin test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
@@ -91,18 +79,6 @@ jobs:
       ASDF_NIM_REQUIRE_BINARY: ${{ matrix.require-binary }}
 
     steps:
-      - name: Disable tcp/udp offloading
-        run: |
-          # Prevent network slowness
-          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-          # and https://github.com/enso-org/enso/pull/1159
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-          else
-            sudo ethtool -K eth0 tx off rx off
-          fi
-
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         if: matrix.nim-version != 'ref:HEAD'
@@ -173,18 +149,6 @@ jobs:
             arch: ppc64le
 
     steps:
-      - name: Disable tcp/udp offloading
-        run: |
-          # Prevent network slowness
-          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-          # and https://github.com/enso-org/enso/pull/1159
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-          else
-            sudo ethtool -K eth0 tx off rx off
-          fi
-
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         uses: actions/cache@v2
