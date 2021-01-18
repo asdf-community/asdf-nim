@@ -246,25 +246,53 @@ asdf_nim_exe_ext() {
 # - arm64 (on macOS)
 # - powerpc64le
 asdf_nim_normalize_arch() {
-  local arch
+  local arch arm_arch arch_version
   arch="${ASDF_NIM_MOCK_MACHINE_NAME:-$(uname -m)}"
   case "$arch" in
     x86_64 | x64 | amd64)
-      # Detect 386 container on amd64 using __amd64 definition
-      IS_AMD64="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __amd64 " | sed 's/#define __amd64 //')"
-      [ "$IS_AMD64" = "1" ] && echo x86_64 || echo i686
+      if [ -n "$(which gcc)" ]; then
+        # Edge case: detect 386 container on amd64 kernel using __amd64 definition
+        IS_AMD64="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __amd64 " | sed 's/#define __amd64 //')"
+        if [ "$IS_AMD64" = "1" ]; then
+          echo "x86_64"
+        else
+          echo "i686"
+        fi
+      else
+        # No gcc, so can't detect 386 container on amd64 kernel. x86_64 is most likely case
+        echo "x86_64"
+      fi
       ;;
-    *86* | x32) echo i686 ;;
+    *86* | x32) echo "i686" ;;
     *aarch64* | *arm64* | armv8b | armv8l)
       case "$(asdf_nim_normalize_os)" in
         macos | windows) echo arm64 ;;
-        *) echo aarch64 ;;
+        *) echo "aarch64" ;;
       esac
       ;;
     arm*)
-      # Detect arm32 version using __ARM_ARCH definition
-      ARM_ARCH="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __ARM_ARCH " | sed 's/#define __ARM_ARCH //')"
-      [ -n "$ARM_ARCH" ] && echo "armv$ARM_ARCH" || echo "$arch"
+      arm_arch=""
+      if [ -n "$(which gcc)" ]; then
+        # Detect arm32 version using __ARM_ARCH definition
+        arch_version="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __ARM_ARCH " | sed 's/#define __ARM_ARCH //')"
+        if [ -n "$arch_version" ]; then
+          arm_arch="armv$arch_version"
+        fi
+      fi
+      if [ -z "$arm_arch" ]; then
+        if [ -n "$(which dpkg)" ]; then
+          # Detect arm32 version using dpkg
+          case "$(dpkg --print-architecture)" in
+            armel) arm_arch="armv5" ;;
+            armhf) arm_arch="armv7" ;;
+          esac
+        fi
+      fi
+      if [ -z "$arm_arch" ]; then
+        # If couldn't detect, go low
+        arm_arch="armv5"
+      fi
+      echo "$arm_arch"
       ;;
     ppc64le | powerpc64le | ppc64el | powerpc64el) echo powerpc64le ;;
     *) echo "$arch" ;;
