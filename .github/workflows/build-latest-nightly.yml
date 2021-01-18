@@ -2,6 +2,13 @@
 
 name: Build latest nightly
 on:
+  pull_request:
+    paths:
+      - .github/workflows/build-latest-nightly.yml
+  push:
+    paths:
+      - .github/workflows/build-latest-nightly.yml
+
   schedule:
     # daily at midnight
     - cron: "0 0 * * *"
