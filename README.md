@@ -1,4 +1,4 @@
-![Tests](https://github.com/asdf-community/asdf-nim/workflows/Tests/badge.svg) ![Lint](https://github.com/asdf-community/asdf-nim/workflows/Lint/badge.svg) ![Latest Nim](https://github.com/asdf-community/asdf-nim/workflows/Latest%20Nim/badge.svg)
+![Build](https://github.com/asdf-community/asdf-nim/workflows/Build/badge.svg) ![Lint](https://github.com/asdf-community/asdf-nim/workflows/Lint/badge.svg) ![Latest Nim](https://github.com/asdf-community/asdf-nim/workflows/Latest%20Nim/badge.svg)
 
 # asdf-nim
 
