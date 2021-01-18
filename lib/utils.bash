@@ -250,7 +250,7 @@ asdf_nim_normalize_arch() {
   arch="${ASDF_NIM_MOCK_MACHINE_NAME:-$(uname -m)}"
   case "$arch" in
     x86_64 | x64 | amd64)
-      if [ -n "$(which gcc)" ]; then
+      if [ -n "$(which gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
         # Edge case: detect 386 container on amd64 kernel using __amd64 definition
         IS_AMD64="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __amd64 " | sed 's/#define __amd64 //')"
         if [ "$IS_AMD64" = "1" ]; then
@@ -272,7 +272,7 @@ asdf_nim_normalize_arch() {
       ;;
     arm*)
       arm_arch=""
-      if [ -n "$(which gcc)" ]; then
+      if [ -n "$(which gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
         # Detect arm32 version using __ARM_ARCH definition
         arch_version="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __ARM_ARCH " | sed 's/#define __ARM_ARCH //')"
         if [ -n "$arch_version" ]; then
