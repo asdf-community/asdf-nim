@@ -31,7 +31,7 @@ jobs:
       - name: Run tests
         run: |
           npm install --include=dev
-          npx run test
+          npm run test
 
   plugin_test_x86:
     name: Plugin test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
