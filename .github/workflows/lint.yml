@@ -1,35 +1,39 @@
+# yamllint disable rule:line-length
+
 name: Lint
 on:
   pull_request:
-    brances: ["*"]
+    branches: ["*"]
   push:
-    brances: ["*"]
-  schedule:
-    - cron: "0 0 * * *" # daily at midnight
+    branches: ["*"]
+    tags: ["*"]
 
 jobs:
   lint:
     name: lint
+
     runs-on: ubuntu-latest
+
     steps:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      # Install prettier
       - uses: actions/setup-node@v2
         with:
-          node-version: "15"
+          node-version: "15.x"
 
-      - name: Install shfmt
-        run: brew install shfmt
+      - uses: actions/setup-python@v2
+        with:
+          python-version: "3.x"
 
-      - name: Update Shellcheck
+      - name: Install shellcheck & shfmt
         run: |
-          sudo apt install xz-utils
-          scversion="stable"
-          wget -qO- "https://github.com/koalaman/shellcheck/releases/download/${scversion?}/shellcheck-${scversion?}.linux.x86_64.tar.xz" | tar -xJv
-          sudo cp "shellcheck-${scversion}/shellcheck" /usr/bin/
-          shellcheck --version
+          # Linuxbrew has more recent versions than apt
+          brew install shellcheck shfmt
 
-      - name: check
-        run: ./lint/check-all
+      - name: Install lintball
+        shell: bash
+        run: curl -o- https://raw.githubusercontent.com/elijahr/lintball/devel/install.sh | bash
+
+      - name: Check for linter issues
+        run: lintball check

@@ -1,7 +1,17 @@
+# yamllint disable rule:line-length
+
 name: Build latest nightly
 on:
+  pull_request:
+    paths:
+      - .github/workflows/build-latest-nightly.yml
+  push:
+    paths:
+      - .github/workflows/build-latest-nightly.yml
+
   schedule:
-    - cron: "0 0 * * *" # daily at midnight
+    # daily at midnight
+    - cron: "0 0 * * *"
 
 jobs:
   test:
@@ -13,29 +23,17 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          # Test installation of official Linux binaries from nim-lang.org
+          # Test installation of official Linux binaries (nim-lang.org)
           - os: ubuntu-latest
             nim-version: latest
             libc: linux-glibc
 
-          # Test installation of unofficial macOS binaries from elijahr/nim-builds
+          # Test installation of unofficial macOS binaries (elijahr/nim-builds)
           - os: macos-latest
             nim-version: latest
             libc: macOS
 
     steps:
-      - name: Disable tcp/udp offloading
-        run: |
-          # Prevent network slowness
-          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-          # and https://github.com/enso-org/enso/pull/1159
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-          else
-            sudo ethtool -K eth0 tx off rx off
-          fi
-
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         if: matrix.nim-version != 'ref:HEAD'
@@ -57,4 +55,4 @@ jobs:
           git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git fetch origin "$GITHUB_SHA" --depth 1
           git reset --hard FETCH_HEAD
-          asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
+          asdf plugin test nim . --asdf-tool-version "${{ matrix.nim-version }}" --asdf-plugin-gitref "${GITHUB_SHA}" nim -v

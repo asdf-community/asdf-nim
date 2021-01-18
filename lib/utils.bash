@@ -15,7 +15,7 @@ normpath() {
   local path
   path="${1//\/.\//\/}"
   # Remove dir/.. sequences.
-  while [[ "$path" =~ ([^/][^/]*/\.\./?) ]]; do
+  while [[ $path =~ ([^/][^/]*/\.\./?) ]]; do
     path="${path/${BASH_REMATCH[0]}/}"
   done
   echo "$path" | sed 's/\/$//'
@@ -76,13 +76,6 @@ out() {
   # To screen
   if [ "$ASDF_NIM_SILENT" = "no" ]; then
     echo "$@" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
-  fi
-}
-
-outf() {
-  # To screen
-  if [ "$ASDF_NIM_SILENT" = "no" ]; then
-    printf "%s" "$@" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
   fi
 }
 
@@ -182,15 +175,21 @@ asdf_nim_log() {
 }
 
 section_start() {
-  outf "\n%s\n" "# $1"
+  if [ "$ASDF_NIM_SILENT" = "no" ]; then
+    printf "\n# %s\n" "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+  fi
 }
 
 step_start() {
-  outf "# %s%s" "↳ $1" "… "
+  if [ "$ASDF_NIM_SILENT" = "no" ]; then
+    printf "# ↳ %s … " "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+  fi
 }
 
 step_end() {
-  outf "%s\n" "$1"
+  if [ "$ASDF_NIM_SILENT" = "no" ]; then
+    printf "%s\n" "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+  fi
 }
 
 # Sort semantic version numbers.
@@ -235,25 +234,59 @@ asdf_nim_exe_ext() {
 # - arm64 (on macOS)
 # - powerpc64le
 asdf_nim_normalize_arch() {
-  local arch
+  local arch arm_arch arch_version
   arch="${ASDF_NIM_MOCK_MACHINE_NAME:-$(uname -m)}"
   case "$arch" in
     x86_64 | x64 | amd64)
-      # Detect 386 container on amd64 using __amd64 definition
-      IS_AMD64="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __amd64 " | sed 's/#define __amd64 //')"
-      [ "$IS_AMD64" = "1" ] && echo x86_64 || echo i686
+      if [ -n "$(which gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
+        # Edge case: detect 386 container on amd64 kernel using __amd64 definition
+        IS_AMD64="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __amd64 " | sed 's/#define __amd64 //')"
+        if [ "$IS_AMD64" = "1" ]; then
+          echo "x86_64"
+        else
+          echo "i686"
+        fi
+      else
+        # No gcc, so can't detect 386 container on amd64 kernel. x86_64 is most likely case
+        echo "x86_64"
+      fi
       ;;
-    *86* | x32) echo i686 ;;
+    *86* | x32) echo "i686" ;;
     *aarch64* | *arm64* | armv8b | armv8l)
       case "$(asdf_nim_normalize_os)" in
         macos | windows) echo arm64 ;;
-        *) echo aarch64 ;;
+        *) echo "aarch64" ;;
       esac
       ;;
     arm*)
-      # Detect arm32 version using __ARM_ARCH definition
-      ARM_ARCH="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __ARM_ARCH " | sed 's/#define __ARM_ARCH //')"
-      [ -n "$ARM_ARCH" ] && echo "armv$ARM_ARCH" || echo "$arch"
+      arm_arch=""
+      if [ -n "$(which gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
+        # Detect arm32 version using __ARM_ARCH definition
+        arch_version="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __ARM_ARCH " | sed 's/#define __ARM_ARCH //')"
+        if [ -n "$arch_version" ]; then
+          arm_arch="armv$arch_version"
+        fi
+      fi
+      if [ -z "$arm_arch" ]; then
+        if [ -n "$(which dpkg)" ] || [ -n "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-}" ]; then
+          # Detect arm32 version using dpkg
+          case "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-"$(dpkg --print-architecture)"}" in
+            armel) arm_arch="armv5" ;;
+            armhf) arm_arch="armv7" ;;
+          esac
+        fi
+      fi
+      if [ -z "$arm_arch" ]; then
+        if [ "$arch" = "arm" ]; then
+          # If couldn't detect, go low
+          arm_arch="armv5"
+        else
+          # Something like armv7l -> armv7
+          # shellcheck disable=SC2001
+          arm_arch="$(echo "$arch" | sed 's/^\(armv[0-9]\{1,\}\).*$/\1/')"
+        fi
+      fi
+      echo "$arm_arch"
       ;;
     ppc64le | powerpc64le | ppc64el | powerpc64el) echo powerpc64le ;;
     *) echo "$arch" ;;
@@ -367,19 +400,19 @@ asdf_nim_install_deps() {
 # Detect if the standard C library on the system is musl or not.
 # Echoes "yes" or "no"
 asdf_nim_is_musl() {
-  echo "${ASDF_NIM_MOCK_IS_MUSL:-$(
-    local libc_path
-    libc_path=$(
-      ldconfig -p 2>/dev/null |
-        grep -F "libc.so." |
-        tr ' ' '\n' |
-        grep -F "/" |
-        head -n 1 ||
-        ls /lib/libc.so.* 2>/dev/null ||
-        true
-    )
-    (echo "$libc_path" | grep -q musl && echo yes) || echo no
-  )}"
+  if [ -n "${ASDF_NIM_MOCK_IS_MUSL:-}" ]; then
+    echo "$ASDF_NIM_MOCK_IS_MUSL"
+  else
+    if [ -n "$(which ldd)" ]; then
+      if ldd --version | grep -qF "musl"; then
+        echo "yes"
+      else
+        echo "no"
+      fi
+    else
+      echo "no"
+    fi
+  fi
 }
 
 # Echo the suffix for a gcc toolchain triple, e.g. `musleabihf` for a
@@ -537,18 +570,26 @@ asdf_nim_download_urls() {
             # Distros using musl can't use official Nim binaries
             yes)
               asdf_nim_search_nim_builds
-              asdf_nim_source_url
+              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                asdf_nim_source_url
+              fi
               ;;
             no)
               case "$(asdf_nim_normalize_arch)" in
                 x86_64 | i686)
                   # Linux with glibc has official x86_64 & x86 binaries
                   asdf_nim_official_archive_url
-                  asdf_nim_source_url
+
+                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                    asdf_nim_source_url
+                  fi
                   ;;
                 *)
                   asdf_nim_search_nim_builds
-                  asdf_nim_source_url
+
+                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                    asdf_nim_source_url
+                  fi
                   ;;
               esac
               ;;
@@ -556,19 +597,33 @@ asdf_nim_download_urls() {
           ;;
         macos)
           asdf_nim_search_nim_builds
-          asdf_nim_source_url
+
+          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+            asdf_nim_source_url
+          fi
           ;;
         windows)
           case "$(asdf_nim_normalize_arch)" in
             x86_64 | i686)
               # Windows has official x86_64 & x86 binaries
               asdf_nim_official_archive_url
-              asdf_nim_source_url
+
+              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                asdf_nim_source_url
+              fi
               ;;
-            *) asdf_nim_source_url ;;
+            *)
+              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+                asdf_nim_source_url
+              fi
+              ;;
           esac
           ;;
-        *) asdf_nim_source_url ;;
+        *)
+          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
+            asdf_nim_source_url
+          fi
+          ;;
       esac
       ;;
   esac
@@ -793,7 +848,7 @@ asdf_nim_time() {
     secs="$((now - start))"
     local mins
     mins="0"
-    if [[ "$secs" -ge 60 ]]; then
+    if [[ $secs -ge 60 ]]; then
       local time_mins
       time_mins="$(echo "scale=2; ${secs}/60" | bc)"
       mins="$(echo "${time_mins}" | cut -d'.' -f1)"

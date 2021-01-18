@@ -1,3 +1,5 @@
+# yamllint disable rule:line-length
+
 name: Build
 on:
   pull_request:
@@ -19,18 +21,6 @@ jobs:
       GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
     steps:
-      - name: Disable tcp/udp offloading
-        run: |
-          # Prevent network slowness
-          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-          # and https://github.com/enso-org/enso/pull/1159
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-          else
-            sudo ethtool -K eth0 tx off rx off
-          fi
-
       - name: Checkout plugin
         uses: actions/checkout@v2
 
@@ -41,7 +31,7 @@ jobs:
       - name: Run tests
         run: |
           npm install --include=dev
-          npx bats test --tap
+          npm run test
 
   plugin_test_x86:
     name: Plugin test nim-${{ matrix.nim-version }} / ${{ matrix.libc }} / x86_64
@@ -89,18 +79,6 @@ jobs:
       ASDF_NIM_REQUIRE_BINARY: ${{ matrix.require-binary }}
 
     steps:
-      - name: Disable tcp/udp offloading
-        run: |
-          # Prevent network slowness
-          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-          # and https://github.com/enso-org/enso/pull/1159
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-          else
-            sudo ethtool -K eth0 tx off rx off
-          fi
-
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         if: matrix.nim-version != 'ref:HEAD'
@@ -122,7 +100,7 @@ jobs:
           git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
           git fetch origin "$GITHUB_SHA" --depth 1
           git reset --hard FETCH_HEAD
-          asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
+          asdf plugin test nim . --asdf-tool-version "${{ matrix.nim-version }}" --asdf-plugin-gitref "${GITHUB_SHA}" nim -v
 
   # Test musl binary installation
   plugin_test_x86_musl:
@@ -141,11 +119,8 @@ jobs:
           path: ~/.cache
           key: cache-ubuntu-latest-${{ matrix.nim-version }}
 
-      - name: Install asdf dependencies
-        run: apk add --update bash git curl coreutils tar
-
-      # - name: Install asdf
-      #   uses: asdf-vm/actions/setup@v1
+      - name: Install dependencies
+        run: apk add --update bash git curl coreutils tar xz
 
       - name: Test plugin
         uses: asdf-vm/actions/plugin-test@v1
@@ -174,18 +149,6 @@ jobs:
             arch: ppc64le
 
     steps:
-      - name: Disable tcp/udp offloading
-        run: |
-          # Prevent network slowness
-          # See https://github.com/actions/virtual-environments/issues/1187#issuecomment-696195756
-          # and https://github.com/enso-org/enso/pull/1159
-          if [ "${{ runner.os }}" == "macOS" ]; then
-            sudo sysctl -w net.link.generic.system.hwcksum_tx=0
-            sudo sysctl -w net.link.generic.system.hwcksum_rx=0
-          else
-            sudo ethtool -K eth0 tx off rx off
-          fi
-
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         uses: actions/cache@v2
@@ -212,7 +175,7 @@ jobs:
 
           install: |
             apt-get update -q -y
-            apt-get -qq install -y build-essential curl git hub xz-utils
+            apt-get -qq install -y curl git hub xz-utils
             git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
 
           env: |
@@ -221,4 +184,4 @@ jobs:
 
           run: |
             . "${HOME}/.asdf/asdf.sh"
-            asdf plugin test nim . --asdf-tool-version ${{ matrix.nim-version }}
+            asdf plugin test nim . --asdf-tool-version "${{ matrix.nim-version }}" --asdf-plugin-gitref "${GITHUB_SHA}" nim -v

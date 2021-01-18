@@ -228,7 +228,7 @@ teardown() {
   assert_equal "$output" "$expected_arch"
 }
 
-@test "asdf_nim_normalize_arch_arm32" {
+@test "asdf_nim_normalize_arch_arm32_via_gcc" {
   ASDF_NIM_MOCK_MACHINE_NAME="arm"
   for arm_version in {5..7}; do
     ASDF_NIM_MOCK_GCC_DEFINES="#define __ARM_ARCH ${arm_version}"
@@ -236,6 +236,36 @@ teardown() {
     output="$(asdf_nim_normalize_arch)"
     assert_equal "$output" "$expected_arch"
   done
+}
+
+@test "asdf_nim_normalize_arch_armel_via_dpkg" {
+  ASDF_NIM_MOCK_MACHINE_NAME="arm"
+  ASDF_NIM_MOCK_DPKG_ARCHITECTURE="armel"
+  expected_arch="armv5"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
+}
+
+@test "asdf_nim_normalize_arch_armhf_via_dpkg" {
+  ASDF_NIM_MOCK_MACHINE_NAME="arm"
+  ASDF_NIM_MOCK_DPKG_ARCHITECTURE="armhf"
+  expected_arch="armv7"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
+}
+
+@test "asdf_nim_normalize_arch_arm_no_dpkg_no_gcc" {
+  ASDF_NIM_MOCK_MACHINE_NAME="arm"
+  expected_arch="armv5"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
+}
+
+@test "asdf_nim_normalize_arch_armv7l_no_dpkg_no_gcc" {
+  ASDF_NIM_MOCK_MACHINE_NAME="armv7l"
+  expected_arch="armv7"
+  output="$(asdf_nim_normalize_arch)"
+  assert_equal "$output" "$expected_arch"
 }
 
 @test "asdf_nim_normalize_arch_arm64" {
@@ -361,6 +391,16 @@ teardown() {
   ASDF_NIM_MOCK_PKG_MGR="choco"
   expected="choco install --yes hub unzip mingw"
   output="$(asdf_nim_install_deps_cmds)"
+  assert_equal "$output" "$expected"
+}
+
+@test "asdf_nim_download_urls_require_binary_does_not_echo_source_url" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
+  ASDF_NIM_REQUIRE_BINARY="yes"
+  asdf_nim_init "install"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-gnu.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
 
