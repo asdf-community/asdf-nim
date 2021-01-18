@@ -1,6 +1,6 @@
 # yamllint disable rule:line-length
 
-name: Build
+name: Tests
 on:
   pull_request:
     paths-ignore:

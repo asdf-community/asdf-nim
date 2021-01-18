@@ -1,6 +1,6 @@
 # yamllint disable rule:line-length
 
-name: Build latest nightly
+name: Latest Nim
 on:
   pull_request:
     paths:
