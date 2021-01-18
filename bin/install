@@ -8,7 +8,6 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/utils.bash"
 
 asdf_nim_init "install"
 asdf_nim_init_traps
-exec {ASDF_NIM_STDOUT}<&1 {ASDF_NIM_STDERR}<&2
 
 # Install Nim using the best available method, either from a binary or building
 # from source.
@@ -74,6 +73,14 @@ asdf_nim_install() {
   fi
 }
 
-{
+# No exec {fd} redirection with bash 3
+BASH_MAJOR_VERSION="$(echo "$BASH_VERSION" | sed 's/\..*//')"
+if [ "$BASH_MAJOR_VERSION" -ge 4 ]; then
+  exec {ASDF_NIM_STDOUT}<&1 {ASDF_NIM_STDERR}<&2
+  {
+    asdf_nim_install
+  } 1>>"$(asdf_nim_log)" 2>>"$(asdf_nim_log)"
+else
+  touch "$(asdf_nim_log)"
   asdf_nim_install
-} 1>>"$(asdf_nim_log)" 2>>"$(asdf_nim_log)"
+fi
