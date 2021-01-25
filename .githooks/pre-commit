@@ -2,66 +2,8 @@
 
 set -ueo pipefail
 
-LINTBALL_DIR="${LINTBALL_DIR:-"${HOME}/.lintball"}"
-
-if [ ! -d "$LINTBALL_DIR" ]; then
-  curl -o- https://raw.githubusercontent.com/elijahr/lintball/devel/install.sh | bash
+if [ -n "${LINTBALL_DIR:-}" ]; then
+  "${LINTBALL_DIR}/bin/lintball" pre-commit
+else
+  lintball pre-commit
 fi
-
-# shellcheck disable=SC1090
-source "${LINTBALL_DIR}/lib/utils.bash"
-
-fully_staged() {
-  local staged line
-  staged="$(git diff --name-only --cached | sort)"
-  echo "$staged" | while read -r line; do
-    # shellcheck disable=SC2143
-    if [ -z "$(git diff --name-only | grep -F "$line")" ]; then
-      if [ -f "$line" ]; then
-        # path exists, is staged and has no unstaged changes
-        echo "$line"
-      fi
-    fi
-  done
-}
-
-main() {
-  local paths line
-  paths="$(fully_staged)"
-
-  if [ -n "$paths" ]; then
-    tmp="$(mktemp -d)"
-    eval "$(cmd_find "$paths")" | while read -r line; do
-      if [ -n "$line" ] && assert_handled_path "$line"; then
-        status=0
-        lint_any "yes" "$line" || status="$?"
-        if [ "$status" -eq 0 ]; then
-          git add "$line"
-        else
-          touch "${tmp}/error"
-        fi
-      fi
-    done
-
-    status=0
-    if [ -f "${tmp}/error" ]; then
-      status=1
-    fi
-    rm -r "$tmp"
-    exit "$status"
-  fi
-}
-
-load_config "${LINTBALL_DIR}/configs/lintballrc.json"
-
-if [ -z "${LINTBALL_CONFIG:-}" ]; then
-  LINTBALL_CONFIG="$(find_config)"
-fi
-
-if [ -n "$LINTBALL_CONFIG" ]; then
-  echo "# Using config file ${LINTBALL_CONFIG}"
-  echo
-  load_config "$LINTBALL_CONFIG" || exit 1
-fi
-
-main

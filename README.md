@@ -75,7 +75,7 @@ on:
     paths-ignore:
       - README.md
   schedule:
-    - cron: "0 0 * * *" # daily at midnight
+    - cron: '0 0 * * *' # daily at midnight
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

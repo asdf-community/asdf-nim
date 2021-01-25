@@ -5,17 +5,19 @@ load ../node_modules/bats-assert/load
 
 setup_file() {
   export PROJECT_DIR
-  PROJECT_DIR="$(realpath $(dirname "$BATS_TEST_DIRNAME"))"
+  PROJECT_DIR="$(realpath "$(dirname "$BATS_TEST_DIRNAME")")"
   cd "$PROJECT_DIR"
 
   export ASDF_NIM_TEST_TEMP
   ASDF_NIM_TEST_TEMP="$(mktemp -t asdf-nim-integration-tests.XXXX -d)"
-  export ASDF_DATA_DIR
   ASDF_DATA_DIR="${ASDF_NIM_TEST_TEMP}/asdf"
+  export ASDF_DATA_DIR
   mkdir -p "$ASDF_DATA_DIR"
   git clone --branch=v0.8.0 --depth=1 https://github.com/asdf-vm/asdf.git "$ASDF_DATA_DIR"
   mkdir -p "$ASDF_DATA_DIR/plugins"
-  . "${ASDF_DATA_DIR}/asdf.sh"
+
+  # shellcheck disable=SC1090
+  source "${ASDF_DATA_DIR}/asdf.sh"
 }
 
 teardown_file() {
@@ -27,7 +29,7 @@ teardown() {
 }
 
 info() {
-  echo "# $@ …" >&3
+  echo "# ${*} …" >&3
 }
 
 @test "nimble configuration" {

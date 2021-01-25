@@ -3,10 +3,10 @@
 name: Lint
 on:
   pull_request:
-    branches: ["*"]
+    branches: ['*']
   push:
-    branches: ["*"]
-    tags: ["*"]
+    branches: ['*']
+    tags: ['*']
 
 jobs:
   lint:
@@ -18,22 +18,10 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: "15.x"
-
-      - uses: actions/setup-python@v2
-        with:
-          python-version: "3.x"
-
-      - name: Install shellcheck & shfmt
-        run: |
-          # Linuxbrew has more recent versions than apt
-          brew install shellcheck shfmt
-
       - name: Install lintball
-        shell: bash
-        run: curl -o- https://raw.githubusercontent.com/elijahr/lintball/devel/install.sh | bash
+        run: |
+          npm install -g lintball
+          lintball install-tools --yes
 
       - name: Check for linter issues
         run: lintball check
