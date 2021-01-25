@@ -20,10 +20,8 @@ jobs:
 
       - name: Install lintball
         run: |
-          set -uexo pipefail
-          which brew
-          sudo npm install -g lintball
-          lintball install-tools --yes
+          npm install --include=dev
+          npm run install-tools
 
       - name: Check for linter issues
-        run: lintball check
+        run: npm run check

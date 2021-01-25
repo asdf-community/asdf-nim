@@ -24,13 +24,10 @@ jobs:
       - name: Checkout plugin
         uses: actions/checkout@v2
 
-      - uses: actions/setup-node@v2
-        with:
-          node-version: '15'
-
       - name: Run tests
         run: |
           npm install --include=dev
+          [ -n "$(which bats)" ] || npm link bats
           npm run test
 
   plugin_test_x86:
