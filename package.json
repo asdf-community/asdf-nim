@@ -7,7 +7,7 @@
   "scripts": {
     "check": "lintball check",
     "fix": "lintball fix",
-    "install-tools": "install-tools --yes",
+    "install-tools": "lintball install-tools --yes",
     "test": "bats test --tap"
   }
 }
