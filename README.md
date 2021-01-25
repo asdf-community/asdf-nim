@@ -236,7 +236,7 @@ This project uses [bats](https://github.com/bats-core/bats-core) for unit testin
 npm run test
 ```
 
-This project uses various linters (via [lintball](https://github.com/elijahr/lintball)), they can be enabled to auto-format code via:
+This project uses [lintball](https://github.com/elijahr/lintball) to auto-format code. Enable the githooks with:
 
 ```
 git config --local core.hooksPath .githooks
@@ -250,6 +250,10 @@ A few ideas for contributions:
 - Windows support (does asdf support Windows?)
 
 ## Changelog
+
+### v1.1.1 - 2021-01-24
+
+- Update to lintball 1.1.3
 
 ### v1.1.0 - 2021-01-18
 
