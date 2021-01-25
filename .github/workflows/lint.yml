@@ -20,8 +20,8 @@ jobs:
 
       - name: Install lintball
         run: |
-          npm install -g lintball
-          lintball install-tools --yes
+          sudo npm install -g lintball
+          sudo lintball install-tools --yes
 
       - name: Check for linter issues
         run: lintball check
