@@ -22,6 +22,7 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.0.10--202012300913
 https://github.com/elijahr/nim-builds/releases/download/nim-1.0.10--202012300913/nim-1.0.10--x86_64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.0.10--202012300913/nim-1.0.10--x86_64-linux-musl.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.0.10--202012300913/nim-1.0.10--x86_64-macos-catalina.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.0.10--202012300913/nim-1.0.10--arm64-macos-bigsur.tar.xz
 
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--aarch64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--aarch64-linux-musl.tar.xz
@@ -34,6 +35,7 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--x86_64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--x86_64-linux-musl.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--x86_64-macos-catalina.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--arm64-macos-bigsur.tar.xz
 
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-musl.tar.xz
@@ -46,3 +48,4 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-linux-musl.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-macos-catalina.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--arm64-macos-bigsur.tar.xz
