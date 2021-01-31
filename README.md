@@ -251,6 +251,10 @@ A few ideas for contributions:
 
 ## Changelog
 
+### v1.1.2 - 2021-01-30
+
+- Add support for Apple Silicon / M1
+
 ### v1.1.1 - 2021-01-24
 
 - Update to lintball 1.1.3
