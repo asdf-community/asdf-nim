@@ -433,9 +433,14 @@ asdf_nim_lib_suffix() {
       esac
       ;;
     macos)
-      case "${ASDF_NIM_MOCK_MAC_OS_VERSION:-"$(defaults read loginwindow SystemVersionStampAsString)"}" in
-        10.15.* | 11.* | 12.* | 13.*) echo "catalina" ;; # For now, everything >=10.15 gets catalina builds
-        *) echo "unknown" ;;
+      case "$(asdf_nim_normalize_arch)" in
+        arm64) echo "bigsur" ;;
+        *)
+          case "${ASDF_NIM_MOCK_MAC_OS_VERSION:-"$(defaults read loginwindow SystemVersionStampAsString)"}" in
+            10.15.* | 11.* | 12.* | 13.*) echo "catalina" ;; # For now, everything >=10.15 gets catalina builds
+            *) echo "unknown" ;;
+          esac
+          ;;
       esac
       ;;
     *) echo "" ;;
