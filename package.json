@@ -2,12 +2,9 @@
   "devDependencies": {
     "bats": "^1.2.1",
     "bats-assert": "^2.0.0",
-    "lintball": "^1.1.3"
+    "lintball": "^1.2.3"
   },
   "scripts": {
-    "check": "lintball check",
-    "fix": "lintball fix",
-    "install-tools": "lintball install-tools --yes",
     "test": "bats test --tap"
   }
 }

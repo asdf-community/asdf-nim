@@ -24,8 +24,8 @@ jobs:
 
       - name: Install lintball
         run: |
-          npm install --include=dev
-          npm run install-tools
+          npm install -g lintball@1.2.3
+          lintball install-tools --yes
 
       - name: Check for linter issues
-        run: npm run check
+        run: lintball check
