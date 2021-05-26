@@ -94,7 +94,7 @@ jobs:
       - name: Install asdf-nim & test
         shell: bash
         run: |
-          set -ueo pipefail
+          set -uexo pipefail
           mkdir -p asdf-nim
           cd asdf-nim
           git init
