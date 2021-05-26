@@ -2,8 +2,8 @@
 
 # shellcheck disable=SC2030,SC2031,SC2034,SC2230
 
-load ../node_modules/bats-support/load
-load ../node_modules/bats-assert/load
+load ../node_modules/bats-support/load.bash
+load ../node_modules/bats-assert/load.bash
 load ../lib/utils
 load ./lib/test_utils
 
