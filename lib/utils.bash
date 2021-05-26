@@ -1,5 +1,7 @@
 #!/usr/bin/env bash
 
+# shellcheck disable=SC2230
+
 # Constants
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
 SOURCE_URL="https://nim-lang.org/download/nim-VERSION.tar.xz"

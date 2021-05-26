@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-# shellcheck disable=SC2030,SC2031,SC2034
+# shellcheck disable=SC2030,SC2031,SC2034,SC2230
 
 load ../node_modules/bats-support/load
 load ../node_modules/bats-assert/load
