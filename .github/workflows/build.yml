@@ -74,6 +74,11 @@ jobs:
           - os: macos-latest
             nim-version: latest
             libc: macOS
+            require-binary: no
+
+          - os: macos-latest
+            nim-version: 1.4.2
+            libc: macOS
             require-binary: yes
 
     env:
