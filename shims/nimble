@@ -21,7 +21,7 @@ trap 'trap - INT; SIGNAL=SIGINT; regenerate; kill -INT $$' INT
 trap 'trap - TERM; SIGNAL=SIGTERM; regenerate; kill -TERM $$' TERM
 
 if "${ASDF_INSTALL_PATH}/bin/nimble" "$@"; then
-  case "$1" in
+  case "${1:-}" in
     install | develop | uninstall)
       regenerate
       ;;

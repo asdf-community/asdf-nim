@@ -1,7 +1,9 @@
 #!/usr/bin/env bats
 
-load ../node_modules/bats-support/load
-load ../node_modules/bats-assert/load
+# shellcheck disable=SC2230
+
+load ../node_modules/bats-support/load.bash
+load ../node_modules/bats-assert/load.bash
 
 setup_file() {
   export PROJECT_DIR

@@ -74,6 +74,11 @@ jobs:
           - os: macos-latest
             nim-version: latest
             libc: macOS
+            require-binary: no
+
+          - os: macos-latest
+            nim-version: 1.4.2
+            libc: macOS
             require-binary: yes
 
     env:
@@ -94,7 +99,7 @@ jobs:
       - name: Install asdf-nim & test
         shell: bash
         run: |
-          set -ueo pipefail
+          set -uexo pipefail
           mkdir -p asdf-nim
           cd asdf-nim
           git init
