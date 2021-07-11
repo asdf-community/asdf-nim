@@ -12,6 +12,13 @@ XDG_CONFIG_HOME="${ASDF_INSTALL_PATH}/userconfig"
 export APPDATA
 APPDATA="${ASDF_INSTALL_PATH}/userconfig"
 
-# Tell nim where to find nimble package metadata and packages
 export NIMBLE_DIR
-NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
+# Tell nim where to find nimble package metadata and packages.
+# If a local nimbledeps directory exists here, use that.
+# Otherwise, use the nimble directory within ASDF_INSTALL_PATH.
+# see https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages
+if [[ -z ${NIMBLE_DIR:-} ]]; then
+  if [[ ! -d "${PWD}/nimbledeps" ]]; then
+    NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
+  fi
+fi

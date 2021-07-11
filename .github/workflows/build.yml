@@ -64,15 +64,15 @@ jobs:
             libc: linux-glibc
             require-binary: yes
 
-          # Test building from git checkout
-          - os: ubuntu-latest
-            nim-version: ref:HEAD
-            libc: linux-glibc
-            require-binary: no
+          # # Test building from git checkout
+          # - os: ubuntu-latest
+          #   nim-version: ref:HEAD
+          #   libc: linux-glibc
+          #   require-binary: no
 
           # Test installation of unoffical macOS binaries from elijahr/nim-builds
           - os: macos-latest
-            nim-version: latest
+            nim-version: 1.4.2
             libc: macOS
             require-binary: yes
 
@@ -82,7 +82,7 @@ jobs:
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
-        if: matrix.nim-version != 'ref:HEAD'
+        if: matrix.nim-version != 'ref:HEAD' && matrix.nim-version != 'latest'
         uses: actions/cache@v2
         with:
           path: ~/.cache
@@ -91,16 +91,13 @@ jobs:
       - name: Install asdf
         uses: asdf-vm/actions/setup@v1
 
+      - name: Checkout plugin
+        uses: actions/checkout@v2
+
       - name: Install asdf-nim & test
         shell: bash
         run: |
           set -ueo pipefail
-          mkdir -p asdf-nim
-          cd asdf-nim
-          git init
-          git remote add origin "https://github.com/${GITHUB_REPOSITORY}.git"
-          git fetch origin "$GITHUB_SHA" --depth 1
-          git reset --hard FETCH_HEAD
           asdf plugin test nim . --asdf-tool-version "${{ matrix.nim-version }}" --asdf-plugin-gitref "${GITHUB_SHA}" nim -v
 
   # Test musl binary installation

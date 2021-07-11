@@ -291,7 +291,6 @@ teardown() {
 
 @test "asdf_nim_pkg_mgr" {
   mkdir -p "${ASDF_NIM_TEST_TEMP}/bin"
-  ln -s "$(which which)" "${ASDF_NIM_TEST_TEMP}/bin"
   declare -a bin_names=(
     "brew"
     "apt-get"

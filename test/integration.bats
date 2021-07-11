@@ -56,10 +56,44 @@ info() {
   assert [ -f "${ASDF_INSTALL_PATH}/nimble/pkgs/nimjson-1.2.8/nimjson.nimble" ]
 
   # Assert that shim was created for package binary
-  assert [ -n "$(which nimjson)" ]
+  assert [ -n "$(command -v nimjson)" ]
 
   # Assert that nim finds nimble packages
   echo "import nimjson" >"${ASDF_NIM_TEST_TEMP}/testnimble.nim"
   info "nim c -r \"${ASDF_NIM_TEST_TEMP}/testnimble.nim\""
   nim c -r "${ASDF_NIM_TEST_TEMP}/testnimble.nim"
+}
+
+@test "nimble configuration with nimbledeps" {
+  # `asdf plugin add nim .` would only install from git HEAD.
+  # So, we mock an installation via a symlink.
+  # This makes it easier to run tests while developing.
+  ln -s "$PROJECT_DIR" "${ASDF_DATA_DIR}/plugins/nim"
+
+  rm -rf nimbledeps
+  mkdir "./nimbledeps"
+
+  info "asdf install nim 1.4.2"
+  asdf install nim 1.4.2
+  asdf local nim 1.4.2
+
+  ASDF_INSTALL_PATH="${ASDF_DATA_DIR}/installs/nim/1.4.2"
+
+  # Assert package index is placed in the correct location
+  info "nimble refresh"
+  nimble refresh -y
+  assert [ -f "./nimbledeps/packages_official.json" ]
+
+  # Assert package installs to correct location
+  info "nimble install -y nimjson@1.2.8"
+  nimble install -y nimjson@1.2.8
+  assert [ -x "./nimbledeps/bin/nimjson" ]
+  assert [ -f "./nimbledeps/pkgs/nimjson-1.2.8/nimjson.nimble" ]
+
+  # Assert that nim finds nimble packages
+  echo "import nimjson" >"${ASDF_NIM_TEST_TEMP}/testnimble.nim"
+  info "nim c --nimblePath:./nimbledeps/pkgs -r \"${ASDF_NIM_TEST_TEMP}/testnimble.nim\""
+  nim c --nimblePath:./nimbledeps/pkgs -r "${ASDF_NIM_TEST_TEMP}/testnimble.nim"
+
+  rm -rf nimbledeps
 }
