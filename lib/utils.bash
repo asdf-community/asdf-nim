@@ -240,7 +240,7 @@ asdf_nim_normalize_arch() {
   arch="${ASDF_NIM_MOCK_MACHINE_NAME:-$(uname -m)}"
   case "$arch" in
     x86_64 | x64 | amd64)
-      if [ -n "$(which gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
+      if [ -n "$(command -v gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
         # Edge case: detect 386 container on amd64 kernel using __amd64 definition
         IS_AMD64="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __amd64 " | sed 's/#define __amd64 //')"
         if [ "$IS_AMD64" = "1" ]; then
@@ -262,7 +262,7 @@ asdf_nim_normalize_arch() {
       ;;
     arm*)
       arm_arch=""
-      if [ -n "$(which gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
+      if [ -n "$(command -v gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
         # Detect arm32 version using __ARM_ARCH definition
         arch_version="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __ARM_ARCH " | sed 's/#define __ARM_ARCH //')"
         if [ -n "$arch_version" ]; then
@@ -270,7 +270,7 @@ asdf_nim_normalize_arch() {
         fi
       fi
       if [ -z "$arm_arch" ]; then
-        if [ -n "$(which dpkg)" ] || [ -n "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-}" ]; then
+        if [ -n "$(command -v dpkg)" ] || [ -n "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-}" ]; then
           # Detect arm32 version using dpkg
           case "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-"$(dpkg --print-architecture)"}" in
             armel) arm_arch="armv5" ;;
@@ -297,12 +297,12 @@ asdf_nim_normalize_arch() {
 
 asdf_nim_pkg_mgr() {
   echo "${ASDF_NIM_MOCK_PKG_MGR:-$(
-    (which brew >/dev/null 2>&1 && echo "brew") ||
-      (which apt-get >/dev/null 2>&1 && echo "apt-get") ||
-      (which apk >/dev/null 2>&1 && echo "apk") ||
-      (which pacman >/dev/null 2>&1 && echo "pacman") ||
-      (which dnf >/dev/null 2>&1 && echo "dnf") ||
-      (which choco >/dev/null 2>&1 && echo "choco") ||
+    (command -v brew >/dev/null 2>&1 && echo "brew") ||
+      (command -v apt-get >/dev/null 2>&1 && echo "apt-get") ||
+      (command -v apk >/dev/null 2>&1 && echo "apk") ||
+      (command -v pacman >/dev/null 2>&1 && echo "pacman") ||
+      (command -v dnf >/dev/null 2>&1 && echo "dnf") ||
+      (command -v choco >/dev/null 2>&1 && echo "choco") ||
       echo ""
   )}"
 }
@@ -405,7 +405,7 @@ asdf_nim_is_musl() {
   if [ -n "${ASDF_NIM_MOCK_IS_MUSL:-}" ]; then
     echo "$ASDF_NIM_MOCK_IS_MUSL"
   else
-    if [ -n "$(which ldd)" ]; then
+    if [ -n "$(command -v ldd)" ]; then
       if ldd --version | grep -qF "musl"; then
         echo "yes"
       else

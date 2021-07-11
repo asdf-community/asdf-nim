@@ -59,7 +59,7 @@ For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/c
 
 ## Nimble packages
 
-Nimble packages are version-specific and installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`.
+Nimble packages are version-specific and installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`, unless a `nimbledeps` directory exists in your project. See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) for more information about nimbledeps.
 
 ## Continuous Integration
 
