@@ -815,6 +815,14 @@ asdf_nim_build_tools() {
   step_end "done"
 }
 
+asdf_nim_build_doc() {
+  step_start "Building docs"
+  cd "$ASDF_DOWNLOAD_PATH"
+  # shellcheck disable=SC2046
+  eval ./koch doc $(printf ' %q ' "${NIM_ARGS[@]}")
+  step_end "done"
+}
+
 asdf_nim_build_nimble() {
   step_start "Building nimble"
   cd "$ASDF_DOWNLOAD_PATH"
@@ -841,6 +849,7 @@ asdf_nim_build() {
   [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || asdf_nim_bootstrap_nim
   [ -f "./bin/nimgrep$(asdf_nim_exe_ext)" ] || asdf_nim_build_tools
   [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || asdf_nim_build_nimble
+  [ -f "./bin/dochack$(asdf_nim_exe_ext)" ] || asdf_nim_build_doc
   if [ "$(asdf_nim_normalize_os)" != "windows" ]; then
     [ -f "./install.sh" ] || asdf_nim_generate_install_sh
   fi
