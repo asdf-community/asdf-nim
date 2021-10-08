@@ -123,7 +123,7 @@ jobs:
           key: cache-ubuntu-latest-${{ matrix.nim-version }}
 
       - name: Install dependencies
-        run: apk add --update bash git curl coreutils tar xz
+        run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep
 
       - name: Test plugin
         uses: asdf-vm/actions/plugin-test@v1
