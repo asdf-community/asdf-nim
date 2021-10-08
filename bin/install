@@ -33,20 +33,24 @@ asdf_nim_install() {
 
   mkdir -p "$ASDF_NIM_INSTALL_PATH"
   # Use nim's install.sh to install to the custom path
-  step_start "Running install.sh"
-  (
-    cd "$ASDF_DOWNLOAD_PATH"
-    sh install.sh "$ASDF_NIM_INSTALL_PATH"
-  )
-  step_end "done"
+  # step_start "Running install.sh"
+  # (
+  #   cd "$ASDF_DOWNLOAD_PATH"
+  #   sh install.sh "$ASDF_NIM_INSTALL_PATH"
+  # )
+  # step_end "done"
 
   step_start "Copying installation"
-  # Un-nest installed files
-  mv -v "${ASDF_NIM_INSTALL_PATH}/nim/"* "$ASDF_NIM_INSTALL_PATH"
-  rm -vrf "${ASDF_NIM_INSTALL_PATH}/nim"
+  cp -vR "${ASDF_DOWNLOAD_PATH}/"* "$ASDF_NIM_INSTALL_PATH"
+  cp -vR "${ASDF_DOWNLOAD_PATH}/."* "$ASDF_NIM_INSTALL_PATH"
 
-  # Copy additional tools
-  cp -vR "${ASDF_DOWNLOAD_PATH}/bin/"* "${ASDF_NIM_INSTALL_PATH}/bin"
+  # Un-nest installed files
+  # mv -v "${ASDF_NIM_INSTALL_PATH}/nim/"* "$ASDF_NIM_INSTALL_PATH"
+  # rm -vrf "${ASDF_NIM_INSTALL_PATH}/nim"
+
+  # # Copy additional tools
+
+  # cp -vR "${ASDF_DOWNLOAD_PATH}/bin/"* "${ASDF_NIM_INSTALL_PATH}/bin"
   step_end "done"
 
   step_start "Configuring nimble"
