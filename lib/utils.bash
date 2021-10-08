@@ -23,9 +23,6 @@ normpath() {
   echo "$path" | sed 's/\/$//'
 }
 
-# Ensure ASDF_DATA_DIR has a value
-ASDF_DATA_DIR="${ASDF_DATA_DIR:-${ASDF_DIR:-$(normpath "${ASDF_INSTALL_PATH}/../../..")}}"
-
 # Create the temp directories used by the download/build/install functions.
 asdf_nim_init() {
   export ASDF_NIM_ACTION
@@ -48,15 +45,19 @@ asdf_nim_init() {
   ASDF_NIM_SILENT="${ASDF_NIM_SILENT:-no}" # If yes, asdf-nim will not echo build steps to stdout.
   # End configuration options
 
-  export ASDF_NIM_TEMP
-  ASDF_NIM_TEMP="${ASDF_DATA_DIR}/tmp/nim/${ASDF_INSTALL_VERSION}"
-  export ASDF_NIM_DOWNLOAD_PATH
-  ASDF_NIM_DOWNLOAD_PATH="${ASDF_NIM_TEMP}/download" # Temporary directory where downloads are placed
-  export ASDF_NIM_INSTALL_PATH
-  ASDF_NIM_INSTALL_PATH="${ASDF_NIM_TEMP}/install" # Temporary directory where installation is prepared
-
-  mkdir -p "$ASDF_NIM_TEMP"
-  rm -f "$(asdf_nim_log)"
+  # Ensure ASDF_DATA_DIR has a value
+  if [ -n "${ASDF_INSTALL_PATH:-}" ]; then
+    export ASDF_DATA_DIR
+    ASDF_DATA_DIR="${ASDF_DATA_DIR:-${ASDF_DIR:-$(normpath "${ASDF_INSTALL_PATH:-}/../../..")}}"
+    export ASDF_NIM_TEMP
+    ASDF_NIM_TEMP="${ASDF_DATA_DIR}/tmp/nim/${ASDF_INSTALL_VERSION}"
+    export ASDF_NIM_DOWNLOAD_PATH
+    ASDF_NIM_DOWNLOAD_PATH="${ASDF_NIM_TEMP}/download" # Temporary directory where downloads are placed
+    export ASDF_NIM_INSTALL_PATH
+    ASDF_NIM_INSTALL_PATH="${ASDF_NIM_TEMP}/install" # Temporary directory where installation is prepared
+    mkdir -p "$ASDF_NIM_TEMP"
+    rm -f "$(asdf_nim_log)"
+  fi
 
   if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
     out
