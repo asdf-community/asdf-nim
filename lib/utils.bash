@@ -694,7 +694,7 @@ asdf_nim_download() {
           xz) tar -xJf "${ASDF_NIM_TEMP}/${archive_name}" -C "$ASDF_NIM_DOWNLOAD_PATH" --strip-components=1 ;;
           *)
             unzip -q "${ASDF_NIM_TEMP}/${archive_name}" -d "$ASDF_NIM_DOWNLOAD_PATH"
-            cp "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}" ~/Desktop/asdf-nim--nim-${ASDF_INSTALL_VERSION}--1
+            cp -R "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}" ~/Desktop/asdf-nim--nim-${ASDF_INSTALL_VERSION}--1
             mv -v "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}/"* "$ASDF_NIM_DOWNLOAD_PATH"
             rm -vr "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}"
             ;;
@@ -706,7 +706,7 @@ asdf_nim_download() {
     step_start "Moving download to ${ASDF_DOWNLOAD_PATH}"
     rm -rf "$ASDF_DOWNLOAD_PATH"
     mkdir -p "$(dirname "$ASDF_DOWNLOAD_PATH")"
-    cp "$ASDF_NIM_DOWNLOAD_PATH" ~/Desktop/asdf-nim--nim-${ASDF_INSTALL_VERSION}--2
+    cp -R "$ASDF_NIM_DOWNLOAD_PATH" ~/Desktop/asdf-nim--nim-${ASDF_INSTALL_VERSION}--2
     mv -v "$ASDF_NIM_DOWNLOAD_PATH" "$ASDF_DOWNLOAD_PATH"
     step_end "done"
 
