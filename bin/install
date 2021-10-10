@@ -31,9 +31,11 @@ asdf_nim_install() {
   section_start "Installing"
 
   step_start "Copying installation"
+  rm -rf "$ASDF_NIM_INSTALL_PATH"
   mkdir -p "$ASDF_NIM_INSTALL_PATH"
   cp -vR "${ASDF_DOWNLOAD_PATH}/"* "${ASDF_NIM_INSTALL_PATH}/"
   cp -vR "${ASDF_DOWNLOAD_PATH}/."* "${ASDF_NIM_INSTALL_PATH}/"
+  rm -Rf "$ASDF_DOWNLOAD_PATH"
   step_end "done"
 
   step_start "Configuring nimble"
@@ -43,14 +45,13 @@ asdf_nim_install() {
   step_end "done"
 
   # Finalize installation
-  # step_start "Moving installation to ${ASDF_INSTALL_PATH}"
-  step_start "Emptying install path"
-  rm -rf "$ASDF_INSTALL_PATH"
+  step_start "Moving installation to ${ASDF_INSTALL_PATH}"
+  rm -rf "${ASDF_INSTALL_PATH}/"* "${ASDF_INSTALL_PATH}/."* || true
   mkdir -p "$ASDF_INSTALL_PATH"
+  mv -v "$ASDF_NIM_INSTALL_PATH/"* "${ASDF_INSTALL_PATH}/"
+  mv -v "$ASDF_NIM_INSTALL_PATH/."* "${ASDF_INSTALL_PATH}/"
+  rm -Rf "$ASDF_NIM_INSTALL_PATH"
   step_end "done"
-  # mv -v "$ASDF_NIM_INSTALL_PATH/"* "${ASDF_INSTALL_PATH}/"
-  # mv -v "$ASDF_NIM_INSTALL_PATH/."* "${ASDF_INSTALL_PATH}/"
-  # step_end "done"
 
   out
   out "👑 Installed Nim ${ASDF_INSTALL_VERSION}$(asdf_nim_time) 👑"
