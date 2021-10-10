@@ -31,7 +31,7 @@ asdf_nim_install() {
   section_start "Installing"
 
   step_start "Copying installation"
-  rm -Rf "$ASDF_NIM_INSTALL_PATH"
+  rm -rf "$ASDF_NIM_INSTALL_PATH"
   cp -R "$ASDF_DOWNLOAD_PATH" "$ASDF_NIM_INSTALL_PATH"
   step_end "done"
 
@@ -43,7 +43,7 @@ asdf_nim_install() {
 
   # Finalize installation
   step_start "Moving installation to ${ASDF_INSTALL_PATH}"
-  rm -Rf "$ASDF_INSTALL_PATH"
+  rm -rf "$ASDF_INSTALL_PATH"
   mv -v "$ASDF_NIM_INSTALL_PATH" "$ASDF_INSTALL_PATH"
   step_end "done"
 
