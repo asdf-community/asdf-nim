@@ -706,7 +706,6 @@ asdf_nim_download() {
     rm -rf "$ASDF_DOWNLOAD_PATH"
     mkdir -p "$(dirname "$ASDF_DOWNLOAD_PATH")"
     mv -v "$ASDF_NIM_DOWNLOAD_PATH" "$ASDF_DOWNLOAD_PATH"
-    ls -al "$ASDF_DOWNLOAD_PATH"
     step_end "done"
 
     if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
@@ -756,8 +755,6 @@ asdf_nim_needs_build() {
     [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimble$(asdf_nim_exe_ext)" ]; then
     if [ "$(asdf_nim_normalize_os)" = "windows" ]; then
       echo "no"
-    # elif [ -f "${ASDF_DOWNLOAD_PATH}/install.sh" ]; then
-    #   echo "no"
     else
       echo "yes"
     fi
@@ -816,14 +813,6 @@ asdf_nim_build_tools() {
   step_end "done"
 }
 
-# asdf_nim_build_doc() {
-#   step_start "Building docs"
-#   cd "$ASDF_DOWNLOAD_PATH"
-#   # shellcheck disable=SC2046
-#   eval ./koch doc $(printf ' %q ' "${NIM_ARGS[@]}")
-#   step_end "done"
-# }
-
 asdf_nim_build_nimble() {
   step_start "Building nimble"
   cd "$ASDF_DOWNLOAD_PATH"
@@ -832,17 +821,6 @@ asdf_nim_build_nimble() {
   step_end "done"
 }
 
-# asdf_nim_generate_install_sh() {
-#   step_start "Building niminst"
-#   cd "$ASDF_DOWNLOAD_PATH"
-#   # shellcheck disable=SC2046
-#   "./bin/nim$(asdf_nim_exe_ext)" c $(printf ' %q ' "${NIM_ARGS[@]}") tools/niminst/niminst
-#   step_end "done"
-#   step_start "Generating install.sh"
-#   eval ./tools/niminst/niminst scripts ./compiler/installer.ini
-#   step_end "done"
-# }
-
 # Build Nim binaries in ASDF_NIM_DOWNLOAD_PATH.
 asdf_nim_build() {
   section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
@@ -850,10 +828,6 @@ asdf_nim_build() {
   [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || asdf_nim_bootstrap_nim
   [ -f "./bin/nimgrep$(asdf_nim_exe_ext)" ] || asdf_nim_build_tools
   [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || asdf_nim_build_nimble
-  # [ -f "./bin/dochack$(asdf_nim_exe_ext)" ] || asdf_nim_build_doc
-  # if [ "$(asdf_nim_normalize_os)" != "windows" ]; then
-  #   [ -f "./install.sh" ] || asdf_nim_generate_install_sh
-  # fi
 }
 
 asdf_nim_time() {
