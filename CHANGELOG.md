@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### v1.1.7 - 2021-10-09
+
+- fix: missing `tools` directory
+
 ### v1.1.6 - 2021-10-08
 
 - fix: CI: plugin test on Alpine Linux failed due to busybox grep missing -quiet
