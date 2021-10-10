@@ -32,7 +32,6 @@ teardown() {
   # Configurable
   assert_equal "$ASDF_NIM_ACTION" "download"
   assert_equal "$ASDF_NIM_REMOVE_TEMP" "yes"
-  assert_equal "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" "no"
   assert_equal "$ASDF_NIM_DEBUG" "no"
   assert_equal "$ASDF_NIM_SILENT" "no"
 
@@ -44,7 +43,6 @@ teardown() {
 
 @test "asdf_nim_init configuration" {
   ASDF_NIM_REMOVE_TEMP="no"
-  ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="yes"
   ASDF_NIM_DEBUG="yes"
   ASDF_NIM_SILENT="yes"
   ASDF_NIM_TEMP="${ASDF_NIM_TEST_TEMP}/configured"
@@ -54,7 +52,6 @@ teardown() {
   # Configurable
   assert_equal "$ASDF_NIM_ACTION" "install"
   assert_equal "$ASDF_NIM_REMOVE_TEMP" "no"
-  assert_equal "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" "yes"
   assert_equal "$ASDF_NIM_DEBUG" "yes"
   assert_equal "$ASDF_NIM_SILENT" "yes"
 
@@ -189,8 +186,6 @@ teardown() {
   # In x86_64 docker hosts running x86 containers,
   # the kernel uname will show x86_64 so we have to properly detect using the
   # __amd64 gcc define.
-
-  ASDF_NIM_MOCK_GCC_DEFINES="#"
 
   # Expect i686 when __amd64 is not defined
   ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
@@ -641,10 +636,6 @@ teardown() {
   touch "${ASDF_DOWNLOAD_PATH}/install.sh"
   run asdf_nim_needs_build
   assert_success
-  assert_output "no"
-  ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="yes"
-  run asdf_nim_needs_build
-  assert_success
   assert_output "yes"
 }
 
@@ -670,10 +661,6 @@ teardown() {
   run asdf_nim_needs_build
   assert_success
   assert_output "no"
-  ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="yes"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
 }
 
 # @test "asdf_nim_build" {
