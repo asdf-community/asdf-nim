@@ -6,10 +6,6 @@ on:
     paths-ignore:
       - README.md
       - .github/workflows/build-latest-nightly.yml
-  push:
-    paths-ignore:
-      - README.md
-      - .github/workflows/build-latest-nightly.yml
 
 jobs:
   # Run tests with bats
@@ -58,12 +54,6 @@ jobs:
           - os: ubuntu-latest
             nim-version: 0.20.2
             libc: linux-glibc
-
-          # Test installation of unoffical macOS binaries from elijahr/nim-builds
-          - os: macos-latest
-            nim-version: 1.4.2
-            libc: macOS
-
           - os: macos-latest
             nim-version: 1.4.2
             libc: macOS
