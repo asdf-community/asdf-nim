@@ -19,6 +19,8 @@ setup_test() {
   ASDF_INSTALL_PATH="${ASDF_DATA_DIR}/installs/nim/1.4.2"
   export ASDF_DOWNLOAD_PATH
   ASDF_DOWNLOAD_PATH="${ASDF_DATA_DIR}/downloads/nim/1.4.2"
+  export ASDF_NIM_MOCK_GCC_DEFINES
+  ASDF_NIM_MOCK_GCC_DEFINES="#"
 
   # Mock some other vars
   export XDG_CONFIG_HOME

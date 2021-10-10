@@ -31,10 +31,6 @@ asdf_nim_init() {
   # Configuration options
   export ASDF_NIM_REMOVE_TEMP
   ASDF_NIM_REMOVE_TEMP="${ASDF_NIM_REMOVE_TEMP:-yes}" # If no, asdf-nim's temporary directory won't be deleted on exit
-  export ASDF_NIM_REQUIRE_BINARY
-  ASDF_NIM_REQUIRE_BINARY="${ASDF_NIM_REQUIRE_BINARY:-no}" # If yes, Nim will never be built from source. The script will exit with status 1 if a binary cannot be found.
-  export ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE
-  ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="${ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE:-no}" # If yes, Nim will always be built from source, even if a binary is available.
   export ASDF_NIM_DEBUG
   ASDF_NIM_DEBUG="${ASDF_NIM_DEBUG:-no}" # If yes, extra information will be logged to the console and every command executed will be logged to the logfile.
   export ASDF_NIM_STDOUT
@@ -569,70 +565,47 @@ asdf_nim_search_nim_builds() {
 }
 
 asdf_nim_download_urls() {
-  case "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" in
-    yes) asdf_nim_source_url ;;
-    *)
-      case "$(asdf_nim_normalize_os)" in
-        linux)
-          case "$(asdf_nim_is_musl)" in
-            # Distros using musl can't use official Nim binaries
-            yes)
-              asdf_nim_search_nim_builds
-              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                asdf_nim_source_url
-              fi
-              ;;
-            no)
-              case "$(asdf_nim_normalize_arch)" in
-                x86_64 | i686)
-                  # Linux with glibc has official x86_64 & x86 binaries
-                  asdf_nim_official_archive_url
-
-                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                    asdf_nim_source_url
-                  fi
-                  ;;
-                *)
-                  asdf_nim_search_nim_builds
-
-                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                    asdf_nim_source_url
-                  fi
-                  ;;
-              esac
-              ;;
-          esac
-          ;;
-        macos)
+  case "$(asdf_nim_normalize_os)" in
+    linux)
+      case "$(asdf_nim_is_musl)" in
+        # Distros using musl can't use official Nim binaries
+        yes)
           asdf_nim_search_nim_builds
-
-          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-            asdf_nim_source_url
-          fi
+          asdf_nim_source_url
           ;;
-        windows)
+        no)
           case "$(asdf_nim_normalize_arch)" in
             x86_64 | i686)
-              # Windows has official x86_64 & x86 binaries
+              # Linux with glibc has official x86_64 & x86 binaries
               asdf_nim_official_archive_url
-
-              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                asdf_nim_source_url
-              fi
+              asdf_nim_source_url
               ;;
             *)
-              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                asdf_nim_source_url
-              fi
+              asdf_nim_search_nim_builds
+              asdf_nim_source_url
               ;;
           esac
           ;;
+      esac
+      ;;
+    macos)
+      asdf_nim_search_nim_builds
+      asdf_nim_source_url
+      ;;
+    windows)
+      case "$(asdf_nim_normalize_arch)" in
+        x86_64 | i686)
+          # Windows has official x86_64 & x86 binaries
+          asdf_nim_official_archive_url
+          asdf_nim_source_url
+          ;;
         *)
-          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-            asdf_nim_source_url
-          fi
+          asdf_nim_source_url
           ;;
       esac
+      ;;
+    *)
+      asdf_nim_source_url
       ;;
   esac
 }
@@ -748,14 +721,10 @@ asdf_nim_fetch() {
 }
 
 asdf_nim_needs_build() {
-  if [ "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" = "yes" ]; then
-    echo "yes"
-  elif [ -f "${ASDF_DOWNLOAD_PATH}/bin/nim$(asdf_nim_exe_ext)" ] &&
+  if [ -f "${ASDF_DOWNLOAD_PATH}/bin/nim$(asdf_nim_exe_ext)" ] &&
     [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimgrep$(asdf_nim_exe_ext)" ] &&
     [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimble$(asdf_nim_exe_ext)" ]; then
     if [ "$(asdf_nim_normalize_os)" = "windows" ]; then
-      echo "no"
-    elif [ -f "${ASDF_DOWNLOAD_PATH}/install.sh" ]; then
       echo "no"
     else
       echo "yes"
@@ -823,17 +792,6 @@ asdf_nim_build_nimble() {
   step_end "done"
 }
 
-asdf_nim_generate_install_sh() {
-  step_start "Building niminst"
-  cd "$ASDF_DOWNLOAD_PATH"
-  # shellcheck disable=SC2046
-  "./bin/nim$(asdf_nim_exe_ext)" c $(printf ' %q ' "${NIM_ARGS[@]}") tools/niminst/niminst
-  step_end "done"
-  step_start "Generating install.sh"
-  eval ./tools/niminst/niminst scripts ./compiler/installer.ini
-  step_end "done"
-}
-
 # Build Nim binaries in ASDF_NIM_DOWNLOAD_PATH.
 asdf_nim_build() {
   section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
@@ -841,9 +799,6 @@ asdf_nim_build() {
   [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || asdf_nim_bootstrap_nim
   [ -f "./bin/nimgrep$(asdf_nim_exe_ext)" ] || asdf_nim_build_tools
   [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || asdf_nim_build_nimble
-  if [ "$(asdf_nim_normalize_os)" != "windows" ]; then
-    [ -f "./install.sh" ] || asdf_nim_generate_install_sh
-  fi
 }
 
 asdf_nim_time() {
