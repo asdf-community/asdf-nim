@@ -32,7 +32,6 @@ teardown() {
   # Configurable
   assert_equal "$ASDF_NIM_ACTION" "download"
   assert_equal "$ASDF_NIM_REMOVE_TEMP" "yes"
-  assert_equal "$ASDF_NIM_REQUIRE_BINARY" "no"
   assert_equal "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" "no"
   assert_equal "$ASDF_NIM_DEBUG" "no"
   assert_equal "$ASDF_NIM_SILENT" "no"
@@ -45,7 +44,6 @@ teardown() {
 
 @test "asdf_nim_init configuration" {
   ASDF_NIM_REMOVE_TEMP="no"
-  ASDF_NIM_REQUIRE_BINARY="yes"
   ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="yes"
   ASDF_NIM_DEBUG="yes"
   ASDF_NIM_SILENT="yes"
@@ -56,7 +54,6 @@ teardown() {
   # Configurable
   assert_equal "$ASDF_NIM_ACTION" "install"
   assert_equal "$ASDF_NIM_REMOVE_TEMP" "no"
-  assert_equal "$ASDF_NIM_REQUIRE_BINARY" "yes"
   assert_equal "$ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE" "yes"
   assert_equal "$ASDF_NIM_DEBUG" "yes"
   assert_equal "$ASDF_NIM_SILENT" "yes"
@@ -392,16 +389,6 @@ teardown() {
   ASDF_NIM_MOCK_PKG_MGR="choco"
   expected="choco install --yes hub unzip mingw"
   output="$(asdf_nim_install_deps_cmds)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_require_binary_does_not_echo_source_url" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
-  ASDF_NIM_REQUIRE_BINARY="yes"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-gnu.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
 

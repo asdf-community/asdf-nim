@@ -31,8 +31,6 @@ asdf_nim_init() {
   # Configuration options
   export ASDF_NIM_REMOVE_TEMP
   ASDF_NIM_REMOVE_TEMP="${ASDF_NIM_REMOVE_TEMP:-yes}" # If no, asdf-nim's temporary directory won't be deleted on exit
-  export ASDF_NIM_REQUIRE_BINARY
-  ASDF_NIM_REQUIRE_BINARY="${ASDF_NIM_REQUIRE_BINARY:-no}" # If yes, Nim will never be built from source. The script will exit with status 1 if a binary cannot be found.
   export ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE
   ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE="${ASDF_NIM_REQUIRE_BUILD_FROM_SOURCE:-no}" # If yes, Nim will always be built from source, even if a binary is available.
   export ASDF_NIM_DEBUG
@@ -578,26 +576,18 @@ asdf_nim_download_urls() {
             # Distros using musl can't use official Nim binaries
             yes)
               asdf_nim_search_nim_builds
-              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                asdf_nim_source_url
-              fi
+              asdf_nim_source_url
               ;;
             no)
               case "$(asdf_nim_normalize_arch)" in
                 x86_64 | i686)
                   # Linux with glibc has official x86_64 & x86 binaries
                   asdf_nim_official_archive_url
-
-                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                    asdf_nim_source_url
-                  fi
+                  asdf_nim_source_url
                   ;;
                 *)
                   asdf_nim_search_nim_builds
-
-                  if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                    asdf_nim_source_url
-                  fi
+                  asdf_nim_source_url
                   ;;
               esac
               ;;
@@ -605,32 +595,22 @@ asdf_nim_download_urls() {
           ;;
         macos)
           asdf_nim_search_nim_builds
-
-          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-            asdf_nim_source_url
-          fi
+          asdf_nim_source_url
           ;;
         windows)
           case "$(asdf_nim_normalize_arch)" in
             x86_64 | i686)
               # Windows has official x86_64 & x86 binaries
               asdf_nim_official_archive_url
-
-              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                asdf_nim_source_url
-              fi
+              asdf_nim_source_url
               ;;
             *)
-              if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-                asdf_nim_source_url
-              fi
+              asdf_nim_source_url
               ;;
           esac
           ;;
         *)
-          if [ "$ASDF_NIM_REQUIRE_BINARY" = "no" ]; then
-            asdf_nim_source_url
-          fi
+          asdf_nim_source_url
           ;;
       esac
       ;;
