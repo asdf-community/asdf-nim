@@ -21,10 +21,6 @@ asdf_nim_install() {
   fi
 
   if [ "$(asdf_nim_needs_build)" = "yes" ]; then
-    if [ "$ASDF_NIM_REQUIRE_BINARY" = "yes" ]; then
-      echo "Requested ASDF_NIM_REQUIRE_BINARY=yes, and no binaries available." >&2
-      return 1
-    fi
     asdf_nim_build
   fi
 
