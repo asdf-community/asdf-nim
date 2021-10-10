@@ -9,8 +9,7 @@ source "$(dirname "${BASH_SOURCE[0]}")/../lib/utils.bash"
 asdf_nim_init "install"
 asdf_nim_init_traps
 
-# Install Nim using the best available method, either from a binary or building
-# from source.
+# Install Nim by building from source.
 # The installation will be placed in ASDF_INSTALL_PATH when complete.
 asdf_nim_install() {
   if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
@@ -28,6 +27,12 @@ asdf_nim_install() {
     fi
     asdf_nim_build
   fi
+
+  printf ">>>>>>" "" 1>&"$ASDF_NIM_STDOUT"
+  find "${ASDF_DOWNLOAD_PATH}/."* 1>&"$ASDF_NIM_STDOUT"
+  printf "......" "" 1>&"$ASDF_NIM_STDOUT"
+  find "${ASDF_DOWNLOAD_PATH}/"* 1>&"$ASDF_NIM_STDOUT"
+  printf "<<<<<<" "" 1>&"$ASDF_NIM_STDOUT"
 
   section_start "Installing"
 
