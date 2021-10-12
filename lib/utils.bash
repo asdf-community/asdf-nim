@@ -403,7 +403,7 @@ asdf_nim_is_musl() {
     echo "$ASDF_NIM_MOCK_IS_MUSL"
   else
     if [ -n "$(command -v ldd)" ]; then
-      if ldd --version | grep -qF "musl"; then
+      if (ldd --version 2>&1 || true) | grep -qF "musl"; then
         echo "yes"
       else
         echo "no"
