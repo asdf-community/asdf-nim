@@ -805,7 +805,7 @@ asdf_nim_build() {
   [ -f "./bin/nimgrep$(asdf_nim_exe_ext)" ] || build_tools=y
   [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || build_nimble=y
 
-  if [ "$bootstrap" = "y" ] || [ "$build_tools" = "y" ] || "$build_nimble" = "y" ]; then
+  if [ "$bootstrap" = "y" ] || [ "$build_tools" = "y" ] || [ "$build_nimble" = "y" ]; then
     section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
   fi
 
