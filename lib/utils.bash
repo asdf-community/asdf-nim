@@ -794,11 +794,24 @@ asdf_nim_build_nimble() {
 
 # Build Nim binaries in ASDF_NIM_DOWNLOAD_PATH.
 asdf_nim_build() {
-  section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
   cd "$ASDF_DOWNLOAD_PATH"
-  [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || asdf_nim_bootstrap_nim
-  [ -f "./bin/nimgrep$(asdf_nim_exe_ext)" ] || asdf_nim_build_tools
-  [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || asdf_nim_build_nimble
+  local bootstrap
+  bootstrap=n
+  local build_tools
+  build_tools=n
+  local build_nimble
+  build_nimble=n
+  [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || bootstrap=y
+  [ -f "./bin/nimgrep$(asdf_nim_exe_ext)" ] || build_tools=y
+  [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || build_nimble=y
+
+  if [ "$bootstrap" = "y" ] || [ "$build_tools" = "y" ] || "$build_nimble" = "y" ]; then
+    section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
+  fi
+
+  [ "$bootstrap" = "n" ] || echo asdf_nim_bootstrap_nim
+  [ "$build_tools" = "n" ] || echo asdf_nim_build_tools
+  [ "$build_nimble" = "n" ] || echo asdf_nim_build_nimble
 }
 
 asdf_nim_time() {
