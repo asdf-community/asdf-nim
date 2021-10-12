@@ -809,9 +809,9 @@ asdf_nim_build() {
     section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
   fi
 
-  [ "$bootstrap" = "n" ] || echo asdf_nim_bootstrap_nim
-  [ "$build_tools" = "n" ] || echo asdf_nim_build_tools
-  [ "$build_nimble" = "n" ] || echo asdf_nim_build_nimble
+  [ "$bootstrap" = "n" ] || asdf_nim_bootstrap_nim
+  [ "$build_tools" = "n" ] || asdf_nim_build_tools
+  [ "$build_nimble" = "n" ] || asdf_nim_build_nimble
 }
 
 asdf_nim_time() {
