@@ -1,5 +1,22 @@
 #!/usr/bin/env bash
 
+# Workaround so Nim knows where to find Homebrew-installed dynamic libraries
+# on M1 Macs. On M1, Homebrew lives in /opt/homebrew instead of /usr/local.
+# So end users have to put something like DYLD_LIBRARY_PATH=/opt/homebrew/lib
+# in their shell init files. However, macOS has a security feature called SIP
+# which prevents certain env vars such as DYLD_LIBRARY_PATH from propagating
+# to /usr/bin/env child processes. So, we assume that if the user is on M1 macOS
+# and has Homebrew installed, they want to link to libraries there. To skip this
+# set ASDF_NIM_MACOS_M1_HOMEBREW_WORKAROUND=no in your environment.
+if [ "${ASDF_NIM_MACOS_M1_HOMEBREW_WORKAROUND:-yes}" = "yes" ] &&
+  [ "$(uname)" = "Darwin" ] &&
+  [ "$(uname -m)" = "arm64" ] &&
+  [ "${DYLD_LIBRARY_PATH:-}" = "" ] &&
+  [ -d /opt/homebrew/lib ]; then
+  export DYLD_LIBRARY_PATH
+  DYLD_LIBRARY_PATH=/opt/homebrew/lib
+fi
+
 # Override PATH so this nim is found first
 export PATH
 PATH="${ASDF_INSTALL_PATH}/bin:${PATH}"
@@ -13,12 +30,12 @@ export APPDATA
 APPDATA="${ASDF_INSTALL_PATH}/userconfig"
 
 export NIMBLE_DIR
-# Tell nim where to find nimble package metadata and packages.
+
+# Tell Nim where to find nimble package metadata and packages.
 # If a local nimbledeps directory exists here, use that.
 # Otherwise, use the nimble directory within ASDF_INSTALL_PATH.
 # see https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages
-if [[ -z ${NIMBLE_DIR:-} ]]; then
-  if [[ ! -d "${PWD}/nimbledeps" ]]; then
-    NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
-  fi
+if [ "${NIMBLE_DIR:-}" = "" ] &&
+  [ ! -d "${PWD}/nimbledeps" ]; then
+  NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
 fi
