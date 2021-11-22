@@ -4,8 +4,7 @@ name: Build
 on:
   pull_request:
     paths-ignore:
-      - README.md
-      - .github/workflows/build-latest-nightly.yml
+      - *.md
 
 jobs:
   # Run tests with bats
@@ -43,19 +42,19 @@ jobs:
             nim-version: latest
             libc: linux-glibc
           - os: ubuntu-latest
-            nim-version: 1.4.2
+            nim-version: 1.6.0
             libc: linux-glibc
           - os: ubuntu-latest
-            nim-version: 1.2.8
+            nim-version: 1.4.8
+            libc: linux-glibc
+          - os: ubuntu-latest
+            nim-version: 1.2.12
             libc: linux-glibc
           - os: ubuntu-latest
             nim-version: 1.0.10
             libc: linux-glibc
-          - os: ubuntu-latest
-            nim-version: 0.20.2
-            libc: linux-glibc
           - os: macos-latest
-            nim-version: 1.4.2
+            nim-version: 1.4.8
             libc: macOS
 
     steps:
@@ -81,7 +80,7 @@ jobs:
 
   # Test musl installation
   plugin_test_x86_musl:
-    name: 👑1.4.2/linux-musl/x86_64
+    name: 👑1.6.0/linux-musl/x86_64
     runs-on: ubuntu-latest
     container: alpine:latest
 
@@ -100,7 +99,7 @@ jobs:
         uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
-          version: 1.4.2
+          version: 1.6.0
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
@@ -113,13 +112,13 @@ jobs:
         include:
           # Test on non-x86 Linux using run-on-arch-action
           - runs-on: ubuntu-latest
-            nim-version: 1.4.2
+            nim-version: 1.6.0
             arch: armv7
           - runs-on: ubuntu-latest
-            nim-version: 1.2.8
+            nim-version: 1.4.8
             arch: aarch64
           - runs-on: ubuntu-latest
-            nim-version: 1.0.10
+            nim-version: 1.2.12
             arch: ppc64le
 
     steps:
