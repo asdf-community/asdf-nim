@@ -4,7 +4,7 @@ name: Build
 on:
   pull_request:
     paths-ignore:
-      - *.md
+      - '*.md'
 
 jobs:
   # Run tests with bats
@@ -155,5 +155,7 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           run: |
+            set -exo pipefail
+            set +u
             . "${HOME}/.asdf/asdf.sh"
             asdf plugin test nim . --asdf-tool-version "${{ matrix.nim-version }}" --asdf-plugin-gitref "${GITHUB_SHA}" nim -v
