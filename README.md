@@ -4,7 +4,7 @@
 
 asdf-nim allows you to quickly install any version of [Nim](https://nim-lang.org).
 
-asdf-nim is intended for end-users and continuous integration. Whether macOS or Linux, x86 or ARM - all you need to install Nim is bash.
+asdf-nim is intended for end-users and continuous integration. Whether macOS or Linux, x86 or ARM - all you'll need to install Nim is bash.
 
 ## Installation
 
@@ -37,14 +37,9 @@ See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder
 ```yaml
 name: Build
 on:
-  pull_request:
-    paths-ignore:
-      - README.md
   push:
     paths-ignore:
       - README.md
-  schedule:
-    - cron: '0 0 * * *' # daily at midnight
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -64,6 +59,7 @@ jobs:
       - name: Run tests
         run: |
           asdf local nim 1.6.0
+          # Run your tests
           nimble develop -y
           nimble test
           nimble examples
@@ -71,7 +67,7 @@ jobs:
 
 ### Continuous Integration on Non-x86 Architectures
 
-This uses [uraimo/run-on-arch-action](https://github.com/uraimo/run-on-arch-action):
+Using [uraimo/run-on-arch-action](https://github.com/uraimo/run-on-arch-action):
 
 ```yaml
 name: Build
@@ -102,7 +98,7 @@ jobs:
       - name: Checkout Nim project
         uses: actions/checkout@v2
 
-      - uses: uraimo/run-on-arch-action@v2.0.8
+      - uses: uraimo/run-on-arch-action@v2.1.1
         name: Install Nim & run tests
         with:
           arch: ${{ matrix.arch }}
