@@ -72,9 +72,6 @@ Using [uraimo/run-on-arch-action](https://github.com/uraimo/run-on-arch-action):
 ```yaml
 name: Build
 on:
-  pull_request:
-    paths-ignore:
-      - README.md
   push:
     paths-ignore:
       - README.md
