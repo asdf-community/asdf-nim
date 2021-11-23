@@ -22,6 +22,8 @@ To use a specific version of Nim only within a directory:
 asdf local nim 1.6.0
 ```
 
+For installation in continuous integration environments, [see below](#continuous-integration).
+
 For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
 
 ## Nimble packages
