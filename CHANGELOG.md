@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### v1.2.2 - 2021-11-22
+
+- fix: workaround for M1 `DYLD_LIBRARY_PATH`
+
 ### v1.2.1 - 2021-10-12
 
 - fix: `asdf_nim_is_musl ` check
