@@ -144,18 +144,18 @@ jobs:
             nimble examples
 ```
 
-## Official binaries
+## Official Nim binaries
 
-[nim-lang.org](https://nim-lang.org/install.html) supplies binaries for:
+[nim-lang.org](https://nim-lang.org/install.html) supplies binaries of Nim for:
 
 Linux:
 
 - `x86_64` (gnu libc)
 - `x86` (gnu libc)
 
-## Unofficial binaries
+## Unofficial Nim binaries
 
-[nim-builds](https://github.com/elijahr/nim-builds) supplies binaries for other platforms, including macOS, non-x86 CPUs, and Linux distros that use the musl C standard library instead of GNU libc, such as Alpine Linux.
+[nim-builds](https://github.com/elijahr/nim-builds) supplies binaries of Nim for other platforms, including macOS, non-x86 CPUs, and Linux distros that use the musl C standard library instead of GNU libc, such as Alpine Linux.
 
 Linux:
 
@@ -180,9 +180,18 @@ asdf plugin update nim main
 
 Pull requests are welcome!
 
+Fork this repo, then run:
+
+```
+# warning: this will clear any current nim installations made via asdf-nim
+rm -rf ~/.asdf/plugins/nim
+git clone git@github.com:<your-username>/asdf-nim.git ~/.asdf/plugins/nim
+```
+
 Dev dependencies for unit tests are installed via:
 
 ```shell
+cd ~/.asdf/plugins/nim
 npm install --include=dev
 ```
 
@@ -197,8 +206,6 @@ This project uses [lintball](https://github.com/elijahr/lintball) to auto-format
 ```
 git config --local core.hooksPath .githooks
 ```
-
-Note: `asdf plugin add nim .` will install the plugin from git HEAD. Any uncommitted changes won't be installed. I suggest instead installing via a symlink, so asdf uses your code exactly as it is during development: `ln -s "$(pwd)" ~/.asdf/plugins/nim`.
 
 A few ideas for contributions:
 
