@@ -13,7 +13,7 @@ asdf-nim is intended for end-users and continuous integration. Whether macOS or 
 ```sh
 asdf plugin add nim
 asdf nim install-deps
-asdf install nim 1.6.0 # or another version of Nim such as 1.4.8 or ref:HEAD
+asdf install nim 1.6.0  # or 1.4.8, ref:HEAD, etc
 ```
 
 To use a specific version of Nim only within a directory:
