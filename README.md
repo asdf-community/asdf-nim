@@ -25,7 +25,7 @@ asdf install nim
 Or a specific version:
 
 ```sh
-asdf install nim 1.4.2
+asdf install nim 1.6.0
 ```
 
 Or even a specific git ref:
@@ -34,10 +34,10 @@ Or even a specific git ref:
 asdf install nim ref:1b143f5e79c940ba7f70e0512f36b5c61a6bc24d
 ```
 
-To use a specific version of Nim for a directory:
+To use a specific version of Nim only within a directory:
 
 ```sh
-asdf local nim <nim-version>
+asdf local nim 1.6.0
 ```
 
 For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
