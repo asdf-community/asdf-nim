@@ -175,7 +175,7 @@ Pull requests are welcome!
 
 Fork this repo, then run:
 
-```
+```sh
 # warning: this will clear any existing nim installations made via asdf-nim
 rm -rf ~/.asdf/plugins/nim
 git clone git@github.com:<your-username>/asdf-nim.git ~/.asdf/plugins/nim
@@ -190,17 +190,16 @@ npm install --include=dev
 
 This project uses [bats](https://github.com/bats-core/bats-core) for unit testing. Tests are found in the `test` directory and can be run with:
 
-```shell
+```sh
 npm run test
 ```
 
 This project uses [lintball](https://github.com/elijahr/lintball) to auto-format code. Enable the githooks with:
 
-```
+```sh
 git config --local core.hooksPath .githooks
 ```
 
 A few ideas for contributions:
 
 - Shell completion
-- Windows support (does asdf support Windows?)
