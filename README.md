@@ -2,42 +2,27 @@
 
 # asdf-nim
 
-A [Nim](https://nim-lang.org) plugin for the [asdf](https://asdf-vm.com) version manager.
+asdf-nim allows you to quickly install any version of [Nim](https://nim-lang.org).
 
-This plugin installs the `nim` compiler and tools (`nimble`, `nimgrep`, etc).
-
-Pre-compiled [official binaries](#official-binaries) are installed if available for the current platform.
-
-If no official binaries exist, [unoffical binaries](#unofficial-binaries) are installed.
-
-If there are no binaries for the platform, Nim is built from source.
+asdf-nim is intended for end-users, continuous integration, and many CPU architectures.
 
 ## Installation
 
-If not already installed, [install asdf](https://asdf-vm.com/#/core-manage-asdf?id=install).
-
-Then install `asdf-nim` and its dependencies with:
+[Install asdf](https://asdf-vm.com/guide/getting-started.html), then:
 
 ```sh
-asdf plugin add nim https://github.com/asdf-community/asdf-nim
-asdf nim install-deps
+asdf plugin add nim; asdf nim install-deps
 ```
 
-Updating the plugin later is easy:
+## Installing Nim
 
-```sh
-asdf plugin update nim main
-```
-
-## Managing Nim Versions
-
-The latest Nim can be installed with:
+The latest release of Nim can be installed with:
 
 ```sh
 asdf install nim
 ```
 
-Or for a specific version:
+Or a specific version:
 
 ```sh
 asdf install nim 1.4.2
@@ -46,10 +31,10 @@ asdf install nim 1.4.2
 Or even a specific git ref:
 
 ```sh
-asdf install nim ref:17992fca1dc0b3674dce123296b277551bbca1db
+asdf install nim ref:1b143f5e79c940ba7f70e0512f36b5c61a6bc24d
 ```
 
-To specify a version of Nim for a project:
+To use a specific version of Nim for a directory:
 
 ```sh
 asdf local nim <nim-version>
@@ -219,6 +204,12 @@ Linux:
 macOS:
 
 - `x86_64`
+
+## Updating the plugin
+
+```sh
+asdf plugin update nim main
+```
 
 ## Contributing
 
