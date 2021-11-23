@@ -11,27 +11,9 @@ asdf-nim is intended for end-users, continuous integration, and many CPU archite
 [Install asdf](https://asdf-vm.com/guide/getting-started.html), then:
 
 ```sh
-asdf plugin add nim; asdf nim install-deps
-```
-
-## Installing Nim
-
-The latest release of Nim can be installed with:
-
-```sh
-asdf install nim
-```
-
-Or a specific version:
-
-```sh
-asdf install nim 1.6.0
-```
-
-Or even a specific git ref:
-
-```sh
-asdf install nim ref:1b143f5e79c940ba7f70e0512f36b5c61a6bc24d
+asdf plugin add nim
+asdf nim install-deps
+asdf install nim 1.6.0 # or another version of Nim such as 1.4.8 or ref:HEAD
 ```
 
 To use a specific version of Nim only within a directory:
@@ -44,7 +26,9 @@ For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/c
 
 ## Nimble packages
 
-Nimble packages are version-specific and installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`, unless a `nimbledeps` directory exists in your project. See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) for more information about nimbledeps.
+Nimble packages are installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`, unless a `nimbledeps` directory exists in the directory where `nimble install` is run from.
+
+See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) for more information about nimbledeps.
 
 ## Continuous Integration
 
@@ -67,46 +51,27 @@ env:
 
 jobs:
   build:
-    name: Test nim-${{ matrix.nim-version }} / ${{ matrix.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runs-on: ubuntu-latest
-            nim-version: latest
-          - runs-on: macos-latest
-            nim-version: latest
-
-    runs-on: ${{ matrix.runs-on }}
+    name: Test
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Nim project
+      - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Install asdf
-        uses: asdf-vm/actions/setup@v1
-
-      - name: Install asdf-nim
-        run: |
-          git clone \
-            --branch main --depth 1
-            https://github.com/asdf-community/asdf-nim.git \
-            "${HOME}/asdf-nim
-          asdf plugin add nim "${HOME}/asdf-nim"
-          asdf nim install-deps -y
-
       - name: Install Nim
-        run: |
-          asdf install nim ${{ matrix.nim-version }}
-          asdf local nim ${{ matrix.nim-version }}
-
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            nim 1.6.0
       - name: Run tests
         run: |
+          asdf local nim 1.6.0
           nimble develop -y
           nimble test
           nimble examples
 ```
 
-### An example using GitHub Actions to test on non-x86 architectures:
+### Continuous Integration on Non-x86 Architectures
+
+This uses [uraimo/run-on-arch-action](https://github.com/uraimo/run-on-arch-action):
 
 ```yaml
 name: Build
@@ -125,11 +90,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - nim-version: 1.4.2
+          - nim-version: 1.6.0
             arch: armv7
-          - nim-version: 1.2.8
+          - nim-version: 1.2.12
             arch: aarch64
-          - nim-version: 1.4.2
+          - nim-version: 1.4.8
             arch: ppc64le
 
     runs-on: ubuntu-latest
