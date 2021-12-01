@@ -2,64 +2,35 @@
 
 # asdf-nim
 
-A [Nim](https://nim-lang.org) plugin for the [asdf](https://asdf-vm.com) version manager.
+asdf-nim allows you to quickly install any version of [Nim](https://nim-lang.org).
 
-This plugin installs the `nim` compiler and tools (`nimble`, `nimgrep`, etc).
-
-Pre-compiled [official binaries](#official-binaries) are installed if available for the current platform.
-
-If no official binaries exist, [unoffical binaries](#unofficial-binaries) are installed.
-
-If there are no binaries for the platform, Nim is built from source.
+asdf-nim is intended for end-users and continuous integration. Whether macOS or Linux, x86 or ARM - all you'll need to install Nim is bash.
 
 ## Installation
 
-If not already installed, [install asdf](https://asdf-vm.com/#/core-manage-asdf?id=install).
-
-Then install `asdf-nim` and its dependencies with:
+[Install asdf](https://asdf-vm.com/guide/getting-started.html), then:
 
 ```sh
-asdf plugin add nim https://github.com/asdf-community/asdf-nim
+asdf plugin add nim
 asdf nim install-deps
+asdf install nim 1.6.0  # or 1.4.8, ref:HEAD, etc
 ```
 
-Updating the plugin later is easy:
+To use a specific version of Nim only within a directory:
 
 ```sh
-asdf plugin update nim main
+asdf local nim 1.6.0
 ```
 
-## Managing Nim Versions
-
-The latest Nim can be installed with:
-
-```sh
-asdf install nim
-```
-
-Or for a specific version:
-
-```sh
-asdf install nim 1.6.0
-```
-
-Or even a specific git ref:
-
-```sh
-asdf install nim ref:17992fca1dc0b3674dce123296b277551bbca1db
-```
-
-To specify a version of Nim for a project:
-
-```sh
-asdf local nim <nim-version>
-```
+For installation in continuous integration environments, [see below](#continuous-integration).
 
 For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
 
 ## Nimble packages
 
-Nimble packages are version-specific and installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`, unless a `nimbledeps` directory exists in your project. See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) for more information about nimbledeps.
+Nimble packages are installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`, unless a `nimbledeps` directory exists in the directory where `nimble install` is run from.
+
+See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) for more information about nimbledeps.
 
 ## Continuous Integration
 
@@ -68,67 +39,41 @@ Nimble packages are version-specific and installed in `~/.asdf/installs/nim/<nim
 ```yaml
 name: Build
 on:
-  pull_request:
-    paths-ignore:
-      - README.md
   push:
     paths-ignore:
       - README.md
-  schedule:
-    - cron: '0 0 * * *' # daily at midnight
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
 jobs:
   build:
-    name: Test nim-${{ matrix.nim-version }} / ${{ matrix.runs-on }}
-    strategy:
-      fail-fast: false
-      matrix:
-        include:
-          - runs-on: ubuntu-latest
-            nim-version: latest
-          - runs-on: macos-latest
-            nim-version: latest
-
-    runs-on: ${{ matrix.runs-on }}
+    name: Test
+    runs-on: ubuntu-latest
     steps:
-      - name: Checkout Nim project
+      - name: Checkout
         uses: actions/checkout@v2
-
-      - name: Install asdf
-        uses: asdf-vm/actions/setup@v1
-
-      - name: Install asdf-nim
-        run: |
-          git clone \
-            --branch main --depth 1
-            https://github.com/asdf-community/asdf-nim.git \
-            "${HOME}/asdf-nim
-          asdf plugin add nim "${HOME}/asdf-nim"
-          asdf nim install-deps -y
-
       - name: Install Nim
-        run: |
-          asdf install nim ${{ matrix.nim-version }}
-          asdf local nim ${{ matrix.nim-version }}
-
+        uses: asdf-vm/actions/install@v1
+        with:
+          tool_versions: |
+            nim 1.6.0
       - name: Run tests
         run: |
+          asdf local nim 1.6.0
+          # Run your tests
           nimble develop -y
           nimble test
           nimble examples
 ```
 
-### An example using GitHub Actions to test on non-x86 architectures:
+### Continuous Integration on Non-x86 Architectures
+
+Using [uraimo/run-on-arch-action](https://github.com/uraimo/run-on-arch-action):
 
 ```yaml
 name: Build
 on:
-  pull_request:
-    paths-ignore:
-      - README.md
   push:
     paths-ignore:
       - README.md
@@ -140,11 +85,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - nim-version: 1.4.8
+          - nim-version: 1.6.0
             arch: armv7
           - nim-version: 1.2.12
             arch: aarch64
-          - nim-version: 1.6.0
+          - nim-version: 1.4.8
             arch: ppc64le
 
     runs-on: ubuntu-latest
@@ -152,7 +97,7 @@ jobs:
       - name: Checkout Nim project
         uses: actions/checkout@v2
 
-      - uses: uraimo/run-on-arch-action@v2.0.8
+      - uses: uraimo/run-on-arch-action@v2.1.1
         name: Install Nim & run tests
         with:
           arch: ${{ matrix.arch }}
@@ -194,18 +139,18 @@ jobs:
             nimble examples
 ```
 
-## Official binaries
+## Official Nim binaries
 
-[nim-lang.org](https://nim-lang.org/install.html) supplies binaries for:
+[nim-lang.org](https://nim-lang.org/install.html) supplies binaries of Nim for:
 
 Linux:
 
 - `x86_64` (gnu libc)
 - `x86` (gnu libc)
 
-## Unofficial binaries
+## Unofficial Nim binaries
 
-[nim-builds](https://github.com/elijahr/nim-builds) supplies binaries for other platforms, including macOS, non-x86 CPUs, and Linux distros that use the musl C standard library instead of GNU libc, such as Alpine Linux.
+[nim-builds](https://github.com/elijahr/nim-builds) supplies binaries of Nim for other platforms, including macOS, non-x86 CPUs, and Linux distros that use the musl C standard library instead of GNU libc, such as Alpine Linux.
 
 Linux:
 
@@ -220,31 +165,43 @@ macOS:
 
 - `x86_64`
 
+## Updating the plugin
+
+```sh
+asdf plugin update nim main
+```
+
 ## Contributing
 
 Pull requests are welcome!
 
+Fork this repo, then run:
+
+```sh
+# warning: this will clear any existing nim installations made via asdf-nim
+rm -rf ~/.asdf/plugins/nim
+git clone git@github.com:<your-username>/asdf-nim.git ~/.asdf/plugins/nim
+```
+
 Dev dependencies for unit tests are installed via:
 
 ```shell
+cd ~/.asdf/plugins/nim
 npm install --include=dev
 ```
 
 This project uses [bats](https://github.com/bats-core/bats-core) for unit testing. Tests are found in the `test` directory and can be run with:
 
-```shell
+```sh
 npm run test
 ```
 
 This project uses [lintball](https://github.com/elijahr/lintball) to auto-format code. Enable the githooks with:
 
-```
+```sh
 git config --local core.hooksPath .githooks
 ```
-
-Note: `asdf plugin add nim .` will install the plugin from git HEAD. Any uncommitted changes won't be installed. I suggest instead installing via a symlink, so asdf uses your code exactly as it is during development: `ln -s "$(pwd)" ~/.asdf/plugins/nim`.
 
 A few ideas for contributions:
 
 - Shell completion
-- Windows support (does asdf support Windows?)
