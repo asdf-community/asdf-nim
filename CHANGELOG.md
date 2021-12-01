@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+### v1.3.0 - 2021-11-30
+
+- fix: don't override XDG_CONFIG_HOME and APPDATA
+
 ### v1.2.3 - 2021-11-22
 
 - fix: workaround for M1 `DYLD_LIBRARY_PATH`
