@@ -40,11 +40,11 @@ info() {
   # This makes it easier to run tests while developing.
   ln -s "$PROJECT_DIR" "${ASDF_DATA_DIR}/plugins/nim"
 
-  info "asdf install nim 1.4.2"
-  asdf install nim 1.4.2
-  asdf local nim 1.4.2
+  info "asdf install nim 1.6.0"
+  asdf install nim 1.6.0
+  asdf local nim 1.6.0
 
-  ASDF_INSTALL_PATH="${ASDF_DATA_DIR}/installs/nim/1.4.2"
+  ASDF_INSTALL_PATH="${ASDF_DATA_DIR}/installs/nim/1.6.0"
 
   # Assert package index is placed in the correct location
   info "nimble refresh"
@@ -75,11 +75,11 @@ info() {
   rm -rf nimbledeps
   mkdir "./nimbledeps"
 
-  info "asdf install nim 1.4.2"
-  asdf install nim 1.4.2
-  asdf local nim 1.4.2
+  info "asdf install nim 1.6.0"
+  asdf install nim 1.6.0
+  asdf local nim 1.6.0
 
-  ASDF_INSTALL_PATH="${ASDF_DATA_DIR}/installs/nim/1.4.2"
+  ASDF_INSTALL_PATH="${ASDF_DATA_DIR}/installs/nim/1.6.0"
 
   # Assert package index is placed in the correct location
   info "nimble refresh"

@@ -40,7 +40,7 @@ asdf install nim
 Or for a specific version:
 
 ```sh
-asdf install nim 1.4.2
+asdf install nim 1.6.0
 ```
 
 Or even a specific git ref:
@@ -140,11 +140,11 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - nim-version: 1.4.2
+          - nim-version: 1.4.8
             arch: armv7
-          - nim-version: 1.2.8
+          - nim-version: 1.2.12
             arch: aarch64
-          - nim-version: 1.4.2
+          - nim-version: 1.6.0
             arch: ppc64le
 
     runs-on: ubuntu-latest

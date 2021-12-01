@@ -17,12 +17,12 @@ teardown() {
 
 @test "asdf_nim_log install" {
   asdf_nim_init "install"
-  assert [ "$(asdf_nim_log)" = "${ASDF_DATA_DIR}/tmp/nim/1.4.2/install.log" ]
+  assert [ "$(asdf_nim_log)" = "${ASDF_DATA_DIR}/tmp/nim/1.6.0/install.log" ]
 }
 
 @test "asdf_nim_log download" {
   asdf_nim_init "download"
-  assert [ "$(asdf_nim_log)" = "${ASDF_DATA_DIR}/tmp/nim/1.4.2/download.log" ]
+  assert [ "$(asdf_nim_log)" = "${ASDF_DATA_DIR}/tmp/nim/1.6.0/download.log" ]
 }
 
 @test "asdf_nim_init defaults" {
@@ -36,7 +36,7 @@ teardown() {
   assert_equal "$ASDF_NIM_SILENT" "no"
 
   # Non-configurable
-  assert_equal "$ASDF_NIM_TEMP" "${ASDF_DATA_DIR}/tmp/nim/1.4.2"
+  assert_equal "$ASDF_NIM_TEMP" "${ASDF_DATA_DIR}/tmp/nim/1.6.0"
   assert_equal "$ASDF_NIM_DOWNLOAD_PATH" "${ASDF_NIM_TEMP}/download"
   assert_equal "$ASDF_NIM_INSTALL_PATH" "${ASDF_NIM_TEMP}/install"
 }
@@ -56,7 +56,7 @@ teardown() {
   assert_equal "$ASDF_NIM_SILENT" "yes"
 
   # Non-configurable
-  assert_equal "$ASDF_NIM_TEMP" "${ASDF_DATA_DIR}/tmp/nim/1.4.2"
+  assert_equal "$ASDF_NIM_TEMP" "${ASDF_DATA_DIR}/tmp/nim/1.6.0"
   assert_equal "$ASDF_NIM_DOWNLOAD_PATH" "${ASDF_NIM_TEMP}/download"
   assert_equal "$ASDF_NIM_INSTALL_PATH" "${ASDF_NIM_TEMP}/install"
 }
@@ -73,8 +73,8 @@ teardown() {
 }
 
 @test "asdf_nim_sort_versions" {
-  expected="0.2.2 1.1.1 1.2.0 1.4.2"
-  output="$(printf "1.4.2\n0.2.2\n1.1.1\n1.2.0" | asdf_nim_sort_versions | xargs)"
+  expected="0.2.2 1.1.1 1.2.0 1.6.0"
+  output="$(printf "1.6.0\n0.2.2\n1.1.1\n1.2.0" | asdf_nim_sort_versions | xargs)"
   assert_equal "$output" "$expected"
 }
 
@@ -117,7 +117,7 @@ teardown() {
   assert_line 1.2.6
   assert_line 1.2.8
   assert_line 1.4.0
-  assert_line 1.4.2
+  assert_line 1.6.0
 }
 
 @test "asdf_nim_list_all_versions_displays_in_order" {
@@ -391,7 +391,7 @@ teardown() {
   ASDF_NIM_MOCK_OS_NAME="Linux"
   ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-gnu.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--aarch64-linux-gnu.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -401,7 +401,7 @@ teardown() {
   ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
   ASDF_NIM_MOCK_IS_MUSL="yes"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-musl.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--aarch64-linux-musl.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -410,7 +410,7 @@ teardown() {
   ASDF_NIM_MOCK_OS_NAME="Linux"
   ASDF_NIM_MOCK_MACHINE_NAME="armv5"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--armv5-linux-gnueabi.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv5-linux-gnueabi.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -420,7 +420,7 @@ teardown() {
   ASDF_NIM_MOCK_MACHINE_NAME="armv6"
   ASDF_NIM_MOCK_IS_MUSL="yes"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--armv6-linux-musleabihf.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv6-linux-musleabihf.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -429,7 +429,7 @@ teardown() {
   ASDF_NIM_MOCK_OS_NAME="Linux"
   ASDF_NIM_MOCK_MACHINE_NAME="armv7"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--armv7-linux-gnueabihf.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv7-linux-gnueabihf.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -439,7 +439,7 @@ teardown() {
   ASDF_NIM_MOCK_MACHINE_NAME="armv7"
   ASDF_NIM_MOCK_IS_MUSL="yes"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--armv7-linux-musleabihf.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv7-linux-musleabihf.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -448,7 +448,7 @@ teardown() {
   ASDF_NIM_MOCK_OS_NAME="Linux"
   ASDF_NIM_MOCK_MACHINE_NAME="i686"
   asdf_nim_init "install"
-  expected="https://nim-lang.org/download/nim-1.4.2-linux_x32.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://nim-lang.org/download/nim-1.6.0-linux_x32.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -457,7 +457,7 @@ teardown() {
   ASDF_NIM_MOCK_OS_NAME="Linux"
   ASDF_NIM_MOCK_MACHINE_NAME="powerpc64le"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--powerpc64le-linux-gnu.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--powerpc64le-linux-gnu.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -467,7 +467,7 @@ teardown() {
   ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
   ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
-  expected="https://nim-lang.org/download/nim-1.4.2-linux_x64.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://nim-lang.org/download/nim-1.6.0-linux_x64.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -478,7 +478,7 @@ teardown() {
   ASDF_NIM_MOCK_IS_MUSL="yes"
   ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-linux-musl.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-linux-musl.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -517,7 +517,7 @@ teardown() {
   ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
   ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-macos-catalina.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-macos-catalina.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
@@ -528,7 +528,7 @@ teardown() {
   ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
   ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-macos-catalina.tar.xz https://nim-lang.org/download/nim-1.4.2.tar.xz"
+  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-macos-catalina.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
