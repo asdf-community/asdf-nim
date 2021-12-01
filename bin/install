@@ -31,12 +31,6 @@ asdf_nim_install() {
   cp -R "$ASDF_DOWNLOAD_PATH" "$ASDF_NIM_INSTALL_PATH"
   step_end "done"
 
-  step_start "Configuring nimble"
-  # Create nimble.ini to tell nimble where to put metadata & packages
-  mkdir -p "${ASDF_NIM_INSTALL_PATH}/userconfig/nimble"
-  echo "nimbleDir = r\"${ASDF_INSTALL_PATH}/nimble\"" >"${ASDF_NIM_INSTALL_PATH}/userconfig/nimble/nimble.ini"
-  step_end "done"
-
   # Finalize installation
   step_start "Moving installation to ${ASDF_INSTALL_PATH}"
   rm -rf "$ASDF_INSTALL_PATH"
