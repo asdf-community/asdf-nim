@@ -1,6 +1,5 @@
 ![Build](https://github.com/asdf-community/asdf-nim/workflows/Build/badge.svg) ![Lint](https://github.com/asdf-community/asdf-nim/workflows/Lint/badge.svg) ![Latest Nim](https://github.com/asdf-community/asdf-nim/workflows/Latest%20Nim/badge.svg) [![Join the chat at https://gitter.im/asdf-nim/community](https://badges.gitter.im/asdf-nim/community.svg)](https://gitter.im/asdf-nim/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-
 # asdf-nim
 
 asdf-nim allows you to quickly install any version of [Nim](https://nim-lang.org).
