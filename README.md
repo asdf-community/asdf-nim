@@ -2,6 +2,8 @@
 
 # asdf-nim
 
+[![Join the chat at https://gitter.im/asdf-nim/community](https://badges.gitter.im/asdf-nim/community.svg)](https://gitter.im/asdf-nim/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+
 asdf-nim allows you to quickly install any version of [Nim](https://nim-lang.org).
 
 asdf-nim is intended for end-users and continuous integration. Whether macOS or Linux, x86 or ARM - all you'll need to install Nim is bash.
