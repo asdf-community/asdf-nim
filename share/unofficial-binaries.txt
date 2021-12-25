@@ -26,6 +26,7 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.0.10--202012300913
 
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--aarch64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--aarch64-linux-musl.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--arm64-macos-bigsur.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--armv5-linux-gnueabi.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--armv6-linux-musleabihf.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--armv7-linux-gnueabihf.tar.xz
@@ -35,7 +36,6 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--x86_64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--x86_64-linux-musl.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--x86_64-macos-catalina.tar.xz
-https://github.com/elijahr/nim-builds/releases/download/nim-1.2.8--202012300913/nim-1.2.8--arm64-macos-bigsur.tar.xz
 
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.12--202111230013/nim-1.2.12--aarch64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.12--202111230013/nim-1.2.12--aarch64-linux-musl.tar.xz
@@ -50,8 +50,23 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.2.12--202111230013
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.12--202111230013/nim-1.2.12--x86_64-macos-bigsur.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.2.12--202111230013/nim-1.2.12--x86_64-macos-catalina.tar.xz
 
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--aarch64-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--aarch64-linux-musl.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--arm64-macos-bigsur.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--armv5-linux-gnueabi.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--armv6-linux-musleabihf.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--armv7-linux-gnueabihf.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--armv7-linux-musleabihf.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--i686-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--powerpc64le-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--x86_64-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--x86_64-linux-musl.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--x86_64-macos-bigsur.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.2.16--202112250104/nim-1.2.16--x86_64-macos-catalina.tar.xz
+
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--aarch64-linux-musl.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--arm64-macos-bigsur.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--armv5-linux-gnueabi.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--armv6-linux-musleabihf.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--armv7-linux-gnueabihf.tar.xz
@@ -61,7 +76,6 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-linux-musl.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--x86_64-macos-catalina.tar.xz
-https://github.com/elijahr/nim-builds/releases/download/nim-1.4.2--202012300913/nim-1.4.2--arm64-macos-bigsur.tar.xz
 
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.8--202111230013/nim-1.4.8--aarch64-linux-gnu.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.4.8--202111230013/nim-1.4.8--aarch64-linux-musl.tar.xz
@@ -91,3 +105,18 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/
 https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-linux-musl.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-macos-bigsur.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-macos-catalina.tar.xz
+
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--aarch64-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--aarch64-linux-musl.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--arm64-macos-bigsur.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--armv5-linux-gnueabi.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--armv6-linux-musleabihf.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--armv7-linux-gnueabihf.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--armv7-linux-musleabihf.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--armv7-linux-musleabihf.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--i686-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--powerpc64le-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--x86_64-linux-gnu.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--x86_64-linux-musl.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--x86_64-macos-bigsur.tar.xz
+https://github.com/elijahr/nim-builds/releases/download/nim-1.6.2--202112250104/nim-1.6.2--x86_64-macos-catalina.tar.xz
