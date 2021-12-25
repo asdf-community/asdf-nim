@@ -164,6 +164,7 @@ Linux:
 macOS:
 
 - `x86_64`
+- `arm64`
 
 ## Updating the plugin
 
