@@ -42,13 +42,13 @@ jobs:
             nim-version: latest
             libc: linux-glibc
           - os: ubuntu-latest
-            nim-version: 1.6.0
+            nim-version: 1.6.2
             libc: linux-glibc
           - os: ubuntu-latest
             nim-version: 1.4.8
             libc: linux-glibc
           - os: ubuntu-latest
-            nim-version: 1.2.12
+            nim-version: 1.2.16
             libc: linux-glibc
           - os: ubuntu-latest
             nim-version: 1.0.10
@@ -80,7 +80,7 @@ jobs:
 
   # Test musl installation
   plugin_test_x86_musl:
-    name: 👑1.6.0/linux-musl/x86_64
+    name: 👑1.6.2/linux-musl/x86_64
     runs-on: ubuntu-latest
     container: alpine:latest
 
@@ -99,7 +99,7 @@ jobs:
         uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
-          version: 1.6.0
+          version: 1.6.2
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
@@ -112,13 +112,13 @@ jobs:
         include:
           # Test on non-x86 Linux using run-on-arch-action
           - runs-on: ubuntu-latest
-            nim-version: 1.6.0
+            nim-version: 1.6.2
             arch: armv7
           - runs-on: ubuntu-latest
             nim-version: 1.4.8
             arch: aarch64
           - runs-on: ubuntu-latest
-            nim-version: 1.2.12
+            nim-version: 1.2.16
             arch: ppc64le
 
     steps:
