@@ -13,13 +13,13 @@ asdf-nim is intended for end-users and continuous integration. Whether macOS or 
 ```sh
 asdf plugin add nim
 asdf nim install-deps
-asdf install nim 1.6.0  # or 1.4.8, ref:HEAD, etc
+asdf install nim 1.6.2  # or 1.4.8, ref:HEAD, etc
 ```
 
 To use a specific version of Nim only within a directory:
 
 ```sh
-asdf local nim 1.6.0
+asdf local nim 1.6.2
 ```
 
 For installation in continuous integration environments, [see below](#continuous-integration).
@@ -57,10 +57,10 @@ jobs:
         uses: asdf-vm/actions/install@v1
         with:
           tool_versions: |
-            nim 1.6.0
+            nim 1.6.2
       - name: Run tests
         run: |
-          asdf local nim 1.6.0
+          asdf local nim 1.6.2
           # Run your tests
           nimble develop -y
           nimble test
@@ -85,9 +85,9 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - nim-version: 1.6.0
+          - nim-version: 1.6.2
             arch: armv7
-          - nim-version: 1.2.12
+          - nim-version: 1.2.16
             arch: aarch64
           - nim-version: 1.4.8
             arch: ppc64le
