@@ -2,7 +2,7 @@
 
 set -ueo pipefail
 
-ASDF_BIN="${ASDF_DIR:-${ASDF_DATA_DIR:-$HOME/.asdf}}/bin/"
+ASDF_BIN="${ASDF_DIR:-$HOME/.asdf}/bin/"
 ASDF_INSTALL_PATH="$("${ASDF_BIN}/asdf" where nim)"
 
 regenerate() {
