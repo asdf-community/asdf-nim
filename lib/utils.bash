@@ -44,7 +44,7 @@ asdf_nim_init() {
   # Ensure ASDF_DATA_DIR has a value
   if [ -n "${ASDF_INSTALL_PATH:-}" ]; then
     export ASDF_DATA_DIR
-    ASDF_DATA_DIR="${ASDF_DATA_DIR:-${ASDF_DIR:-$(normpath "${ASDF_INSTALL_PATH:-}/../../..")}}"
+    ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
     export ASDF_NIM_TEMP
     ASDF_NIM_TEMP="${ASDF_DATA_DIR}/tmp/nim/${ASDF_INSTALL_VERSION}"
     export ASDF_NIM_DOWNLOAD_PATH
