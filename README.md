@@ -1,10 +1,10 @@
-![Build](https://github.com/asdf-community/asdf-nim/workflows/Build/badge.svg) ![Lint](https://github.com/asdf-community/asdf-nim/workflows/Lint/badge.svg) ![Latest Nim](https://github.com/asdf-community/asdf-nim/workflows/Latest%20Nim/badge.svg)
+![Build](https://github.com/asdf-community/asdf-nim/workflows/Build/badge.svg) ![Lint](https://github.com/asdf-community/asdf-nim/workflows/Lint/badge.svg) ![Latest Nim](https://github.com/asdf-community/asdf-nim/workflows/Latest%20Nim/badge.svg) [![Join the chat at https://gitter.im/asdf-nim/community](https://badges.gitter.im/asdf-nim/community.svg)](https://gitter.im/asdf-nim/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 # asdf-nim
 
 asdf-nim allows you to quickly install any version of [Nim](https://nim-lang.org).
 
-asdf-nim is intended for end-users and continuous integration. Whether macOS or Linux, x86 or ARM - all you need to install Nim in a few seconds is bash.
+asdf-nim is intended for end-users and continuous integration. Whether macOS or Linux, x86 or ARM - all you'll need to install Nim is bash.
 
 ## Installation
 
@@ -37,14 +37,9 @@ See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder
 ```yaml
 name: Build
 on:
-  pull_request:
-    paths-ignore:
-      - README.md
   push:
     paths-ignore:
       - README.md
-  schedule:
-    - cron: '0 0 * * *' # daily at midnight
 
 env:
   GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -71,14 +66,11 @@ jobs:
 
 ### Continuous Integration on Non-x86 Architectures
 
-This uses [uraimo/run-on-arch-action](https://github.com/uraimo/run-on-arch-action):
+Using [uraimo/run-on-arch-action](https://github.com/uraimo/run-on-arch-action):
 
 ```yaml
 name: Build
 on:
-  pull_request:
-    paths-ignore:
-      - README.md
   push:
     paths-ignore:
       - README.md
@@ -102,7 +94,7 @@ jobs:
       - name: Checkout Nim project
         uses: actions/checkout@v2
 
-      - uses: uraimo/run-on-arch-action@v2.0.8
+      - uses: uraimo/run-on-arch-action@v2.1.1
         name: Install Nim & run tests
         with:
           arch: ${{ matrix.arch }}
@@ -169,6 +161,13 @@ Linux:
 macOS:
 
 - `x86_64`
+- `arm64`
+
+## Updating the plugin
+
+```sh
+asdf plugin update nim main
+```
 
 ## Updating the plugin
 
@@ -182,7 +181,7 @@ Pull requests are welcome!
 
 Fork this repo, then run:
 
-```
+```sh
 # warning: this will clear any existing nim installations made via asdf-nim
 rm -rf ~/.asdf/plugins/nim
 git clone git@github.com:<your-username>/asdf-nim.git ~/.asdf/plugins/nim
@@ -197,17 +196,16 @@ npm install --include=dev
 
 This project uses [bats](https://github.com/bats-core/bats-core) for unit testing. Tests are found in the `test` directory and can be run with:
 
-```shell
+```sh
 npm run test
 ```
 
 This project uses [lintball](https://github.com/elijahr/lintball) to auto-format code. Enable the githooks with:
 
-```
+```sh
 git config --local core.hooksPath .githooks
 ```
 
 A few ideas for contributions:
 
 - Shell completion
-- Windows support (does asdf support Windows?)

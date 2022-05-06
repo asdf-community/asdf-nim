@@ -21,14 +21,6 @@ fi
 export PATH
 PATH="${ASDF_INSTALL_PATH}/bin:${PATH}"
 
-# Override UNIX config path to find nimble.ini, etc
-export XDG_CONFIG_HOME
-XDG_CONFIG_HOME="${ASDF_INSTALL_PATH}/userconfig"
-
-# Override Windows config path to find nimble.ini, etc
-export APPDATA
-APPDATA="${ASDF_INSTALL_PATH}/userconfig"
-
 export NIMBLE_DIR
 
 # Tell Nim where to find nimble package metadata and packages.

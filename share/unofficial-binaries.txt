@@ -164,3 +164,4 @@ https://github.com/elijahr/nim-builds/releases/download/nim-1.6.6--202205060442/
 https://github.com/elijahr/nim-builds/releases/download/nim-1.6.6--202205060442/nim-1.6.2--x86_64-linux-musl.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.6.6--202205060442/nim-1.6.2--x86_64-macos-bigsur.tar.xz
 https://github.com/elijahr/nim-builds/releases/download/nim-1.6.6--202205060442/nim-1.6.2--x86_64-macos-catalina.tar.xz
+
