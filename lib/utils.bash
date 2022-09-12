@@ -806,7 +806,7 @@ asdf_nim_build() {
   [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || build_nimble=y
 
   if [ "$bootstrap" = "y" ] || [ "$build_tools" = "y" ] || [ "$build_nimble" = "y" ]; then
-    section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
+    section_start "Building Nim in $ASDF_DOWNLOAD_PATH"
   fi
 
   [ "$bootstrap" = "n" ] || asdf_nim_bootstrap_nim
