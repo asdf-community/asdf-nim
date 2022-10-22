@@ -5,8 +5,8 @@
 # Constants
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
 SOURCE_URL="https://nim-lang.org/download/nim-VERSION.tar.xz"
-LINUX_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/VERSION/linux_ARCH.tar.xz"
-WINDOWS_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/VERSION/linux_ARCH.zip"
+LINUX_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-VERSION/linux_ARCH.tar.xz"
+WINDOWS_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-VERSION/linux_ARCH.zip"
 LINUX_X64_URL="https://nim-lang.org/download/nim-VERSION-linux_x64.tar.xz"
 LINUX_X32_URL="https://nim-lang.org/download/nim-VERSION-linux_x32.tar.xz"
 WINDOWS_X64_URL="https://nim-lang.org/download/nim-VERSION_x64.zip"
