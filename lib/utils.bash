@@ -470,17 +470,19 @@ asdf_nim_official_archive_url() {
 # Echo the nightly url for arch/os
 asdf_nim_nightly_url() {
   # Arch needs to be converted to what the nightlies want
-  local arch="$(asdf_nim_normalize_arch)"
+  local arch="$(asdf_nim_normalize_arch)" url
   case "${arch}" in
     aarch64) arch="arm64" ;;
     armv7) arch="armv7l" ;;
     x86_64) arch="x64" ;;
     i686) arch="x32" ;;
   esac
+
   case "$(asdf_nim_normalize_os)" in
-    linux) echo ${LINUX_NIGHTLY_URL} | sed "s/VERSION/${ASDF_INSTALL_VERSION}" "s/ARCH/${arch}" ;;
-    windows) echo ${WINDOWS_NIGHTLY_URL} | sed "s/VERSION/${ASDF_INSTALL_VERSION}" "s/ARCH/${arch}" ;;
+    linux) url="${LINUX_NIGHTLY_URL}" ;;
+    windows) url=${WINDOWS_NIGHTLY_URL} ;;
   esac
+  echo "${url}" | sed -e "s/VERSION/${ASDF_INSTALL_VERSION}/" -e "s/ARCH/${arch}/"
 }
 
 asdf_nim_github_token() {
