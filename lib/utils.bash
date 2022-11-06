@@ -5,6 +5,8 @@
 # Constants
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
 SOURCE_URL="https://nim-lang.org/download/nim-VERSION.tar.xz"
+LINUX_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-VERSION/linux_ARCH.tar.xz"
+WINDOWS_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-VERSION/linux_ARCH.zip"
 LINUX_X64_URL="https://nim-lang.org/download/nim-VERSION-linux_x64.tar.xz"
 LINUX_X32_URL="https://nim-lang.org/download/nim-VERSION-linux_x32.tar.xz"
 WINDOWS_X64_URL="https://nim-lang.org/download/nim-VERSION_x64.zip"
@@ -465,6 +467,24 @@ asdf_nim_official_archive_url() {
   esac
 }
 
+# Echo the nightly url for arch/os
+asdf_nim_nightly_url() {
+  # Arch needs to be converted to what the nightlies want
+  local arch="$(asdf_nim_normalize_arch)" url
+  case "${arch}" in
+    aarch64) arch="arm64" ;;
+    armv7) arch="armv7l" ;;
+    x86_64) arch="x64" ;;
+    i686) arch="x32" ;;
+  esac
+
+  case "$(asdf_nim_normalize_os)" in
+    linux) url="${LINUX_NIGHTLY_URL}" ;;
+    windows) url=${WINDOWS_NIGHTLY_URL} ;;
+  esac
+  echo "${url}" | sed -e "s/VERSION/${ASDF_INSTALL_VERSION}/" -e "s/ARCH/${arch}/"
+}
+
 asdf_nim_github_token() {
   # hub uses GITHUB_TOKEN for auth, asdf uses GITHUB_API_TOKEN
   echo "${GITHUB_TOKEN:-${GITHUB_API_TOKEN:-}}"
@@ -578,10 +598,12 @@ asdf_nim_download_urls() {
             x86_64 | i686)
               # Linux with glibc has official x86_64 & x86 binaries
               asdf_nim_official_archive_url
+              asdf_nim_nightly_url
               asdf_nim_source_url
               ;;
             *)
               asdf_nim_search_nim_builds
+              asdf_nim_nightly_url
               asdf_nim_source_url
               ;;
           esac
@@ -806,7 +828,7 @@ asdf_nim_build() {
   [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || build_nimble=y
 
   if [ "$bootstrap" = "y" ] || [ "$build_tools" = "y" ] || [ "$build_nimble" = "y" ]; then
-    section_start "Building Nim in $ASDF_NIM_DOWNLOAD_PATH"
+    section_start "Building Nim in $ASDF_DOWNLOAD_PATH"
   fi
 
   [ "$bootstrap" = "n" ] || asdf_nim_bootstrap_nim
