@@ -4,6 +4,20 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.0.0 - 2022-11-08
+
+- add: nightly unstable binary support (ire4ever1190)
+- add: docker-compose config for Linux development
+- improve: linting (yaml, markdown, update shellcheck/shfmt)
+- remove: unofficial binaries from nim-builds
+- remove: hub dependency
+- remove: untested windows support (does asdf even support mingw bash?)
+- fix: fixed ASDF_INSTALL_PATH empty when version is ref:HEAD (joxcat)
+
+## v1.4.0 - 2022-05-10
+
+- add: binaries for Nim 1.2.18, 1.6.4, 1.6.6
+
 ## v1.4.0 - 2022-05-10
 
 - add: binaries for Nim 1.2.18, 1.6.4, 1.6.6

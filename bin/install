@@ -17,29 +17,27 @@ asdf_nim_install() {
   fi
 
   if [ "$(asdf_nim_needs_download)" = "yes" ]; then
+    die "No nim source to build or archive to install."
     return 1
   fi
 
-  if [ "$(asdf_nim_needs_build)" = "yes" ]; then
-    asdf_nim_build
-  fi
+  asdf_nim_build
+  section_start "III. Install (${ASDF_NIM_INSTALL_PATH//${HOME}/\~})"
 
-  section_start "Installing"
-
-  step_start "Copying installation"
+  step_start "cp to ${ASDF_NIM_INSTALL_PATH//${HOME}/\~}"
   rm -rf "$ASDF_NIM_INSTALL_PATH"
   cp -R "$ASDF_DOWNLOAD_PATH" "$ASDF_NIM_INSTALL_PATH"
-  step_end "done"
+  step_end "✓"
 
   # Finalize installation
-  step_start "Moving installation to ${ASDF_INSTALL_PATH}"
+  step_start "mv to ${ASDF_INSTALL_PATH//${HOME}/\~}"
   rm -rf "$ASDF_INSTALL_PATH"
   mv -v "$ASDF_NIM_INSTALL_PATH" "$ASDF_INSTALL_PATH"
-  step_end "done"
+  step_end "✓"
 
-  out
-  out "👑 Installed Nim ${ASDF_INSTALL_VERSION}$(asdf_nim_time) 👑"
-  out
+  step_start "👑 installed Nim ${ASDF_INSTALL_VERSION}$(asdf_nim_time)"
+  step_end "✓"
+
   if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
     set +x
   fi

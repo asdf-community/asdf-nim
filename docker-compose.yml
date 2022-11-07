@@ -1,0 +1,11 @@
+version: '3'
+services:
+  asdf:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - .:/root/.asdf/plugins/nim
+    command: /bin/bash
+    stdin_open: true
+    tty: true

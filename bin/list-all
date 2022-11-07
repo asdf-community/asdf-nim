@@ -6,4 +6,4 @@ shopt -s dotglob
 # shellcheck source=SCRIPTDIR/../lib/utils.bash
 source "$(dirname "${BASH_SOURCE[0]}")/../lib/utils.bash"
 
-asdf_nim_list_all_versions | xargs echo
+asdf_nim_list_all_versions | xargs printf '%s ' | sed 's/ $/\n/'

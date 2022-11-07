@@ -15,10 +15,14 @@ setup_file() {
   ASDF_DATA_DIR="${ASDF_NIM_TEST_TEMP}/asdf"
   export ASDF_DATA_DIR
   mkdir -p "$ASDF_DATA_DIR"
-  git clone --branch=v0.8.0 --depth=1 https://github.com/asdf-vm/asdf.git "$ASDF_DATA_DIR"
+  git clone \
+    --branch=v0.10.2 \
+    --depth=1 \
+    https://github.com/asdf-vm/asdf.git \
+    "$ASDF_DATA_DIR"
   mkdir -p "$ASDF_DATA_DIR/plugins"
 
-  # shellcheck disable=SC1090
+  # shellcheck disable=SC1090,SC1091
   source "${ASDF_DATA_DIR}/asdf.sh"
 }
 
@@ -34,7 +38,7 @@ info() {
   echo "# ${*} …" >&3
 }
 
-@test "nimble configuration" {
+@test "nimble_configuration__without_nimbledeps" {
   # `asdf plugin add nim .` would only install from git HEAD.
   # So, we mock an installation via a symlink.
   # This makes it easier to run tests while developing.
@@ -47,7 +51,7 @@ info() {
   ASDF_INSTALL_PATH="${ASDF_DATA_DIR}/installs/nim/1.6.0"
 
   # Assert package index is placed in the correct location
-  info "nimble refresh"
+  info "nimble refresh -y"
   nimble refresh -y
   assert [ -f "${ASDF_INSTALL_PATH}/nimble/packages_official.json" ]
 
@@ -58,7 +62,10 @@ info() {
   assert [ -f "${ASDF_INSTALL_PATH}/nimble/pkgs/nimjson-1.2.8/nimjson.nimble" ]
 
   # Assert that shim was created for package binary
-  assert [ -n "$(command -v nimjson)" ]
+  assert [ -f "${ASDF_DATA_DIR}/shims/nimjson" ]
+
+  # Assert that correct nimjson is used
+  assert [ -n "$(nimjson -v | grep ' version 1\.2\.8')" ]
 
   # Assert that nim finds nimble packages
   echo "import nimjson" >"${ASDF_NIM_TEST_TEMP}/testnimble.nim"
@@ -66,7 +73,7 @@ info() {
   nim c -r "${ASDF_NIM_TEST_TEMP}/testnimble.nim"
 }
 
-@test "nimble configuration with nimbledeps" {
+@test "nimble_configuration__with_nimbledeps" {
   # `asdf plugin add nim .` would only install from git HEAD.
   # So, we mock an installation via a symlink.
   # This makes it easier to run tests while developing.
