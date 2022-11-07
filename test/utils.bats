@@ -1,6 +1,6 @@
 #!/usr/bin/env bats
 
-# shellcheck disable=SC2030,SC2031,SC2034,SC2230
+# shellcheck disable=SC2030,SC2031,SC2034,SC2230,SC2190
 
 load ../node_modules/bats-support/load.bash
 load ../node_modules/bats-assert/load.bash
@@ -15,17 +15,17 @@ teardown() {
   teardown_test
 }
 
-@test "asdf_nim_log install" {
+@test "asdf_nim_log__install" {
   asdf_nim_init "install"
   assert [ "$(asdf_nim_log)" = "${ASDF_DATA_DIR}/tmp/nim/1.6.0/install.log" ]
 }
 
-@test "asdf_nim_log download" {
+@test "asdf_nim_log__download" {
   asdf_nim_init "download"
   assert [ "$(asdf_nim_log)" = "${ASDF_DATA_DIR}/tmp/nim/1.6.0/download.log" ]
 }
 
-@test "asdf_nim_init defaults" {
+@test "asdf_nim_init__defaults" {
   unset ASDF_NIM_SILENT
   asdf_nim_init "download"
 
@@ -41,7 +41,7 @@ teardown() {
   assert_equal "$ASDF_NIM_INSTALL_PATH" "${ASDF_NIM_TEMP}/install"
 }
 
-@test "asdf_nim_init configuration" {
+@test "asdf_nim_init__configuration" {
   ASDF_NIM_REMOVE_TEMP="no"
   ASDF_NIM_DEBUG="yes"
   ASDF_NIM_SILENT="yes"
@@ -78,9 +78,10 @@ teardown() {
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_list_all_versions_contains_tagged_releases" {
+@test "asdf_nim_list_all_versions__contains_tagged_releases" {
   run asdf_nim_list_all_versions
 
+  # Can't hardcode the ever-growing list of releases, so just check for a few known ones
   assert_line 0.10.2
   assert_line 0.11.0
   assert_line 0.11.2
@@ -120,10 +121,12 @@ teardown() {
   assert_line 1.6.0
 }
 
-@test "asdf_nim_list_all_versions_displays_in_order" {
-  expected="$(asdf_nim_list_all_versions | asdf_nim_sort_versions)"
-  run asdf_nim_list_all_versions
-  assert_output "$expected"
+@test "asdf_nim_list_all_versions__displays_in_order" {
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.0' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.4.8' | sed 's/:.*//')" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.2' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.0' | sed 's/:.*//')" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.4' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.2' | sed 's/:.*//')" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.6' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.4' | sed 's/:.*//')" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.8' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.6' | sed 's/:.*//')" ]
 }
 
 @test "asdf_nim_normalize_os" {
@@ -131,7 +134,7 @@ teardown() {
   declare -A uname_outputs=(
     ["Darwin"]="macos"
     ["Linux"]="linux"
-    ["MINGW"]="windows"
+    ["MINGW"]="windows" # not actually supported by asdf?
     ["Unknown"]="unknown"
   )
   for uname_output in "${!uname_outputs[@]}"; do
@@ -143,24 +146,7 @@ teardown() {
   done
 }
 
-@test "asdf_nim_exe_ext" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  expected=""
-  output="$(asdf_nim_exe_ext)"
-  assert_equal "$output" "$expected"
-
-  ASDF_NIM_MOCK_OS_NAME="Darwin"
-  expected=""
-  output="$(asdf_nim_exe_ext)"
-  assert_equal "$output" "$expected"
-
-  ASDF_NIM_MOCK_OS_NAME="MINGW"
-  expected=".exe"
-  output="$(asdf_nim_exe_ext)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_normalize_arch_basic" {
+@test "asdf_nim_normalize_arch__basic" {
   declare -A machine_names=(
     ["i386"]="i686"
     ["i486"]="i686"
@@ -182,7 +168,7 @@ teardown() {
   done
 }
 
-@test "asdf_nim_normalize_arch_i686_x86_64_docker" {
+@test "asdf_nim_normalize_arch__i686__x86_64_docker" {
   # In x86_64 docker hosts running x86 containers,
   # the kernel uname will show x86_64 so we have to properly detect using the
   # __amd64 gcc define.
@@ -222,7 +208,7 @@ teardown() {
   assert_equal "$output" "$expected_arch"
 }
 
-@test "asdf_nim_normalize_arch_arm32_via_gcc" {
+@test "asdf_nim_normalize_arch__arm32__via_gcc" {
   ASDF_NIM_MOCK_MACHINE_NAME="arm"
   for arm_version in {5..7}; do
     ASDF_NIM_MOCK_GCC_DEFINES="#define __ARM_ARCH ${arm_version}"
@@ -232,7 +218,7 @@ teardown() {
   done
 }
 
-@test "asdf_nim_normalize_arch_armel_via_dpkg" {
+@test "asdf_nim_normalize_arch__armel__via_dpkg" {
   ASDF_NIM_MOCK_MACHINE_NAME="arm"
   ASDF_NIM_MOCK_DPKG_ARCHITECTURE="armel"
   expected_arch="armv5"
@@ -240,7 +226,7 @@ teardown() {
   assert_equal "$output" "$expected_arch"
 }
 
-@test "asdf_nim_normalize_arch_armhf_via_dpkg" {
+@test "asdf_nim_normalize_arch__armhf__via_dpkg" {
   ASDF_NIM_MOCK_MACHINE_NAME="arm"
   ASDF_NIM_MOCK_DPKG_ARCHITECTURE="armhf"
   expected_arch="armv7"
@@ -248,21 +234,21 @@ teardown() {
   assert_equal "$output" "$expected_arch"
 }
 
-@test "asdf_nim_normalize_arch_arm_no_dpkg_no_gcc" {
+@test "asdf_nim_normalize_arch__arm__no_dpkg_no_gcc" {
   ASDF_NIM_MOCK_MACHINE_NAME="arm"
   expected_arch="armv5"
   output="$(asdf_nim_normalize_arch)"
   assert_equal "$output" "$expected_arch"
 }
 
-@test "asdf_nim_normalize_arch_armv7l_no_dpkg_no_gcc" {
+@test "asdf_nim_normalize_arch__armv7l__no_dpkg_no_gcc" {
   ASDF_NIM_MOCK_MACHINE_NAME="armv7l"
   expected_arch="armv7"
   output="$(asdf_nim_normalize_arch)"
   assert_equal "$output" "$expected_arch"
 }
 
-@test "asdf_nim_normalize_arch_arm64" {
+@test "asdf_nim_normalize_arch__arm64" {
   ASDF_NIM_MOCK_MACHINE_NAME="arm64"
   ASDF_NIM_MOCK_OS_NAME="Darwin"
   expected_arch="arm64"
@@ -289,7 +275,6 @@ teardown() {
     "apk"
     "pacman"
     "dnf"
-    "choco"
   )
   for bin_name in "${bin_names[@]}"; do
     # mock package manager
@@ -301,169 +286,79 @@ teardown() {
   done
 }
 
-@test "asdf_nim_list_deps_apt_get" {
+@test "asdf_nim_list_deps__apt_get" {
   ASDF_NIM_MOCK_PKG_MGR="apt-get"
-  expected="hub xz-utils build-essential"
+  expected="xz-utils build-essential"
   output="$(asdf_nim_list_deps | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_list_deps_apk" {
+@test "asdf_nim_list_deps__apk" {
   ASDF_NIM_MOCK_PKG_MGR="apk"
-  expected="hub xz build-base"
+  expected="xz build-base"
   output="$(asdf_nim_list_deps | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_list_deps_brew" {
+@test "asdf_nim_list_deps__brew" {
   ASDF_NIM_MOCK_PKG_MGR="brew"
-  expected="hub xz"
+  expected="xz"
   output="$(asdf_nim_list_deps | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_list_deps_pacman" {
+@test "asdf_nim_list_deps__pacman" {
   ASDF_NIM_MOCK_PKG_MGR="pacman"
-  expected="hub xz gcc"
+  expected="xz gcc"
   output="$(asdf_nim_list_deps | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_list_deps_dnf" {
+@test "asdf_nim_list_deps__dnf" {
   ASDF_NIM_MOCK_PKG_MGR="dnf"
-  expected="hub xz gcc"
+  expected="xz gcc"
   output="$(asdf_nim_list_deps | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_list_deps_choco" {
-  ASDF_NIM_MOCK_OS_NAME="MINGW"
-  ASDF_NIM_MOCK_PKG_MGR="choco"
-  expected="hub unzip mingw"
-  output="$(asdf_nim_list_deps | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_install_deps_cmds_apt_get" {
+@test "asdf_nim_install_deps_cmds__apt_get" {
   ASDF_NIM_MOCK_PKG_MGR="apt-get"
-  expected="apt-get update -q -y && apt-get -qq install -y hub xz-utils build-essential"
+  expected="apt-get update -q -y && apt-get -qq install -y xz-utils build-essential"
   output="$(asdf_nim_install_deps_cmds)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_install_deps_cmds_apk" {
+@test "asdf_nim_install_deps_cmds__apk" {
   ASDF_NIM_MOCK_PKG_MGR="apk"
-  expected="apk add --update xz build-base && apk add --update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing hub"
+  expected="apk add --update xz build-base"
   output="$(asdf_nim_install_deps_cmds)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_install_deps_cmds_brew" {
+@test "asdf_nim_install_deps_cmds__brew" {
   ASDF_NIM_MOCK_PKG_MGR="brew"
-  expected="brew install hub xz"
+  expected="brew install xz"
   output="$(asdf_nim_install_deps_cmds)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_install_deps_cmds_pacman" {
+@test "asdf_nim_install_deps_cmds__pacman" {
   ASDF_NIM_MOCK_PKG_MGR="pacman"
-  expected="pacman -Syu --noconfirm hub xz gcc"
+  expected="pacman -Syu --noconfirm xz gcc"
   output="$(asdf_nim_install_deps_cmds)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_install_deps_cmds_dnf" {
+@test "asdf_nim_install_deps_cmds__dnf" {
   ASDF_NIM_MOCK_PKG_MGR="dnf"
-  expected="dnf install -y hub xz gcc"
+  expected="dnf install -y xz gcc"
   output="$(asdf_nim_install_deps_cmds)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_install_deps_cmds_choco" {
-  ASDF_NIM_MOCK_OS_NAME="MINGW"
-  ASDF_NIM_MOCK_PKG_MGR="choco"
-  expected="choco install --yes hub unzip mingw"
-  output="$(asdf_nim_install_deps_cmds)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_aarch64_linux_gnu" {
+@test "asdf_nim_download_urls__stable__linux__x86_64__glibc" {
   ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--aarch64-linux-gnu.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_aarch64_linux_musl" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
-  ASDF_NIM_MOCK_IS_MUSL="yes"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--aarch64-linux-musl.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_armv5_linux_gnu" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="armv5"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv5-linux-gnueabi.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_armv6_linux_musl" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="armv6"
-  ASDF_NIM_MOCK_IS_MUSL="yes"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv6-linux-musleabihf.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_armv7_linux_gnu" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="armv7"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv7-linux-gnueabihf.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_armv7_linux_musl" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="armv7"
-  ASDF_NIM_MOCK_IS_MUSL="yes"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--armv7-linux-musleabihf.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_i686_linux_gnu" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="i686"
-  asdf_nim_init "install"
-  expected="https://nim-lang.org/download/nim-1.6.0-linux_x32.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_powerpc64le_linux_gnu" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="powerpc64le"
-  asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--powerpc64le-linux-gnu.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_x86_64_linux_gnu" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_IS_MUSL="no"
   ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
   ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
@@ -472,125 +367,245 @@ teardown() {
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_download_urls_x86_64_linux_musl" {
+@test "asdf_nim_download_urls__stable__linux__i686__glibc" {
   ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
-  ASDF_NIM_MOCK_IS_MUSL="yes"
-  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
+  ASDF_NIM_MOCK_IS_MUSL="no"
+  ASDF_NIM_MOCK_MACHINE_NAME="i686"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-linux-musl.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
+  expected="https://nim-lang.org/download/nim-1.6.0-linux_x32.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_download_urls_x86_64_linux_musl_with_no_binaries_for_version_yet" {
-  ASDF_INSTALL_VERSION="100.100.100"
+@test "asdf_nim_download_urls__stable__linux__other_archs__glibc" {
   ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
-  ASDF_NIM_MOCK_IS_MUSL="yes"
-  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
-  asdf_nim_init "install"
-  expected="https://nim-lang.org/download/nim-100.100.100.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
+  ASDF_NIM_MOCK_IS_MUSL="no"
+  declare -a machine_names=(
+    "aarch64"
+    "armv5"
+    "armv6"
+    "armv7"
+    "powerpc64le"
+  )
+  for machine_name in "${machine_names[@]}"; do
+    ASDF_NIM_MOCK_MACHINE_NAME="$machine_name"
+    asdf_nim_init "install"
+    expected="https://nim-lang.org/download/nim-1.6.0.tar.xz"
+    output="$(asdf_nim_download_urls | xargs)"
+    assert_equal "$output" "$expected"
+  done
 }
 
-@test "asdf_nim_download_urls_x86_64_linux_musl_with_no_binaries_for_version_yet_and_GITHUB_TOKEN" {
-  if [ -z "$ACTUAL_GITHUB_TOKEN" ]; then
-    skip "Test requires actual GITHUB_TOKEN"
-  fi
-  GITHUB_TOKEN="$ACTUAL_GITHUB_TOKEN"
-  ASDF_INSTALL_VERSION="100.100.100"
+@test "asdf_nim_download_urls__stable__linux__x86_64__musl" {
   ASDF_NIM_MOCK_OS_NAME="Linux"
-  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
   ASDF_NIM_MOCK_IS_MUSL="yes"
-  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
-  asdf_nim_init "install"
-  expected="https://nim-lang.org/download/nim-100.100.100.tar.xz"
-  output="$(asdf_nim_download_urls | xargs)"
-  assert_equal "$output" "$expected"
-}
-
-@test "asdf_nim_download_urls_x86_64_macos_catalina_10_15_0" {
-  ASDF_NIM_MOCK_OS_NAME="Darwin"
-  ASDF_NIM_MOCK_MAC_OS_VERSION="10.15.0"
   ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
   ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-macos-catalina.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
+  expected="https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_download_urls_x86_64_macos_catalina_11_0_0" {
+@test "asdf_nim_download_urls__stable__linux__other_archs__musl" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_IS_MUSL="yes"
+  declare -a machine_names=(
+    "aarch64"
+    "armv5"
+    "armv6"
+    "armv7"
+    "i686"
+    "powerpc64le"
+  )
+  for machine_name in "${machine_names[@]}"; do
+    ASDF_NIM_MOCK_MACHINE_NAME="$machine_name"
+    asdf_nim_init "install"
+    expected="https://nim-lang.org/download/nim-1.6.0.tar.xz"
+    output="$(asdf_nim_download_urls | xargs)"
+    assert_equal "$output" "$expected"
+  done
+}
+
+@test "asdf_nim_download_urls__stable__macos__x86_64" {
   ASDF_NIM_MOCK_OS_NAME="Darwin"
-  ASDF_NIM_MOCK_MAC_OS_VERSION="11.0.0"
   ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
   ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
-  expected="https://github.com/elijahr/nim-builds/releases/download/nim-1.6.0--202111230013/nim-1.6.0--x86_64-macos-catalina.tar.xz https://nim-lang.org/download/nim-1.6.0.tar.xz"
+  expected="https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_download_urls_source_url_macos" {
+@test "asdf_nim_download_urls__stable__macos__arm64" {
   ASDF_NIM_MOCK_OS_NAME="Darwin"
-  ASDF_INSTALL_VERSION="100.100.100"
+  ASDF_NIM_MOCK_MACHINE_NAME="arm64"
   asdf_nim_init "install"
-  expected="https://nim-lang.org/download/nim-100.100.100.tar.xz"
+  expected="https://nim-lang.org/download/nim-1.6.0.tar.xz"
   output="$(asdf_nim_download_urls | xargs)"
   assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_assert_github_auth_no_auth" {
+@test "asdf_nim_download_urls__stable__netbsd__x86_64" {
+  ASDF_NIM_MOCK_OS_NAME="NetBSD"
+  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
+  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
   asdf_nim_init "install"
-  run asdf_nim_assert_github_auth
-  assert_failure
+  expected="https://nim-lang.org/download/nim-1.6.0.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_assert_github_auth_GITHUB_USER_no_GITHUB_PASSWORD" {
+@test "asdf_nim_download_urls__nightly__linux__x86_64__musl" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_IS_MUSL="yes"
+  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
+  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
   asdf_nim_init "install"
-  GITHUB_USER="elijahr"
-  run asdf_nim_assert_github_auth
-  assert_failure
+  expected=""
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_assert_github_auth_GITHUB_USER_and_GITHUB_PASSWORD" {
-  asdf_nim_init "install"
-  GITHUB_USER="elijahr"
-  GITHUB_PASSWORD="elijahr"
-  run asdf_nim_assert_github_auth
-  assert_success
+@test "asdf_nim_download_urls__nightly__linux__other_archs__musl" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_IS_MUSL="yes"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
+  declare -a machine_names=(
+    "aarch64"
+    "armv5"
+    "armv6"
+    "armv7"
+    "i686"
+    "powerpc64le"
+  )
+  for machine_name in "${machine_names[@]}"; do
+    ASDF_NIM_MOCK_MACHINE_NAME="$machine_name"
+    asdf_nim_init "install"
+    expected=""
+    output="$(asdf_nim_download_urls | xargs)"
+    assert_equal "$output" "$expected"
+  done
 }
 
-@test "asdf_nim_assert_github_auth_GITHUB_TOKEN" {
+@test "asdf_nim_download_urls__nightly__linux__x86_64__glibc" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_IS_MUSL="no"
+  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
+  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
   asdf_nim_init "install"
-  GITHUB_TOKEN="elijahr"
-  run asdf_nim_assert_github_auth
-  assert_success
+  expected="https://github.com/nim-lang/nightlies/releases/download/latest-version-1-6/linux_x64.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_assert_github_auth_XDG_CONFIG_HOME_hub" {
+@test "asdf_nim_download_urls__nightly__linux__i686__glibc" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_IS_MUSL="no"
+  ASDF_NIM_MOCK_MACHINE_NAME="i686"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
   asdf_nim_init "install"
-  touch "${XDG_CONFIG_HOME}/hub"
-  run asdf_nim_assert_github_auth
-  assert_success
+  expected="https://github.com/nim-lang/nightlies/releases/download/latest-version-1-6/linux_x32.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
 }
 
-@test "asdf_nim_needs_download_missing_ASDF_DOWNLOAD_PATH" {
+@test "asdf_nim_download_urls__nightly__linux__other_archs__glibc" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_IS_MUSL="no"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
+  declare -a machine_names=(
+    "armv5"
+    "armv6"
+    "powerpc64le"
+  )
+  for machine_name in "${machine_names[@]}"; do
+    ASDF_NIM_MOCK_MACHINE_NAME="$machine_name"
+    asdf_nim_init "install"
+    expected=""
+    output="$(asdf_nim_download_urls | xargs)"
+    assert_equal "$output" "$expected"
+  done
+}
+
+@test "asdf_nim_download_urls__nightly__linux__armv7__glibc" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_MACHINE_NAME="armv7"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
+  asdf_nim_init "install"
+  expected="https://github.com/nim-lang/nightlies/releases/download/latest-version-1-6/linux_armv7l.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
+}
+
+@test "asdf_nim_download_urls__nightly__linux__aarch64__glibc" {
+  ASDF_NIM_MOCK_OS_NAME="Linux"
+  ASDF_NIM_MOCK_MACHINE_NAME="aarch64"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="devel"
+  asdf_nim_init "install"
+  expected="https://github.com/nim-lang/nightlies/releases/download/latest-devel/linux_arm64.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
+}
+
+@test "asdf_nim_download_urls__nightly__macos__x86_64" {
+  ASDF_NIM_MOCK_OS_NAME="Darwin"
+  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
+  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
+  asdf_nim_init "install"
+  expected="https://github.com/nim-lang/nightlies/releases/download/latest-version-1-6/macosx_x64.tar.xz"
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
+}
+
+@test "asdf_nim_download_urls__nightly__macos__arm64" {
+  ASDF_NIM_MOCK_OS_NAME="Darwin"
+  ASDF_NIM_MOCK_MACHINE_NAME="arm64"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
+  asdf_nim_init "install"
+  expected=""
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
+}
+
+@test "asdf_nim_download_urls__nightly__netbsd__x86_64" {
+  ASDF_NIM_MOCK_OS_NAME="NetBSD"
+  ASDF_NIM_MOCK_MACHINE_NAME="x86_64"
+  ASDF_NIM_MOCK_GCC_DEFINES="#define __amd64 1"
+  ASDF_INSTALL_TYPE="ref"
+  ASDF_INSTALL_VERSION="version-1-6"
+  asdf_nim_init "install"
+  expected=""
+  output="$(asdf_nim_download_urls | xargs)"
+  assert_equal "$output" "$expected"
+}
+
+@test "asdf_nim_needs_download__missing_ASDF_DOWNLOAD_PATH" {
   asdf_nim_init "install"
   run asdf_nim_needs_download
   assert_output "yes"
 }
 
-@test "asdf_nim_needs_download_with_ASDF_DOWNLOAD_PATH" {
+@test "asdf_nim_needs_download__with_ASDF_DOWNLOAD_PATH" {
   asdf_nim_init "install"
   mkdir -p "$ASDF_DOWNLOAD_PATH"
   run asdf_nim_needs_download
   assert_output "no"
 }
 
-@test "asdf_nim_download_ref" {
+@test "asdf_nim_download__ref" {
   export ASDF_INSTALL_TYPE
   ASDF_INSTALL_TYPE="ref"
   export ASDF_INSTALL_VERSION
@@ -602,65 +617,13 @@ teardown() {
   assert [ -f "${ASDF_DOWNLOAD_PATH}/koch.nim" ]
 }
 
-@test "asdf_nim_download_version" {
+@test "asdf_nim_download__version" {
   ASDF_DOWNLOAD_PATH="${ASDF_DATA_DIR}/downloads/nim/${ASDF_INSTALL_VERSION}"
   asdf_nim_init "download"
   run asdf_nim_download
   assert_success
   refute [ -d "${ASDF_DOWNLOAD_PATH}/.git" ]
   assert [ -f "${ASDF_DOWNLOAD_PATH}/koch.nim" ]
-}
-
-@test "asdf_nim_needs_build_unix" {
-  ASDF_NIM_MOCK_OS_NAME="Linux"
-  asdf_nim_init "install"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  mkdir -p "${ASDF_DOWNLOAD_PATH}/bin"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  touch "${ASDF_DOWNLOAD_PATH}/bin/nim"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  touch "${ASDF_DOWNLOAD_PATH}/bin/nimgrep"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  touch "${ASDF_DOWNLOAD_PATH}/bin/nimble"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  touch "${ASDF_DOWNLOAD_PATH}/install.sh"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-}
-
-@test "asdf_nim_needs_build_windows" {
-  ASDF_NIM_MOCK_OS_NAME="MINGW"
-  asdf_nim_init "install"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  mkdir -p "${ASDF_DOWNLOAD_PATH}/bin"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  touch "${ASDF_DOWNLOAD_PATH}/bin/nim.exe"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  touch "${ASDF_DOWNLOAD_PATH}/bin/nimgrep.exe"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "yes"
-  touch "${ASDF_DOWNLOAD_PATH}/bin/nimble.exe"
-  run asdf_nim_needs_build
-  assert_success
-  assert_output "no"
 }
 
 # @test "asdf_nim_build" {

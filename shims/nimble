@@ -3,7 +3,7 @@
 set -ueo pipefail
 
 ASDF_BIN="${ASDF_DIR:-$HOME/.asdf}/bin/"
-ASDF_INSTALL_BIN_PATH="$(dirname $("${ASDF_BIN}/asdf" which nim))"
+ASDF_INSTALL_BIN_PATH=$(dirname "$("${ASDF_BIN}/asdf" which nim)")
 
 regenerate() {
   # After a nimble operation, regenerate nim shims to find new package binaries

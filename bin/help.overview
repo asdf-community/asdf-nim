@@ -1,14 +1,27 @@
 #!/usr/bin/env bash
 
-echo "This plugin installs the Nim compiler and tools (nimble, nimgrep, etc)."
+# shellcheck disable=SC2016
+
+echo 'This plugin installs the Nim compiler and tools (nimble, nimgrep, etc).'
 echo
-echo "Pre-compiled official binaries from https://nim-lang.org are installed if"
-echo "available for the current platform (Linux: x86_64 & x86)."
+echo 'The tool will try to install pre-compiled binaries when available for'
+echo 'the version/platform, otherwise Nim is built from source.'
 echo
-echo "If no official binaries exist, unoffical binaries from "
-echo "https://github.com/elijahr/nim-builds are installed"
-echo "(macOS: x86_64, Linux: armv5, armv6, armv7, aarch64/arm64, & powerpc64le)."
+echo 'Stable binaries:'
+echo '- Linux: x86_64 and x86 only'
+echo '- `asdf install nim X.Y.Z` for a specific version'
+echo '- `asdf install nim latest:X.Y` for the latest patch release of X.Y'
 echo
-echo "If neither official nor unoffical binaries can be found for the platform,"
-echo "Nim is built from source."
+echo 'Unstable binaries:'
+echo '- Linux: x86_64, x86, armv7l, aarch64'
+echo '- macOS: x86_64'
+echo '- `asdf install nim ref:devel` for the latest nightly build of github.com/nim-lang/Nim/tree/devel'
+echo '- `asdf install nim ref:version-1-6` for the latest nightly build of github.com/nim-lang/Nim/tree/version-1-6'
+echo '- `asdf install nim ref:version-1-4` for the latest nightly build of github.com/nim-lang/Nim/tree/version-1-4'
+echo '- etc'
+echo
+echo 'Source builds:'
+echo '- All platforms'
+echo '- `asdf install nim ref:<commit-ish>`'
+echo '- `asdf install nim ref:vX.Y.Z` to force build for a specific stable version'
 echo

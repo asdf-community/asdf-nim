@@ -94,7 +94,7 @@ jobs:
       - name: Checkout Nim project
         uses: actions/checkout@v2
 
-      - uses: uraimo/run-on-arch-action@v2.1.1
+      - uses: uraimo/run-on-arch-action@v2
         name: Install Nim & run tests
         with:
           arch: ${{ matrix.arch }}

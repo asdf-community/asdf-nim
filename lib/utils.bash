@@ -5,13 +5,16 @@
 # Constants
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
 SOURCE_URL="https://nim-lang.org/download/nim-VERSION.tar.xz"
-LINUX_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-VERSION/linux_ARCH.tar.xz"
-WINDOWS_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-VERSION/linux_ARCH.zip"
+
+LINUX_X64_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_x64.tar.xz"
+LINUX_X32_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_x32.tar.xz"
+LINUX_ARM64_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_arm64.tar.xz"
+LINUX_ARMV7L_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_armv7l.tar.xz"
+MACOS_X64_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/macosx_x64.tar.xz"
+
 LINUX_X64_URL="https://nim-lang.org/download/nim-VERSION-linux_x64.tar.xz"
 LINUX_X32_URL="https://nim-lang.org/download/nim-VERSION-linux_x32.tar.xz"
-WINDOWS_X64_URL="https://nim-lang.org/download/nim-VERSION_x64.zip"
-WINDOWS_X32_URL="https://nim-lang.org/download/nim-VERSION_x32.zip"
-NIM_BUILDS_REPO="https://github.com/elijahr/nim-builds.git"
+
 NIM_ARGS=("--parallelBuild:${ASDF_CONCURRENCY:-0}" "-d:release") # Args to pass to koch/nim
 
 normpath() {
@@ -83,8 +86,9 @@ out() {
 asdf_nim_on_exit() {
   asdf_nim_cleanup_asdf_install_path() {
     if [ -d "$ASDF_INSTALL_PATH" ]; then
-      out "# Cleaning up install directory…"
+      step_start "rm ${ASDF_INSTALL_PATH//${HOME}/\~} …"
       rm -rf "$ASDF_INSTALL_PATH"
+      step_end "✓"
     fi
   }
 
@@ -92,16 +96,18 @@ asdf_nim_on_exit() {
     if [ -d "$ASDF_DOWNLOAD_PATH" ]; then
       if [ "${1:-}" = "force" ]; then
         # Force delete
-        out "# Cleaning up download directory…"
+        step_start "rm ${ASDF_DOWNLOAD_PATH//${HOME}/\~}"
         rm -rf "$ASDF_DOWNLOAD_PATH"
+        step_end "✓"
       else
         # asdf will delete this folder depending on --keep-download or
         # always_keep_download flag, so respect that by not deleting here;
         # however, asdf uses `rm -r` instead of `rm -rf` which fails to delete
         # protected git objects. So we simply chmod the git objects so they
         # can be deleted if asdf decides to delete.
-        out "# Making download directory removable…"
+        step_start "chmod ${ASDF_DOWNLOAD_PATH//${HOME}/\~}"
         chmod -R 700 "$ASDF_DOWNLOAD_PATH"
+        step_end "✓"
       fi
     fi
   }
@@ -109,14 +115,14 @@ asdf_nim_on_exit() {
   asdf_nim_cleanup_temp() {
     if [ -d "$ASDF_NIM_TEMP" ]; then
       if [ "$ASDF_NIM_REMOVE_TEMP" = "yes" ]; then
-        out "# Cleaning up temp dir…"
+        step_start "rm ${ASDF_NIM_TEMP//${HOME}/\~}"
         rm -rf "$ASDF_NIM_TEMP"
+        step_end "✓"
       else
-        out "# ASDF_NIM_REMOVE_TEMP=${ASDF_NIM_REMOVE_TEMP}, keeping temp dir ${ASDF_NIM_TEMP}"
+        step_start "ASDF_NIM_REMOVE_TEMP=${ASDF_NIM_REMOVE_TEMP}, keeping temp dir ${ASDF_NIM_TEMP//${HOME}/\~}"
+        step_end "✓"
       fi
-
     fi
-
   }
 
   case "$ASDF_NIM_ACTION" in
@@ -128,7 +134,6 @@ asdf_nim_on_exit() {
       case "${ASDF_NIM_SIGNAL:-}" in
         SIG*)
           # cleanup everything
-          out
           asdf_nim_cleanup_asdf_install_path
           asdf_nim_cleanup_asdf_download_path force
           asdf_nim_cleanup_temp
@@ -143,7 +148,6 @@ asdf_nim_on_exit() {
         0)
           # successful install, only clean up temp dir, make download path
           # removable.
-          out
           asdf_nim_cleanup_asdf_download_path
           asdf_nim_cleanup_temp
           out
@@ -151,10 +155,10 @@ asdf_nim_on_exit() {
         *)
           # failure, dump log
           out
-          out "# 😱 Exited with status ${ASDF_NIM_EXIT_STATUS}:"
+          out "😱 Exited with status ${ASDF_NIM_EXIT_STATUS}:"
           out
-          cat "$(asdf_nim_log download)" >&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
-          cat "$(asdf_nim_log install)" >&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+          cat "$(asdf_nim_log download)" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+          cat "$(asdf_nim_log install)" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
           # cleanup everything
           out
           asdf_nim_cleanup_asdf_install_path
@@ -175,15 +179,19 @@ asdf_nim_log() {
   echo "$path"
 }
 
+STEP=0
+
 section_start() {
+  STEP=0
   if [ "$ASDF_NIM_SILENT" = "no" ]; then
-    printf "\n# %s\n" "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+    printf "\n%s\n" "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
   fi
 }
 
 step_start() {
+  export STEP=$((STEP + 1))
   if [ "$ASDF_NIM_SILENT" = "no" ]; then
-    printf "# ↳ %s … " "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
+    printf "     %s. %s … " "$STEP" "$1" 1>&"$ASDF_NIM_STDOUT" 2>&"$ASDF_NIM_STDERR"
   fi
 }
 
@@ -193,19 +201,24 @@ step_end() {
   fi
 }
 
-# Sort semantic version numbers.
-asdf_nim_sort_versions() {
-  sed 'h; s/[+-]/./g; s/.p\([[:digit:]]\)/.z\1/; s/$/.z/; G; s/\n/ /' |
-    LC_ALL=C sort -t. -k 1,1 -k 2,2n -k 3,3n -k 4,4n -k 5,5n | awk '{print $2}'
+die() {
+  if [ "$ASDF_NIM_SILENT" = "no" ]; then
+    printf "\n💥 %s\n\n" "$1" 1>&"$ASDF_NIM_STDERR"
+  fi
 }
 
-# List all available Nim versions (tagged releases at github.com/nim-lang/Nim).
+# Sort semantic version numbers.
+asdf_nim_sort_versions() {
+  awk '{ if ($1 ~ /-/) print; else print $0"_" ; }' | sort -V | sed 's/_$//'
+}
+
+# List all stable Nim versions (tagged releases at github.com/nim-lang/Nim).
 asdf_nim_list_all_versions() {
   git ls-remote --tags --refs "$SOURCE_REPO" |
-    grep -o 'refs/tags/.*' |
-    cut -d/ -f3- |
-    sed 's/^v//' |
-    asdf_nim_sort_versions
+    awk -v col=2 '{print $col}' |
+    grep '^refs/tags/.*' |
+    sed 's/^refs\/tags\///' |
+    sed 's/^v//'
 }
 
 asdf_nim_normalize_os() {
@@ -213,14 +226,8 @@ asdf_nim_normalize_os() {
   os="$(echo "${ASDF_NIM_MOCK_OS_NAME:-$(uname)}" | tr '[:upper:]' '[:lower:]')"
   case "$os" in
     darwin) echo macos ;;
-    mingw*) echo windows ;;
+    mingw*) echo windows ;; # not actually supported by asdf?
     *) echo "$os" ;;
-  esac
-}
-
-asdf_nim_exe_ext() {
-  case "$(asdf_nim_normalize_os)" in
-    windows) echo ".exe" ;;
   esac
 }
 
@@ -255,7 +262,7 @@ asdf_nim_normalize_arch() {
     *86* | x32) echo "i686" ;;
     *aarch64* | *arm64* | armv8b | armv8l)
       case "$(asdf_nim_normalize_os)" in
-        macos | windows) echo arm64 ;;
+        macos) echo arm64 ;;
         *) echo "aarch64" ;;
       esac
       ;;
@@ -301,7 +308,6 @@ asdf_nim_pkg_mgr() {
       (command -v apk >/dev/null 2>&1 && echo "apk") ||
       (command -v pacman >/dev/null 2>&1 && echo "pacman") ||
       (command -v dnf >/dev/null 2>&1 && echo "dnf") ||
-      (command -v choco >/dev/null 2>&1 && echo "choco") ||
       echo ""
   )}"
 }
@@ -309,7 +315,6 @@ asdf_nim_pkg_mgr() {
 # List dependencies of this plugin, as package names for use with the system
 # package manager.
 asdf_nim_list_deps() {
-  echo hub
   case "$(asdf_nim_pkg_mgr)" in
     apt-get)
       echo xz-utils
@@ -322,10 +327,6 @@ asdf_nim_list_deps() {
     brew) echo xz ;;
     *)
       case "$(asdf_nim_normalize_os)" in
-        windows)
-          echo unzip
-          echo mingw
-          ;;
         *)
           echo xz
           echo gcc
@@ -341,15 +342,10 @@ asdf_nim_install_deps_cmds() {
   deps="$(asdf_nim_list_deps | xargs)"
   case "$(asdf_nim_pkg_mgr)" in
     apt-get) echo "apt-get update -q -y && apt-get -qq install -y $deps" ;;
-    apk)
-      printf "%s" "apk add --update ${deps//hub /} && "
-      printf "%s" "apk add --update --repository=http://dl-cdn.alpinelinux.org/alpine/edge/testing hub"
-      echo
-      ;;
+    apk) echo "apk add --update $deps" ;;
     brew) echo "brew install $deps" ;;
     pacman) echo "pacman -Syu --noconfirm $deps" ;;
     dnf) echo "dnf install -y $deps" ;;
-    choco) echo "choco install --yes $deps" ;;
     *) echo "" ;;
   esac
 }
@@ -416,151 +412,65 @@ asdf_nim_is_musl() {
   fi
 }
 
-# Echo the suffix for a gcc toolchain triple, e.g. `musleabihf` for a
-# `arm-unknown-linux-musleabihf` toolchain.
-asdf_nim_lib_suffix() {
-  case "$(asdf_nim_normalize_os)" in
-    linux)
-      local libc
-      case "$(asdf_nim_is_musl)" in
-        yes) libc="musl" ;;
-        no) libc="gnu" ;;
-      esac
-      case "$(asdf_nim_normalize_arch)" in
-        armv5) echo "${libc}eabi" ;;
-        armv6) echo "${libc}eabihf" ;;
-        armv7) echo "${libc}eabihf" ;;
-        *) echo $libc ;;
-      esac
-      ;;
-    macos)
-      case "$(asdf_nim_normalize_arch)" in
-        arm64) echo "bigsur" ;;
-        *)
-          case "${ASDF_NIM_MOCK_MAC_OS_VERSION:-"$(defaults read loginwindow SystemVersionStampAsString)"}" in
-            10.15.* | 11.* | 12.* | 13.*) echo "catalina" ;; # For now, everything >=10.15 gets catalina builds
-            *) echo "unknown" ;;
-          esac
-          ;;
-      esac
-      ;;
-    *) echo "" ;;
-  esac
-}
-
 # Echo the official binary archive URL (from nim-lang.org) for the current
 # architecture.
 asdf_nim_official_archive_url() {
-  case "$(asdf_nim_normalize_os)" in
-    linux)
-      case "$(asdf_nim_normalize_arch)" in
-        x86_64) echo "${LINUX_X64_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
-        i686) echo "${LINUX_X32_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
-      esac
-      ;;
-    windows)
-      case "$(asdf_nim_normalize_arch)" in
-        x86_64) echo "${WINDOWS_X64_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
-        i686) echo "${WINDOWS_X32_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
-      esac
-      ;;
-  esac
+  if [ "${ASDF_INSTALL_TYPE}" = "version" ] && [[ ${ASDF_INSTALL_VERSION} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    case "$(asdf_nim_normalize_os)" in
+      linux)
+        case "$(asdf_nim_is_musl)" in
+          no)
+            # Official Linux builds are only available for glibc x86_64 and x86
+            case "$(asdf_nim_normalize_arch)" in
+              x86_64) echo "${LINUX_X64_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
+              i686) echo "${LINUX_X32_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
+            esac
+            ;;
+        esac
+        ;;
+    esac
+  fi
 }
 
 # Echo the nightly url for arch/os
 asdf_nim_nightly_url() {
-  # Arch needs to be converted to what the nightlies want
-  local arch="$(asdf_nim_normalize_arch)" url
-  case "${arch}" in
-    aarch64) arch="arm64" ;;
-    armv7) arch="armv7l" ;;
-    x86_64) arch="x64" ;;
-    i686) arch="x32" ;;
-  esac
-
-  case "$(asdf_nim_normalize_os)" in
-    linux) url="${LINUX_NIGHTLY_URL}" ;;
-    windows) url=${WINDOWS_NIGHTLY_URL} ;;
-  esac
-  echo "${url}" | sed -e "s/VERSION/${ASDF_INSTALL_VERSION}/" -e "s/ARCH/${arch}/"
+  if [ "${ASDF_INSTALL_TYPE}" != "ref" ]; then
+    return 0
+  fi
+  if [[ $ASDF_INSTALL_VERSION =~ ^version-[0-9]+-[0-9]+$ ]] || [ "$ASDF_INSTALL_VERSION" = "devel" ]; then
+    case "$(asdf_nim_normalize_os)" in
+      linux)
+        case "$(asdf_nim_is_musl)" in
+          no)
+            # Nightly Linux builds are only available for glibc and a few archs
+            case "$(asdf_nim_normalize_arch)" in
+              x86_64) echo "${LINUX_X64_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
+              i686) echo "${LINUX_X32_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
+              aarch64) echo "${LINUX_ARM64_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
+              armv7) echo "${LINUX_ARMV7L_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
+            esac
+            ;;
+        esac
+        ;;
+      macos)
+        case "$(asdf_nim_normalize_arch)" in
+          # Nightly macos builds are only available for x86_64
+          x86_64) echo "${MACOS_X64_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
+        esac
+        ;;
+    esac
+  fi
 }
 
 asdf_nim_github_token() {
-  # hub uses GITHUB_TOKEN for auth, asdf uses GITHUB_API_TOKEN
   echo "${GITHUB_TOKEN:-${GITHUB_API_TOKEN:-}}"
-}
-
-# Verify that the user has provided some means to authenticate with github
-asdf_nim_assert_github_auth() {
-  if [ -n "${GITHUB_USER:-}" ] && [ -n "${GITHUB_PASSWORD:-}" ]; then
-    return 0
-  elif [ -n "$(asdf_nim_github_token)" ]; then
-    return 0
-  elif [ -f "${XDG_CONFIG_HOME:-"${HOME}/.config"}/hub" ]; then
-    return 0
-  fi
-  return 1
-}
-
-asdf_nim_unofficial_archive_name() {
-  echo "nim-${ASDF_INSTALL_VERSION}--$(asdf_nim_normalize_arch)-$(asdf_nim_normalize_os)-$(asdf_nim_lib_suffix).tar.xz"
-}
-
-asdf_nim_unofficial_archive_url_via_hub() {
-  local nim_builds_repo
-  nim_builds_repo="${ASDF_NIM_TEMP}/nim-builds"
-  mkdir -p "$nim_builds_repo"
-  (
-    cd "$nim_builds_repo"
-    git init . 1>/dev/null 2>&1
-    git remote add origin "$NIM_BUILDS_REPO" 1>/dev/null 2>&1
-
-    local releases
-    releases="$(yes | GITHUB_TOKEN=$(asdf_nim_github_token) hub release -L 100 || true)"
-    local archive
-    archive="$(asdf_nim_unofficial_archive_name)"
-    local url
-    url=""
-    # Search through releases looking for a matching binary
-    while read -r release; do
-      case "$release" in
-        nim-${ASDF_INSTALL_VERSION}--*)
-          url="$(yes | GITHUB_TOKEN=$(asdf_nim_github_token) hub release show "$release" --show-downloads | grep -F "$archive" || echo "")"
-          ;;
-      esac
-      if [ -n "$url" ]; then
-        break
-      fi
-    done <<<"$releases"
-    echo "$url"
-  )
-}
-
-asdf_nim_unofficial_archive_url_via_cache() {
-  local archive
-  archive="$(asdf_nim_unofficial_archive_name)"
-  grep -F "$archive" \
-    <"${ASDF_DATA_DIR}/plugins/nim/share/unofficial-binaries.txt" 2>/dev/null |
-    head -n 1 ||
-    true
-}
-
-# Echo the unofficial binary archive URL (from github.com/elijahr/nim-builds)
-# for the current architecture.
-asdf_nim_unofficial_archive_url() {
-  local url
-  url="$(asdf_nim_unofficial_archive_url_via_cache)"
-  if [ -z "$url" ]; then
-    if asdf_nim_assert_github_auth; then
-      url="$(asdf_nim_unofficial_archive_url_via_hub)"
-    fi
-  fi
-  echo "$url"
 }
 
 # Echo the source archive URL (from nim-lang.org).
 asdf_nim_source_url() {
-  echo "${SOURCE_URL//VERSION/$ASDF_INSTALL_VERSION}"
+  if [ "${ASDF_INSTALL_TYPE}" = "version" ] && [[ ${ASDF_INSTALL_VERSION} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    echo "${SOURCE_URL//VERSION/$ASDF_INSTALL_VERSION}"
+  fi
 }
 
 asdf_nim_needs_download() {
@@ -572,136 +482,111 @@ asdf_nim_needs_download() {
   fi
 }
 
-asdf_nim_search_nim_builds() {
-  step_start "Searching for a binary build"
-  local url
-  url="$(asdf_nim_unofficial_archive_url)"
-  if [ -z "$url" ]; then
-    step_end "not found"
-  else
-    step_end "found"
-  fi
-  echo "$url"
+asdf_nim_download_urls() {
+  # Official binaries
+  asdf_nim_official_archive_url
+  # Nightly binaries
+  asdf_nim_nightly_url
+  # Fall back to building from source
+  asdf_nim_source_url
 }
 
-asdf_nim_download_urls() {
-  case "$(asdf_nim_normalize_os)" in
-    linux)
-      case "$(asdf_nim_is_musl)" in
-        # Distros using musl can't use official Nim binaries
-        yes)
-          asdf_nim_search_nim_builds
-          asdf_nim_source_url
-          ;;
-        no)
-          case "$(asdf_nim_normalize_arch)" in
-            x86_64 | i686)
-              # Linux with glibc has official x86_64 & x86 binaries
-              asdf_nim_official_archive_url
-              asdf_nim_nightly_url
-              asdf_nim_source_url
-              ;;
-            *)
-              asdf_nim_search_nim_builds
-              asdf_nim_nightly_url
-              asdf_nim_source_url
-              ;;
-          esac
-          ;;
-      esac
-      ;;
-    macos)
-      asdf_nim_search_nim_builds
-      asdf_nim_source_url
-      ;;
-    windows)
-      case "$(asdf_nim_normalize_arch)" in
-        x86_64 | i686)
-          # Windows has official x86_64 & x86 binaries
-          asdf_nim_official_archive_url
-          asdf_nim_source_url
-          ;;
-        *)
-          asdf_nim_source_url
-          ;;
-      esac
-      ;;
+asdf_nim_download_via_git() {
+  step_start "git clone"
+  rm -rf "$ASDF_NIM_DOWNLOAD_PATH"
+  mkdir -p "$ASDF_NIM_DOWNLOAD_PATH"
+  (
+    cd "$ASDF_NIM_DOWNLOAD_PATH"
+    git init
+    git remote add origin "$SOURCE_REPO"
+    git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
+    git reset --hard FETCH_HEAD
+    chmod -R 700 . # For asdf cleanup
+  )
+  step_end "✓"
+}
+
+asdf_nim_download_via_url() {
+  local urls url archive_path archive_name archive_ext
+  # shellcheck disable=SC2207
+  urls=($(asdf_nim_download_urls))
+  url=""
+  archive_path=""
+  if [ "${#urls[@]}" -eq 0 ]; then
+    return 1
+  fi
+  for i in "${!urls[@]}"; do
+    url="${urls[$i]}"
+    step_start "curl ${url}"
+    archive_path="$(asdf_nim_fetch "$url")"
+    if [ -n "$archive_path" ]; then
+      step_end "✓"
+      break
+    else
+      if [ "$((i + 1))" -ge "${#urls[@]}" ]; then
+        step_end "failed, no more URLs to try"
+        return 1
+      else
+        step_end "failed, trying another URL"
+      fi
+    fi
+  done
+  archive_name="$(basename "$url")"
+  archive_ext="${archive_name##*.}"
+  step_start "unzip"
+
+  rm -rf "$ASDF_NIM_DOWNLOAD_PATH"
+  mkdir -p "$ASDF_NIM_DOWNLOAD_PATH"
+
+  case "$archive_ext" in
+    xz) tar -xJf "${ASDF_NIM_TEMP}/${archive_name}" -C "$ASDF_NIM_DOWNLOAD_PATH" --strip-components=1 ;;
     *)
-      asdf_nim_source_url
+      unzip -q "${ASDF_NIM_TEMP}/${archive_name}" -d "$ASDF_NIM_DOWNLOAD_PATH"
+      mv -v "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}/"* "$ASDF_NIM_DOWNLOAD_PATH"
+      rm -vr "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}"
       ;;
   esac
+  step_end "✓"
 }
 
-# Detect which method to install Nim with (build from source, official binary,
-# or unofficial binary), download the code to ASDF_NIM_DOWNLOAD_PATH, prepare it for
+# Detect which method to install Nim with (official binary, nightly binary, or
+# build from source), download the code to ASDF_NIM_DOWNLOAD_PATH, prepare it for
 # use by the build or install functions, then move it to ASDF_DOWNLOAD_PATH.
 asdf_nim_download() {
+  section_start "I.   Download (${ASDF_NIM_DOWNLOAD_PATH//${HOME}/\~})"
   {
+
+    if [ -f "${ASDF_DOWNLOAD_PATH}/install.sh" ] || [ -f "${ASDF_DOWNLOAD_PATH}/build.sh" ] || [ -f "${ASDF_DOWNLOAD_PATH}/build_all.sh" ]; then
+      step_start "already downloaded"
+      step_end "✓"
+      return 0
+    fi
+
     date +%s >"${ASDF_NIM_TEMP}/download.start"
 
     if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
       set -x
     fi
-    section_start "Downloading Nim to ${ASDF_NIM_DOWNLOAD_PATH}"
 
-    rm -rf "$ASDF_NIM_DOWNLOAD_PATH"
-    mkdir -p "$ASDF_NIM_DOWNLOAD_PATH"
+    # ref install type is usually a git commit-ish
+    # but if it one of the "version-X-Y" branches,
+    # it may have a nightly build for the current arch/os
+    # so first try to download via URL
+    # but if none is available, fallback to git
+    if ! asdf_nim_download_via_url; then
+      if [ "${ASDF_INSTALL_TYPE}" = "ref" ]; then
+        asdf_nim_download_via_git
+      else
+        die "No download method available for ${ASDF_INSTALL_TYPE} ${ASDF_INSTALL_VERSION}"
+        return 1
+      fi
+    fi
 
-    case "$ASDF_INSTALL_TYPE" in
-      ref)
-        step_start "Cloning repo"
-        (
-          cd "$ASDF_NIM_DOWNLOAD_PATH"
-          git init
-          git remote add origin "$SOURCE_REPO"
-          git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
-          git reset --hard FETCH_HEAD
-          chmod -R 700 . # For asdf cleanup
-        )
-        step_end "done"
-        ;;
-      version)
-        local urls url archive_path archive_name archive_ext
-        # shellcheck disable=SC2207
-        urls=($(asdf_nim_download_urls))
-        url=""
-        archive_path=""
-        for i in "${!urls[@]}"; do
-          url="${urls[$i]}"
-          step_start "Downloading ${url}"
-          archive_path="$(asdf_nim_fetch "$url")"
-          if [ -n "$archive_path" ]; then
-            step_end "done"
-            break
-          else
-            if [ "$((i + 1))" -ge "${#urls[@]}" ]; then
-              step_end "failed, no more URLs to try"
-              return 1
-            else
-              step_end "failed, trying another URL"
-            fi
-          fi
-        done
-        archive_name="$(basename "$url")"
-        archive_ext="${archive_name##*.}"
-        step_start "Unpacking"
-        case "$archive_ext" in
-          xz) tar -xJf "${ASDF_NIM_TEMP}/${archive_name}" -C "$ASDF_NIM_DOWNLOAD_PATH" --strip-components=1 ;;
-          *)
-            unzip -q "${ASDF_NIM_TEMP}/${archive_name}" -d "$ASDF_NIM_DOWNLOAD_PATH"
-            mv -v "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}/"* "$ASDF_NIM_DOWNLOAD_PATH"
-            rm -vr "$ASDF_NIM_DOWNLOAD_PATH/nim-${ASDF_INSTALL_VERSION}"
-            ;;
-        esac
-        step_end "done"
-        ;;
-    esac
-
-    step_start "Moving download to ${ASDF_DOWNLOAD_PATH}"
+    step_start "mv to ${ASDF_DOWNLOAD_PATH//${HOME}/\~}"
     rm -rf "$ASDF_DOWNLOAD_PATH"
     mkdir -p "$(dirname "$ASDF_DOWNLOAD_PATH")"
     mv -v "$ASDF_NIM_DOWNLOAD_PATH" "$ASDF_DOWNLOAD_PATH"
-    step_end "done"
+    step_end "✓"
 
     if [ "$ASDF_NIM_DEBUG" = "yes" ]; then
       set +x
@@ -718,7 +603,7 @@ asdf_nim_fetch() {
   # Use a github personal access token to avoid API rate limiting
   if [ -n "$(asdf_nim_github_token)" ]; then
     case "$url" in
-      *github.com*)
+      'https://github.com/'*)
         curl_args+=("-H" "Authorization: token $(asdf_nim_github_token)")
         ;;
     esac
@@ -742,80 +627,74 @@ asdf_nim_fetch() {
   eval curl $(printf ' "%s" ' "${curl_args[@]}") && echo "$archive_path" || echo ""
 }
 
-asdf_nim_needs_build() {
-  if [ -f "${ASDF_DOWNLOAD_PATH}/bin/nim$(asdf_nim_exe_ext)" ] &&
-    [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimgrep$(asdf_nim_exe_ext)" ] &&
-    [ -f "${ASDF_DOWNLOAD_PATH}/bin/nimble$(asdf_nim_exe_ext)" ]; then
-    if [ "$(asdf_nim_normalize_os)" = "windows" ]; then
-      echo "no"
-    else
-      echo "yes"
-    fi
-  else
-    echo "yes"
-  fi
-}
-
 asdf_nim_bootstrap_nim() {
   cd "$ASDF_DOWNLOAD_PATH"
 
   local nim
-  nim="./bin/nim$(asdf_nim_exe_ext)"
+  nim="./bin/nim"
   if [ ! -f "$nim" ]; then
     if [ -f "build.sh" ]; then
       # source directory has build.sh to build koch, nim, and tools.
-      step_start "Building with build.sh"
+      step_start "./build.sh"
       sh build.sh
-      step_end "done"
+      step_end "✓"
     elif [ -f "build_all.sh" ]; then
       # source directory has build_all.sh to build koch, nim, and tools.
-      step_start "Building with build_all.sh"
+      step_start "./build_all.sh"
       sh build_all.sh
-      step_end "done"
+      step_end "✓"
+    else
+      step_start "nim already built"
+      step_end "✓"
     fi
+  else
+    step_start "nim already built"
+    step_end "✓"
   fi
 
   [ -f "$nim" ] # A nim executable must exist at this point to proceed
   [ -f "./koch" ] || asdf_nim_build_koch "$nim"
-  [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || asdf_nim_build_nim
+  [ -f "./bin/nim" ] || asdf_nim_build_nim
 }
 
 asdf_nim_build_koch() {
   local nim
   nim="$1"
-  step_start "Building koch"
+  step_start "build koch"
   cd "$ASDF_DOWNLOAD_PATH"
   # shellcheck disable=SC2046
   eval "$nim" c --skipParentCfg:on $(printf ' %q ' "${NIM_ARGS[@]}") koch
-  step_end "done"
+  step_end "✓"
 }
 
 asdf_nim_build_nim() {
-  step_start "Building nim"
+  step_start "build nim"
   cd "$ASDF_DOWNLOAD_PATH"
   # shellcheck disable=SC2046
   eval ./koch boot $(printf ' %q ' "${NIM_ARGS[@]}")
-  step_end "done"
+  step_end "✓"
 }
 
 asdf_nim_build_tools() {
-  step_start "Building tools"
+  step_start "build tools"
   cd "$ASDF_DOWNLOAD_PATH"
   # shellcheck disable=SC2046
   eval ./koch tools $(printf ' %q ' "${NIM_ARGS[@]}")
-  step_end "done"
+  step_end "✓"
 }
 
 asdf_nim_build_nimble() {
-  step_start "Building nimble"
+  step_start "build nimble"
   cd "$ASDF_DOWNLOAD_PATH"
   # shellcheck disable=SC2046
   eval ./koch nimble $(printf ' %q ' "${NIM_ARGS[@]}")
-  step_end "done"
+  step_end "✓"
 }
 
 # Build Nim binaries in ASDF_NIM_DOWNLOAD_PATH.
 asdf_nim_build() {
+  section_start "II.  Build (${ASDF_DOWNLOAD_PATH//${HOME}/\~})"
+
   cd "$ASDF_DOWNLOAD_PATH"
   local bootstrap
   bootstrap=n
@@ -823,12 +702,14 @@ asdf_nim_build() {
   build_tools=n
   local build_nimble
   build_nimble=n
-  [ -f "./bin/nim$(asdf_nim_exe_ext)" ] || bootstrap=y
-  [ -f "./bin/nimgrep$(asdf_nim_exe_ext)" ] || build_tools=y
-  [ -f "./bin/nimble$(asdf_nim_exe_ext)" ] || build_nimble=y
+  [ -f "./bin/nim" ] || bootstrap=y
+  [ -f "./bin/nimgrep" ] || build_tools=y
+  [ -f "./bin/nimble" ] || build_nimble=y
 
-  if [ "$bootstrap" = "y" ] || [ "$build_tools" = "y" ] || [ "$build_nimble" = "y" ]; then
-    section_start "Building Nim in $ASDF_DOWNLOAD_PATH"
+  if [ "$bootstrap" = "n" ] && [ "$build_tools" = "n" ] && [ "$build_nimble" = "n" ]; then
+    step_start "already built"
+    step_end "✓"
+    return 0
   fi
 
   [ "$bootstrap" = "n" ] || asdf_nim_bootstrap_nim

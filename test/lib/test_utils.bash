@@ -37,7 +37,6 @@ setup_test() {
   # Make plugin files findable via ASDF_DATA_DIR
   mkdir -p "${ASDF_DATA_DIR}/plugins"
   ln -s "$PROJECT_DIR" "${ASDF_DATA_DIR}/plugins/nim"
-  assert [ -f "${ASDF_DATA_DIR}/plugins/nim/share/unofficial-binaries.txt" ]
 }
 
 teardown_test() {
