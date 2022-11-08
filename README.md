@@ -10,7 +10,7 @@ asdf-nim is intended for end-users and continuous integration. Whether macOS or 
 
 [Install asdf](https://asdf-vm.com/guide/getting-started.html), then:
 
-```
+```sh
 asdf plugin add nim # install the asdf-nim plugin
 asdf nim install-deps  # install system-specific dependencies for downloading & building Nim
 ```
