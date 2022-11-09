@@ -234,7 +234,6 @@ Pull requests are welcome!
 Fork this repo, then run:
 
 ```sh
-# warning: this will clear any existing nim installations made via asdf-nim
 rm -rf ~/.asdf/plugins/nim
 git clone git@github.com:<your-username>/asdf-nim.git ~/.asdf/plugins/nim
 ```
