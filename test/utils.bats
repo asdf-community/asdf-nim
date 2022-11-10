@@ -7,6 +7,17 @@ load ../node_modules/bats-assert/load.bash
 load ../lib/utils
 load ./lib/test_utils
 
+setup_file() {
+  PROJECT_DIR="$(realpath "$(dirname "$BATS_TEST_DIRNAME")")"
+  export PROJECT_DIR
+  cd "$PROJECT_DIR"
+  clear_lock git
+}
+
+teardown_file() {
+  clear_lock git
+}
+
 setup() {
   setup_test
 }
@@ -611,7 +622,9 @@ teardown() {
   export ASDF_INSTALL_VERSION
   ASDF_INSTALL_VERSION="HEAD"
   asdf_nim_init "download"
+  get_lock git
   run asdf_nim_download
+  clear_lock git
   assert_success
   assert [ -d "${ASDF_DOWNLOAD_PATH}/.git" ]
   assert [ -f "${ASDF_DOWNLOAD_PATH}/koch.nim" ]
@@ -620,7 +633,9 @@ teardown() {
 @test "asdf_nim_download__version" {
   ASDF_DOWNLOAD_PATH="${ASDF_DATA_DIR}/downloads/nim/${ASDF_INSTALL_VERSION}"
   asdf_nim_init "download"
+  get_lock git
   run asdf_nim_download
+  clear_lock git
   assert_success
   refute [ -d "${ASDF_DOWNLOAD_PATH}/.git" ]
   assert [ -f "${ASDF_DOWNLOAD_PATH}/koch.nim" ]

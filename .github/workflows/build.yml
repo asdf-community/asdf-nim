@@ -46,7 +46,7 @@ jobs:
         run: |
           npm install --include=dev
           [ -n "$(which bats)" ] || npm link bats
-          npm run test
+          npm run test -- --jobs 4
 
   plugin_test_x86:
     name: 👑${{ matrix.nim-version }}/${{ matrix.platform }}/x86_64

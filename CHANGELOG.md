@@ -18,10 +18,6 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 - add: binaries for Nim 1.2.18, 1.6.4, 1.6.6
 
-## v1.4.0 - 2022-05-10
-
-- add: binaries for Nim 1.2.18, 1.6.4, 1.6.6
-
 ### v1.3.2 - 2021-12-27
 
 - fix: #14 ASDF_DATA_DIR default not sensible
@@ -91,7 +87,7 @@ This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.htm
 
 ### v0.2.0 - 2021-01-02
 
-- fix: armv7 could not curl even with update-ca-certificates. Bundle latests cacert.pem.
+- fix: armv7 could not curl even with update-ca-certificates. Bundle latest cacert.pem.
 - fix: perms issue where asdf cleanup handler would block on rm of fusion/.git/\* files
 - workaround: CI: disable TCP offloading so can run macOS tests again
 - feat: add pre-commit git hooks for shfmt and prettier
