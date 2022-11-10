@@ -609,7 +609,7 @@ asdf_nim_fetch() {
     esac
   fi
 
-  # Debian ARMv7 at least seem to have out of date ca certs, so use a newer
+  # Debian ARMv7 at least seem to have out-of-date ca certs, so use a newer
   # one from Mozilla.
   case "$(asdf_nim_normalize_arch)" in
     armv*)
