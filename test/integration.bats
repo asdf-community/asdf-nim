@@ -39,6 +39,7 @@ setup() {
   # `asdf plugin add nim .` would only install from git HEAD.
   # So, we install by copying the plugin to the plugins directory.
   cp -R "$PROJECT_DIR" "${ASDF_DATA_DIR}/plugins/nim"
+  cd "${ASDF_DATA_DIR}/plugins/nim"
 
   # shellcheck disable=SC1090,SC1091
   source "${ASDF_DIR}/asdf.sh"
@@ -51,7 +52,7 @@ setup() {
   if [ -d "${HOME}/.asdf/installs/nim/ref-version-1-6" ]; then
     mkdir -p "${ASDF_DATA_DIR}/installs/nim"
     cp -R "${HOME}/.asdf/installs/nim/ref-version-1-6" "${ASDF_NIM_VERSION_INSTALL_PATH}"
-    rm -rf "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/*"
+    rm -rf "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble"
     asdf reshim
   else
     get_lock git
