@@ -95,6 +95,10 @@ jobs:
           path: ~/.cache
           key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
 
+      - name: Upgrade bash
+        if: runner.os == 'macOS'
+        run: brew install bash parallel
+
       - name: Install asdf
         uses: asdf-vm/actions/setup@v1
 
