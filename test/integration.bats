@@ -51,6 +51,7 @@ setup() {
   if [ -d "${HOME}/.asdf/installs/nim/ref-version-1-6" ]; then
     mkdir -p "${ASDF_DATA_DIR}/installs/nim"
     cp -R "${HOME}/.asdf/installs/nim/ref-version-1-6" "${ASDF_NIM_VERSION_INSTALL_PATH}"
+    rm -rf "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/*"
     asdf reshim
   else
     get_lock git
