@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.0.1 - 2022-11-28
+
+- fix: sorting for `asdf list-all nim`
+
 ## v2.0.0 - 2022-11-08
 
 - add: nightly unstable binary support (ire4ever1190)

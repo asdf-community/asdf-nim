@@ -218,7 +218,8 @@ asdf_nim_list_all_versions() {
     awk -v col=2 '{print $col}' |
     grep '^refs/tags/.*' |
     sed 's/^refs\/tags\///' |
-    sed 's/^v//'
+    sed 's/^v//' |
+    asdf_nim_sort_versions
 }
 
 asdf_nim_normalize_os() {
