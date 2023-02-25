@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout plugin
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - uses: actions/setup-node@v2
         with:
@@ -92,7 +92,7 @@ jobs:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         if: matrix.nim-version != 'ref:HEAD' && matrix.nim-version != 'latest'
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache
           key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
@@ -105,7 +105,7 @@ jobs:
         uses: asdf-vm/actions/setup@v1
 
       - name: Checkout plugin
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       - name: Install asdf-nim & test
         shell: bash
@@ -127,7 +127,7 @@ jobs:
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache
           key: cache-ubuntu-latest-${{ matrix.nim-version }}
@@ -163,13 +163,13 @@ jobs:
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
           path: ~/.cache
           key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
 
       - name: Checkout plugin
-        uses: actions/checkout@v2
+        uses: actions/checkout@v3
 
       # Install & run tests on non-x86
       - uses: uraimo/run-on-arch-action@v2
