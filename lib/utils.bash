@@ -47,7 +47,7 @@ asdf_nim_init() {
   # End configuration options
 
   # Ensure ASDF_DATA_DIR has a value
-  if [ -n "${ASDF_INSTALL_PATH:-}" ]; then
+  if [ -n "${ASDF_INSTALL_PATH-}" ]; then
     export ASDF_DATA_DIR
     ASDF_DATA_DIR="${ASDF_DATA_DIR:-$HOME/.asdf}"
     export ASDF_NIM_TEMP
@@ -94,7 +94,7 @@ asdf_nim_on_exit() {
 
   asdf_nim_cleanup_asdf_download_path() {
     if [ -d "$ASDF_DOWNLOAD_PATH" ]; then
-      if [ "${1:-}" = "force" ]; then
+      if [ "${1-}" = "force" ]; then
         # Force delete
         step_start "rm ${ASDF_DOWNLOAD_PATH//${HOME}/\~}"
         rm -rf "$ASDF_DOWNLOAD_PATH"
@@ -131,7 +131,7 @@ asdf_nim_on_exit() {
       # any cleanup here... *unless* ASDF_NIM_SIGNAL is set, in which case
       # install will not be called and ASDF_DOWNLOAD_PATH should be deleted
       # regardless of --keep-download/always_keep_download.
-      case "${ASDF_NIM_SIGNAL:-}" in
+      case "${ASDF_NIM_SIGNAL-}" in
         SIG*)
           # cleanup everything
           asdf_nim_cleanup_asdf_install_path
@@ -247,7 +247,7 @@ asdf_nim_normalize_arch() {
   arch="${ASDF_NIM_MOCK_MACHINE_NAME:-$(uname -m)}"
   case "$arch" in
     x86_64 | x64 | amd64)
-      if [ -n "$(command -v gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
+      if [ -n "$(command -v gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES-}" ]; then
         # Edge case: detect 386 container on amd64 kernel using __amd64 definition
         IS_AMD64="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __amd64 " | sed 's/#define __amd64 //')"
         if [ "$IS_AMD64" = "1" ]; then
@@ -269,7 +269,7 @@ asdf_nim_normalize_arch() {
       ;;
     arm*)
       arm_arch=""
-      if [ -n "$(command -v gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES:-}" ]; then
+      if [ -n "$(command -v gcc)" ] || [ -n "${ASDF_NIM_MOCK_GCC_DEFINES-}" ]; then
         # Detect arm32 version using __ARM_ARCH definition
         arch_version="$(echo "${ASDF_NIM_MOCK_GCC_DEFINES:-$(gcc -dM -E - </dev/null)}" | grep "#define __ARM_ARCH " | sed 's/#define __ARM_ARCH //')"
         if [ -n "$arch_version" ]; then
@@ -277,7 +277,7 @@ asdf_nim_normalize_arch() {
         fi
       fi
       if [ -z "$arm_arch" ]; then
-        if [ -n "$(command -v dpkg)" ] || [ -n "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-}" ]; then
+        if [ -n "$(command -v dpkg)" ] || [ -n "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE-}" ]; then
           # Detect arm32 version using dpkg
           case "${ASDF_NIM_MOCK_DPKG_ARCHITECTURE:-"$(dpkg --print-architecture)"}" in
             armel) arm_arch="armv5" ;;
@@ -398,7 +398,7 @@ asdf_nim_install_deps() {
 # Detect if the standard C library on the system is musl or not.
 # Echoes "yes" or "no"
 asdf_nim_is_musl() {
-  if [ -n "${ASDF_NIM_MOCK_IS_MUSL:-}" ]; then
+  if [ -n "${ASDF_NIM_MOCK_IS_MUSL-}" ]; then
     echo "$ASDF_NIM_MOCK_IS_MUSL"
   else
     if [ -n "$(command -v ldd)" ]; then
@@ -464,7 +464,7 @@ asdf_nim_nightly_url() {
 }
 
 asdf_nim_github_token() {
-  echo "${GITHUB_TOKEN:-${GITHUB_API_TOKEN:-}}"
+  echo "${GITHUB_TOKEN:-${GITHUB_API_TOKEN-}}"
 }
 
 # Echo the source archive URL (from nim-lang.org).
