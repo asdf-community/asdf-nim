@@ -28,7 +28,7 @@ jobs:
           python-version: '3.x'
 
       - name: Install shfmt
-        uses: mfinelli/setup-shfmt@v2
+        uses: mfinelli/setup-shfmt@v3
 
       - name: Install lintball
         run: |
