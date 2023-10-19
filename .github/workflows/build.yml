@@ -38,7 +38,7 @@ jobs:
 
     steps:
       - name: Checkout plugin
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - uses: actions/setup-node@v3
         with:
@@ -105,7 +105,7 @@ jobs:
         uses: asdf-vm/actions/setup@v1
 
       - name: Checkout plugin
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Install asdf-nim & test
         shell: bash
@@ -169,7 +169,7 @@ jobs:
           key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
 
       - name: Checkout plugin
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       # Install & run tests on non-x86
       - uses: uraimo/run-on-arch-action@v2
