@@ -92,7 +92,7 @@ jobs:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         if: matrix.nim-version != 'ref:HEAD' && matrix.nim-version != 'latest'
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache
           key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
@@ -127,7 +127,7 @@ jobs:
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache
           key: cache-ubuntu-latest-${{ matrix.nim-version }}
@@ -163,7 +163,7 @@ jobs:
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ~/.cache
           key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
