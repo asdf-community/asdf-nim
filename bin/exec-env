@@ -11,7 +11,7 @@
 if [ "${ASDF_NIM_MACOS_M1_HOMEBREW_WORKAROUND:-yes}" = "yes" ] &&
   [ "$(uname)" = "Darwin" ] &&
   [ "$(uname -m)" = "arm64" ] &&
-  [ "${DYLD_LIBRARY_PATH:-}" = "" ] &&
+  [ "${DYLD_LIBRARY_PATH-}" = "" ] &&
   [ -d /opt/homebrew/lib ]; then
   export DYLD_LIBRARY_PATH
   DYLD_LIBRARY_PATH=/opt/homebrew/lib
@@ -28,7 +28,7 @@ export NIMBLE_DIR
 # Otherwise if the current working directory has a nimbledeps directory, use that.
 # Otherwise, use the nimble directory within ASDF_INSTALL_PATH.
 # see https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages
-if [ "${NIMBLE_DIR:-}" = "" ] &&
+if [ "${NIMBLE_DIR-}" = "" ] &&
   [ ! -d "${PWD}/nimbledeps" ]; then
   NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
 fi
