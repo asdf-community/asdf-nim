@@ -5,7 +5,7 @@ name: build
 # yamllint disable rule:truthy
 on:
   pull_request:
-    branches: ['*']
+    branches: ["*"]
     paths:
       - .github/workflows/build.yml # changes to this file
       - bin/** # changes to asdf entrypoint scripts
@@ -15,8 +15,8 @@ on:
       - test/** # changes to tests
       - package*.json # bats upgrade
   push:
-    branches: ['main']
-    tags: ['*']
+    branches: ["main"]
+    tags: ["*"]
     paths:
       - .github/workflows/build.yml # changes to this file
       - bin/** # changes to asdf entrypoint scripts
@@ -38,11 +38,11 @@ jobs:
 
     steps:
       - name: Checkout plugin
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
-      - uses: actions/setup-node@v2
+      - uses: actions/setup-node@v4
         with:
-          node-version: '15'
+          node-version: "22"
 
       - name: Run tests
         run: |
@@ -60,39 +60,39 @@ jobs:
         include:
           # Stable binary
           - os: ubuntu-latest
-            nim-version: 'latest:1.6'
+            nim-version: "latest:1.6"
             platform: linux-glibc
 
           # Stable binary
           - os: ubuntu-latest
-            nim-version: 'latest:1.4'
+            nim-version: "latest:2.2"
             platform: linux-glibc
 
           # Unstable binary
           - os: ubuntu-latest
-            nim-version: 'ref:version-1-6'
+            nim-version: "ref:version-2-0"
             platform: linux-glibc
 
           # Unstable binary
           - os: macos-latest
-            nim-version: 'ref:devel'
+            nim-version: "ref:devel"
             platform: macOS
 
           # Build from source
           - os: ubuntu-latest
-            nim-version: 'ref:HEAD'
+            nim-version: "ref:HEAD"
             platform: linux-glibc
 
           # Build from source
           - os: macos-latest
-            nim-version: 'latest:1.4'
+            nim-version: "latest:2.2"
             platform: macOS
 
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
         if: matrix.nim-version != 'ref:HEAD' && matrix.nim-version != 'latest'
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache
           key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
@@ -105,7 +105,7 @@ jobs:
         uses: asdf-vm/actions/setup@v1
 
       - name: Checkout plugin
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - name: Install asdf-nim & test
         shell: bash
@@ -120,14 +120,14 @@ jobs:
 
   # Test musl installation
   plugin_test_x86_musl:
-    name: 👑1.6.8/linux-musl/x86_64
+    name: 👑2.2.x/linux-musl/x86_64
     runs-on: ubuntu-latest
     container: alpine:latest
 
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache
           key: cache-ubuntu-latest-${{ matrix.nim-version }}
@@ -139,7 +139,7 @@ jobs:
         uses: asdf-vm/actions/plugin-test@v1
         with:
           command: nim -v
-          version: 'latest:1.6'
+          version: "latest:2.2"
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
@@ -152,24 +152,24 @@ jobs:
         include:
           # Unstable binary
           - runs-on: ubuntu-latest
-            nim-version: 'ref:version-1-6'
+            nim-version: "ref:version-2-2"
             arch: aarch64
 
           # Unstable binary
           - runs-on: ubuntu-latest
-            nim-version: 'ref:version-1-4'
+            nim-version: "ref:version-1-6"
             arch: armv7
 
     steps:
       # Optimization: re-use cached Nim->C compilation
       - name: Restore cache
-        uses: actions/cache@v2
+        uses: actions/cache@v4
         with:
           path: ~/.cache
           key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
 
       - name: Checkout plugin
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       # Install & run tests on non-x86
       - uses: uraimo/run-on-arch-action@v2

@@ -1,9 +1,26 @@
 {
+  "lintballrc_version": "2",
   "check_args": {
-    "yamllint": "-c ./.yamllint.yml"
+    "yamllint": [
+      "{{tool}}",
+      "--format",
+      "{{format}}",
+      "--strict",
+      "--config-file",
+      "./.yamllint.yml",
+      "{{path}}"
+    ]
   },
   "write_args": {
-    "yamllint": "-c ./.yamllint.yml"
+    "yamllint": [
+      "{{tool}}",
+      "--format",
+      "{{format}}",
+      "--strict",
+      "--config-file",
+      "./.yamllint.yml",
+      "{{path}}"
+    ]
   },
   "use": {
     "autoflake": false,
@@ -14,16 +31,9 @@
     "prettier": true,
     "prettier-eslint": true,
     "pylint": false,
-    "rubocop": false,
     "shellcheck": true,
     "shfmt": true,
     "yamllint": true
   },
-  "ignores": [
-    "*/.git/*",
-    "*/Gemfile.lock",
-    "*/Pipfile.lock",
-    "*/venv/*",
-    "*/src/*"
-  ]
+  "ignores": ["*/.git/*", "*/venv/*", "*/src/*"]
 }
