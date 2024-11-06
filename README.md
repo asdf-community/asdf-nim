@@ -1,4 +1,4 @@
-![build](https://github.com/asdf-community/asdf-nim/workflows/build/badge.svg) ![lint](https://github.com/asdf-community/asdf-nim/workflows/lint/badge.svg) [![Join the chat at https://gitter.im/asdf-nim/community](https://badges.gitter.im/asdf-nim/community.svg)](https://gitter.im/asdf-nim/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![build](https://github.com/asdf-community/asdf-nim/workflows/build/badge.svg) [![lint](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml/badge.svg)](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml)
 
 # asdf-nim
 
