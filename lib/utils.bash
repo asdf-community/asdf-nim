@@ -497,7 +497,7 @@ asdf_nim_download_via_git() {
   rm -rf "$ASDF_NIM_DOWNLOAD_PATH"
   mkdir -p "$ASDF_NIM_DOWNLOAD_PATH"
   (
-    cd "$ASDF_NIM_DOWNLOAD_PATH"
+    cd "$ASDF_NIM_DOWNLOAD_PATH" || exit
     git init
     git remote add origin "$SOURCE_REPO"
     git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
@@ -629,7 +629,7 @@ asdf_nim_fetch() {
 }
 
 asdf_nim_bootstrap_nim() {
-  cd "$ASDF_DOWNLOAD_PATH"
+  cd "$ASDF_DOWNLOAD_PATH" || exit
 
   local nim
   nim="./bin/nim"
@@ -662,7 +662,7 @@ asdf_nim_build_koch() {
   local nim
   nim="$1"
   step_start "build koch"
-  cd "$ASDF_DOWNLOAD_PATH"
+  cd "$ASDF_DOWNLOAD_PATH" || exit
   # shellcheck disable=SC2046
   eval "$nim" c --skipParentCfg:on $(printf ' %q ' "${NIM_ARGS[@]}") koch
   step_end "✓"
@@ -670,7 +670,7 @@ asdf_nim_build_koch() {
 
 asdf_nim_build_nim() {
   step_start "build nim"
-  cd "$ASDF_DOWNLOAD_PATH"
+  cd "$ASDF_DOWNLOAD_PATH" || exit
   # shellcheck disable=SC2046
   eval ./koch boot $(printf ' %q ' "${NIM_ARGS[@]}")
   step_end "✓"
@@ -678,7 +678,7 @@ asdf_nim_build_nim() {
 
 asdf_nim_build_tools() {
   step_start "build tools"
-  cd "$ASDF_DOWNLOAD_PATH"
+  cd "$ASDF_DOWNLOAD_PATH" || exit
   # shellcheck disable=SC2046
   eval ./koch tools $(printf ' %q ' "${NIM_ARGS[@]}")
   step_end "✓"
@@ -686,7 +686,7 @@ asdf_nim_build_tools() {
 
 asdf_nim_build_nimble() {
   step_start "build nimble"
-  cd "$ASDF_DOWNLOAD_PATH"
+  cd "$ASDF_DOWNLOAD_PATH" || exit
   # shellcheck disable=SC2046
   eval ./koch nimble $(printf ' %q ' "${NIM_ARGS[@]}")
   step_end "✓"
@@ -696,7 +696,7 @@ asdf_nim_build_nimble() {
 asdf_nim_build() {
   section_start "II.  Build (${ASDF_DOWNLOAD_PATH//${HOME}/\~})"
 
-  cd "$ASDF_DOWNLOAD_PATH"
+  cd "$ASDF_DOWNLOAD_PATH" || exit
   local bootstrap
   bootstrap=n
   local build_tools
