@@ -7,9 +7,10 @@ load ../node_modules/bats-assert/load.bash
 load ./lib/test_utils
 
 setup_file() {
+  # shellcheck disable=SC2154
   PROJECT_DIR="$(realpath "$(dirname "$BATS_TEST_DIRNAME")")"
   export PROJECT_DIR
-  cd "$PROJECT_DIR"
+  cd "$PROJECT_DIR" || exit
   clear_lock git
 
   ASDF_DIR="$(mktemp -t asdf-nim-integration-tests.XXXX -d)"
@@ -17,7 +18,7 @@ setup_file() {
 
   get_lock git
   git clone \
-    --branch=v0.10.2 \
+    --branch=v0.14.1 \
     --depth=1 \
     https://github.com/asdf-vm/asdf.git \
     "$ASDF_DIR"
@@ -39,7 +40,7 @@ setup() {
   # `asdf plugin add nim .` would only install from git HEAD.
   # So, we install by copying the plugin to the plugins directory.
   cp -R "$PROJECT_DIR" "${ASDF_DATA_DIR}/plugins/nim"
-  cd "${ASDF_DATA_DIR}/plugins/nim"
+  cd "${ASDF_DATA_DIR}/plugins/nim" || exit
 
   # shellcheck disable=SC1090,SC1091
   source "${ASDF_DIR}/asdf.sh"
@@ -93,7 +94,7 @@ info() {
   assert [ -f "${ASDF_DATA_DIR}/shims/nimjson" ]
 
   # Assert that correct nimjson is used
-  assert [ -n "$(nimjson -v | grep ' version 1\.2\.8')" ]
+  assert [ -n "$(nimjson -v | grep ' version 1\.2\.8' || true)" ]
 
   # Assert that nim finds nimble packages
   echo "import nimjson" >"${ASDF_NIM_TEST_TEMP}/testnimble.nim"
