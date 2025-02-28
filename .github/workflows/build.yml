@@ -136,7 +136,7 @@ jobs:
         run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep build-base
 
       - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v1
+        uses: asdf-vm/actions/plugin-test@v3
         with:
           command: nim -v
           version: "latest:2.2"
