@@ -10,7 +10,7 @@ load ./lib/test_utils
 setup_file() {
   PROJECT_DIR="$(realpath "$(dirname "$BATS_TEST_DIRNAME")")"
   export PROJECT_DIR
-  cd "$PROJECT_DIR"
+  cd "$PROJECT_DIR" || exit
   clear_lock git
 }
 
@@ -130,14 +130,15 @@ teardown() {
   assert_line 1.2.8
   assert_line 1.4.0
   assert_line 1.6.0
+  assert_line 2.2.0
 }
 
 @test "asdf_nim_list_all_versions__displays_in_order" {
-  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.0' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.4.8' | sed 's/:.*//')" ]
-  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.2' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.0' | sed 's/:.*//')" ]
-  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.4' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.2' | sed 's/:.*//')" ]
-  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.6' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.4' | sed 's/:.*//')" ]
-  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.8' | sed 's/:.*//')" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.6' | sed 's/:.*//')" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.0' | sed 's/:.*//' | head -n1)" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.4.8' | sed 's/:.*//' | head -n1)" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.2' | sed 's/:.*//' | head -n1)" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.0' | sed 's/:.*//' | head -n1)" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.4' | sed 's/:.*//' | head -n1)" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.2' | sed 's/:.*//' | head -n1)" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.6' | sed 's/:.*//' | head -n1)" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.4' | sed 's/:.*//' | head -n1)" ]
+  assert [ "$(asdf_nim_list_all_versions | grep -Fn '1.6.8' | sed 's/:.*//' | head -n1)" -gt "$(asdf_nim_list_all_versions | grep -Fn '1.6.6' | sed 's/:.*//' | head -n1)" ]
 }
 
 @test "asdf_nim_normalize_os" {

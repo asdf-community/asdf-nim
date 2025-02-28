@@ -1,4 +1,4 @@
-![build](https://github.com/asdf-community/asdf-nim/workflows/build/badge.svg) ![lint](https://github.com/asdf-community/asdf-nim/workflows/lint/badge.svg) [![Join the chat at https://gitter.im/asdf-nim/community](https://badges.gitter.im/asdf-nim/community.svg)](https://gitter.im/asdf-nim/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
+![build](https://github.com/asdf-community/asdf-nim/workflows/build/badge.svg) [![lint](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml/badge.svg)](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml)
 
 # asdf-nim
 
@@ -22,12 +22,12 @@ When available for the version and platform, the plugin will install pre-compile
 ```sh
 # latest stable version of Nim
 asdf install nim latest
-# or latest stable minor/patch release of Nim 1.x.x
-asdf install nim latest:1
-# or latest stable patch release of Nim 1.6.x
-asdf install nim latest:1.6
+# or latest stable minor/patch release of Nim 2.x.x
+asdf install nim latest:2
+# or latest stable patch release of Nim 2.2.x
+asdf install nim latest:2.2
 # or specific patch release
-asdf install nim 1.6.8
+asdf install nim 2.2.0
 ```
 
 ### To install a nightly build of Nim:
@@ -35,14 +35,10 @@ asdf install nim 1.6.8
 ```sh
 # nightly unstable build of devel branch
 asdf install nim ref:devel
+# or nightly unstable build of version-2-2 branch, i.e. the 2.2.x release + any recent backports from devel
+asdf install nim ref:version-2-2
 # or nightly unstable build of version-1-6 branch, i.e. the latest 1.6.x release + any recent backports from devel
 asdf install nim ref:version-1-6
-# or nightly unstable build of version-1-4 branch, i.e. the latest 1.4.x release + any recent backports from devel
-asdf install nim ref:version-1-4
-# or nightly unstable build of version-1-2 branch, i.e. the 1.2.x release + any recent backports from devel
-asdf install nim ref:version-1-2
-# or nightly unstable build of version-1-0 branch, i.e. the 1.0.x release + any recent backports from devel
-asdf install nim ref:version-1-0
 ```
 
 ### To build a specific git commit or branch of Nim:
@@ -52,14 +48,14 @@ asdf install nim ref:version-1-0
 asdf install nim ref:HEAD
 # build using the specific commit 7d15fdd
 asdf install nim ref:7d15fdd
-# build using the tagged release v1.6.8
-asdf install nim ref:v1.6.8
+# build using the tagged release v2.2.0
+asdf install nim ref:v2.2.0
 ```
 
 ### To set the default version of Nim for your user:
 
 ```sh
-asdf global nim latest:1.6
+asdf global nim latest:2.2
 ```
 
 This creates a `.tool-versions` file in your home directory specifying the Nim version.
@@ -68,7 +64,7 @@ This creates a `.tool-versions` file in your home directory specifying the Nim v
 
 ```sh
 cd my-project
-asdf local nim latest:1.6
+asdf local nim latest:2.2
 ```
 
 This creates a `.tool-versions` file in the current directory specifying the Nim version. For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
@@ -101,18 +97,18 @@ jobs:
       include:
         # Test against stable Nim builds on linux
         - os: ubuntu-latest
-          nim-version: latest:1.6
+          nim-version: latest:2.2
         - os: ubuntu-latest
-          nim-version: latest:1.4
+          nim-version: latest:1.6
 
-        # Test against unstable nightly Nim builds on macos (faster than building from source)
+        # Test against unstable nightly Nim builds on macos x64 (faster than building from source)
+        - os: macos-latest
+          nim-version: ref:version-2-2
         - os: macos-latest
           nim-version: ref:version-1-6
-        - os: macos-latest
-          nim-version: ref:version-1-4
     steps:
       - name: Checkout
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
       - name: Install Nim
         uses: asdf-vm/actions/install@v1
         with:
@@ -144,15 +140,15 @@ jobs:
       fail-fast: false
       matrix:
         include:
-          - nim-version: ref:version-1-6
+          - nim-version: ref:version-2-2
             arch: armv7
-          - nim-version: ref:version-1-2
+          - nim-version: ref:version-1-6
             arch: aarch64
 
     runs-on: ubuntu-latest
     steps:
       - name: Checkout Nim project
-        uses: actions/checkout@v2
+        uses: actions/checkout@v4
 
       - uses: uraimo/run-on-arch-action@v2
         name: Install Nim & run tests
@@ -172,7 +168,7 @@ jobs:
             # Install asdf and dependencies
             apt-get update -q -y
             apt-get -qq install -y build-essential curl git
-            git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf" --branch v0.10.2
+            git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf" --branch v0.14.1
 
           env: |
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

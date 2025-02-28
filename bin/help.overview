@@ -16,7 +16,7 @@ echo 'Unstable binaries:'
 echo '- Linux: x86_64, x86, armv7l, aarch64'
 echo '- macOS: x86_64'
 echo '- `asdf install nim ref:devel` for the latest nightly build of github.com/nim-lang/Nim/tree/devel'
-echo '- `asdf install nim ref:version-1-6` for the latest nightly build of github.com/nim-lang/Nim/tree/version-1-6'
+echo '- `asdf install nim ref:version-2-0` for the latest nightly build of github.com/nim-lang/Nim/tree/version-2-0'
 echo '- `asdf install nim ref:version-1-4` for the latest nightly build of github.com/nim-lang/Nim/tree/version-1-4'
 echo '- etc'
 echo
