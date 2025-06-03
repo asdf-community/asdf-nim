@@ -4,7 +4,7 @@ set -ueo pipefail
 
 regenerate() {
   # After a nimble operation, regenerate nim shims to find new package binaries
-  if "$(which asdf)" reshim nim; then
+  if "$(command -v asdf)" reshim nim; then
     echo "  asdf-nim: regenerated shims"
   else
     echo "  asdf-nim: failed to regenerate shims"
@@ -17,7 +17,7 @@ trap 'trap - HUP; SIGNAL=SIGHUP; regenerate; kill -HUP $$' HUP
 trap 'trap - INT; SIGNAL=SIGINT; regenerate; kill -INT $$' INT
 trap 'trap - TERM; SIGNAL=SIGTERM; regenerate; kill -TERM $$' TERM
 
-if "$(dirname $(asdf which nim))/nimble" "$@"; then
+if "$(dirname "$(asdf which nim)")/nimble" "$@"; then
   case "${1-}" in
     install | develop | uninstall)
       regenerate
