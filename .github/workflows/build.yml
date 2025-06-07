@@ -102,7 +102,7 @@ jobs:
         run: brew install bash parallel
 
       - name: Install asdf
-        uses: asdf-vm/actions/setup@v3
+        uses: asdf-vm/actions/setup@v4
 
       - name: Checkout plugin
         uses: actions/checkout@v4
@@ -136,7 +136,7 @@ jobs:
         run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep build-base
 
       - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v3
+        uses: asdf-vm/actions/plugin-test@v4
         with:
           command: nim -v
           version: "latest:2.2"
@@ -188,7 +188,9 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get -qq install -y curl git xz-utils build-essential
-            git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
+            bash <(curl -sL https://git.io/go-installer)
+            source /root/.bashrc
+            go install github.com/asdf-vm/asdf/cmd/asdf@master
 
           env: |
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -196,7 +198,6 @@ jobs:
           run: |
             set -exo pipefail
             set +u
-            . "${HOME}/.asdf/asdf.sh"
             asdf plugin test nim . \
               --asdf-tool-version \
               "${{ matrix.nim-version }}" \
