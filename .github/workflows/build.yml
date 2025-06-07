@@ -188,14 +188,12 @@ jobs:
             --volume "${HOME}/.cache:/root/.cache"
             --volume "${GITHUB_WORKSPACE}:/workspace"
           shell: /usr/bin/env bash
-          env: |
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           setup: |
             mkdir -p "${HOME}/.cache"
-          install: |
-            exec ./scripts/ci-install.sh
           run: |
-            exec ./scripts/ci-test-plugin.sh \
+            set -uexo pipefail
+            cd /workspace
+            ./scripts/ci-install.sh
+            ./scripts/ci-test-plugin.sh \
               --nim-version "${{ matrix.nim-version }}" \
               --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
-              --workspace "/workspace"
