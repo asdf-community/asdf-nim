@@ -133,7 +133,7 @@ jobs:
 
   # Test musl installation
   plugin_test_x86_musl:
-    name: 👑2.2.x/linux-musl/x86_64
+    name: 👑2.2.4/linux-musl/x86_64
     runs-on: ubuntu-latest
     container: alpine:latest
 
@@ -143,7 +143,7 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache
-          key: cache-ubuntu-latest-${{ matrix.nim-version }}
+          key: cache-ubuntu-latest-2.2.4
 
       - name: Install dependencies
         run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep build-base
@@ -153,7 +153,7 @@ jobs:
         with:
           asdf_branch: master
           command: nim -v
-          version: "latest:2.2"
+          version: "2.2.4"
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
@@ -210,11 +210,21 @@ jobs:
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           run: |
-            set -exo pipefail
-            set +u
+            set -uexo pipefail
+            if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
+              # Extract the part after "latest:"
+              version_prefix="${{ matrix.nim-version }}"
+              version_prefix=${version_prefix#latest:}
+              # Run asdf latest command to get the actual version
+              tool_version=$(asdf latest nim "$version_prefix")
+            else
+              # Use the matrix version directly
+              tool_version="${{ matrix.nim-version }}"
+            fi
+
             asdf plugin test nim . \
               --asdf-tool-version \
-              "${{ matrix.nim-version }}" \
+              "${tool_version}" \
               --asdf-plugin-gitref \
               "${GITHUB_SHA}" \
               nim -v
