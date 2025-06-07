@@ -103,6 +103,8 @@ jobs:
 
       - name: Install asdf
         uses: asdf-vm/actions/setup@v4
+        with:
+          asdf_branch: master
 
       - name: Checkout plugin
         uses: actions/checkout@v4
@@ -149,6 +151,7 @@ jobs:
       - name: Test plugin
         uses: asdf-vm/actions/plugin-test@v4
         with:
+          asdf_branch: master
           command: nim -v
           version: "latest:2.2"
 
