@@ -79,7 +79,8 @@ rm -rf /tmp/asdf-test-nim || true
 git config --global --add safe.directory "${WORKSPACE}"/.git
 git clone "${WORKSPACE}" /tmp/asdf-test-nim
 cd /tmp/asdf-test-nim || exit 1
-git checkout -b tmp-test-branch "${COMMIT}" || true
+git checkout -b tmp-test-branch || true
+git reset --hard "${COMMIT}" || true
 asdf plugin test nim "${PWD}" \
   --asdf-tool-version \
   "${tool_version}" \
