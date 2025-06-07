@@ -113,9 +113,9 @@ jobs:
         shell: bash
         run: |
           set -uexo pipefail
-          asdf plugin add nim .
           if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
-            # Extract the part after "latest:"
+          # Extract the part after "latest:"
+            asdf plugin add nim .
             version_prefix="${{ matrix.nim-version }}"
             version_prefix=${version_prefix#latest:}
             # Run asdf latest command to get the actual version
@@ -203,7 +203,8 @@ jobs:
           install: |
             apt-get update -q -y
             apt-get -qq install -y curl git xz-utils build-essential
-            bash <(curl -sL https://git.io/go-installer)
+            curl -L https://git.io/go-installer.sh -o go.sh
+            bash go.sh
             source /root/.bashrc
             go install github.com/asdf-vm/asdf/cmd/asdf@master
 
@@ -212,9 +213,9 @@ jobs:
 
           run: |
             set -uexo pipefail
-            asdf plugin add nim .
             if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
-              # Extract the part after "latest:"
+            # Extract the part after "latest:"
+              asdf plugin add nim .
               version_prefix="${{ matrix.nim-version }}"
               version_prefix=${version_prefix#latest:}
               # Run asdf latest command to get the actual version
