@@ -213,6 +213,8 @@ jobs:
 
           run: |
             set -uexo pipefail
+            source /root/.bashrc
+
             if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
             # Extract the part after "latest:"
               asdf plugin add nim .
