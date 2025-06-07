@@ -7,6 +7,14 @@ set -uexo pipefail
 # Parse command line arguments
 NIM_VERSION=""
 COMMIT=""
+WORKSPACE="${PWD}"
+
+usage() {
+  echo "Usage: $0 --nim-version VERSION --commit COMMIT --workspace WORKSPACE"
+  echo "  --nim-version VERSION   Specify the Nim version to test (e.g., latest:1.4.8)"
+  echo "  --commit COMMIT         Specify the commit hash to test"
+  echo "  --workspace WORKSPACE   Specify the workspace directory containing the plugin (default: current directory)"
+}
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
@@ -18,9 +26,13 @@ while [[ $# -gt 0 ]]; do
       COMMIT="$2"
       shift 2
       ;;
+    --workspace)
+      WORKSPACE="$2"
+      shift 2
+      ;;
     *)
       echo "Unknown option: $1"
-      echo "Usage: $0 --nim-version VERSION"
+      usage
       exit 1
       ;;
   esac
@@ -28,13 +40,19 @@ done
 
 if [[ -z ${NIM_VERSION} ]]; then
   echo "Error: --nim-version parameter is required"
-  echo "Usage: $0 --nim-version VERSION --commit COMMIT"
+  usage
   exit 1
 fi
 
 if [[ -z ${COMMIT} ]]; then
   echo "Error: --commit parameter is required"
-  echo "Usage: $0 --nim-version VERSION --commit COMMIT"
+  usage
+  exit 1
+fi
+
+if [[ -z ${WORKSPACE} ]]; then
+  echo "Error: --workspace parameter must not be empty"
+  usage
   exit 1
 fi
 
@@ -58,7 +76,7 @@ fi
 asdf plugin remove asdf-test-nim || true
 
 rm -rf /tmp/asdf-test-nim || true
-git clone . /tmp/asdf-test-nim
+git clone "${WORKSPACE}" /tmp/asdf-test-nim
 cd /tmp/asdf-test-nim || exit 1
 git checkout -b tmp-test-branch "${COMMIT}" || true
 asdf plugin test nim "${PWD}" \

@@ -186,6 +186,7 @@ jobs:
           distro: bookworm
           dockerRunArgs: |
             --volume "${HOME}/.cache:/root/.cache"
+            --volume "${GITHUB_WORKSPACE}:/workspace"
           shell: /usr/bin/env bash
           env: |
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
@@ -197,3 +198,4 @@ jobs:
             exec ./scripts/ci-test-plugin.sh \
               --nim-version "${{ matrix.nim-version }}" \
               --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
+              --workspace "/workspace"
