@@ -4,6 +4,8 @@
 
 set -uexo pipefail
 
+export PATH="${HOME}/go/bin:${PATH}"
+
 # Parse command line arguments
 NIM_VERSION=""
 COMMIT=""
@@ -58,8 +60,6 @@ fi
 
 update-ca-certificates || true
 
-export PATH="${HOME}/go/bin:${PATH}"
-
 if [[ ${NIM_VERSION} == latest:* ]]; then
   # Extract the part after "latest:"
   version_prefix="${NIM_VERSION}"
@@ -76,6 +76,7 @@ fi
 asdf plugin remove asdf-test-nim || true
 
 rm -rf /tmp/asdf-test-nim || true
+git config --global --add safe.directory "${WORKSPACE}"/.git
 git clone "${WORKSPACE}" /tmp/asdf-test-nim
 cd /tmp/asdf-test-nim || exit 1
 git checkout -b tmp-test-branch "${COMMIT}" || true
