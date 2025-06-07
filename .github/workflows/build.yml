@@ -114,7 +114,7 @@ jobs:
         run: |
           exec ./scripts/ci-test-plugin.sh \
             --nim-version ${{ matrix.nim-version }} \
-            --commit "${GITHUB_REF_NAME}"
+            --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
 
   # Test musl installation
   plugin_test_x86_musl:
@@ -146,7 +146,7 @@ jobs:
         run: |
           exec ./scripts/ci-test-plugin.sh \
             --nim-version latest:2.2 \
-            --commit "${GITHUB_REF_NAME}"
+            --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
@@ -196,4 +196,4 @@ jobs:
           run: |
             exec ./scripts/ci-test-plugin.sh \
               --nim-version "${{ matrix.nim-version }}" \
-              --commit "${GITHUB_REF_NAME}"
+              --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
