@@ -217,7 +217,8 @@ jobs:
 
             # Update the package list and install dependencies
             apt-get update -q -y
-            apt-get -qq install -y curl git xz-utils build-essential
+            apt-get -qq install -y curl git xz-utils build-essential ca-certificates
+            update-ca-certificates
             apt-get -qq install -y -t bookworm-backports golang-go
 
             # Install asdf
@@ -229,6 +230,7 @@ jobs:
 
           run: |
             set -uexo pipefail
+            update-ca-certificates
 
             source "${HOME}/.bashrc"
 
