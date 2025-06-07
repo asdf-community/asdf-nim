@@ -113,6 +113,7 @@ jobs:
         shell: bash
         run: |
           set -uexo pipefail
+          asdf plugin add nim .
           if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
             # Extract the part after "latest:"
             version_prefix="${{ matrix.nim-version }}"
@@ -211,6 +212,7 @@ jobs:
 
           run: |
             set -uexo pipefail
+            asdf plugin add nim .
             if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
               # Extract the part after "latest:"
               version_prefix="${{ matrix.nim-version }}"
