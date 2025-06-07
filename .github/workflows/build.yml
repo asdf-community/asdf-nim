@@ -113,11 +113,13 @@ jobs:
         shell: bash
         run: |
           set -uexo pipefail
+
           if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
-          # Extract the part after "latest:"
-            asdf plugin add nim .
+            # Extract the part after "latest:"
             version_prefix="${{ matrix.nim-version }}"
             version_prefix=${version_prefix#latest:}
+
+            asdf plugin add nim .
             # Run asdf latest command to get the actual version
             tool_version=$(asdf latest nim "$version_prefix")
           else
@@ -191,7 +193,7 @@ jobs:
         name: Install Nim & run tests
         with:
           arch: ${{ matrix.arch }}
-          distro: buster
+          distro: bookworm
 
           dockerRunArgs: |
             --volume "${HOME}/.cache:/root/.cache"
@@ -201,26 +203,42 @@ jobs:
           shell: /usr/bin/env bash
 
           install: |
+            set -uexo pipefail
+
+            # Add Debian backports repository for newer Golang versions
+            cat > /etc/apt/sources.list.d/debian-backports.sources << EOF
+            Types: deb deb-src
+            URIs: http://deb.debian.org/debian
+            Suites: bookworm-backports
+            Components: main
+            Enabled: yes
+            Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+            EOF
+
+            # Update the package list and install dependencies
             apt-get update -q -y
             apt-get -qq install -y curl git xz-utils build-essential
-            curl -L https://git.io/go-installer.sh -o go.sh
-            bash go.sh
-            source /root/.bashrc
+            apt-get -qq install -y -t bookworm-backports golang-go
+
+            # Install asdf
             go install github.com/asdf-vm/asdf/cmd/asdf@master
+            echo 'export PATH="${HOME}/go/bin:${PATH}"' >> "${HOME}/.bashrc"
 
           env: |
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           run: |
             set -uexo pipefail
-            source /root/.bashrc
+
+            source "${HOME}/.bashrc"
 
             if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
-            # Extract the part after "latest:"
-              asdf plugin add nim .
+              # Extract the part after "latest:"
               version_prefix="${{ matrix.nim-version }}"
               version_prefix=${version_prefix#latest:}
+
               # Run asdf latest command to get the actual version
+              asdf plugin add nim .
               tool_version=$(asdf latest nim "$version_prefix")
             else
               # Use the matrix version directly
