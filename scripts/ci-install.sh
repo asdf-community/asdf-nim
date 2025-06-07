@@ -15,7 +15,7 @@ export PATH="/root/go/bin:${PATH}"
 apt-get update -q -y
 apt-get -qq install -y ca-certificates curl gnupg
 
-update-ca-certificates
+update-ca-certificates || true
 
 # Install apt-fast for faster package downloads
 cat >/etc/apt/sources.list.d/apt-fast.list <<EOF

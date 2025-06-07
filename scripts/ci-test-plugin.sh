@@ -38,7 +38,7 @@ if [[ -z ${COMMIT} ]]; then
   exit 1
 fi
 
-update-ca-certificates
+update-ca-certificates || true
 
 export PATH="${HOME}/go/bin:${PATH}"
 
