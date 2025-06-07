@@ -109,34 +109,16 @@ jobs:
       - name: Checkout plugin
         uses: actions/checkout@v4
 
-      - name: Install asdf-nim & test
+      - name: Test plugin
         shell: bash
         run: |
-          set -uexo pipefail
-
-          if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
-            # Extract the part after "latest:"
-            version_prefix="${{ matrix.nim-version }}"
-            version_prefix=${version_prefix#latest:}
-
-            asdf plugin add nim .
-            # Run asdf latest command to get the actual version
-            tool_version=$(asdf latest nim "$version_prefix")
-          else
-            # Use the matrix version directly
-            tool_version="${{ matrix.nim-version }}"
-          fi
-
-          asdf plugin test nim . \
-            --asdf-tool-version \
-            "${tool_version}" \
-            --asdf-plugin-gitref \
-            "${GITHUB_SHA}" \
-            nim -v
+          exec scripts/ci-test-plugin.sh \
+            --nim-version ${{ matrix.nim-version }} \
+            --commit "${GITHUB_REF_NAME}"
 
   # Test musl installation
   plugin_test_x86_musl:
-    name: 👑2.2.4/linux-musl/x86_64
+    name: 👑2.2.x/linux-musl/x86_64
     runs-on: ubuntu-latest
     container: alpine:latest
 
@@ -152,11 +134,11 @@ jobs:
         run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep build-base
 
       - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v4
-        with:
-          asdf_branch: master
-          command: nim -v
-          version: "2.2.4"
+        shell: bash
+        run: |
+          exec scripts/ci-test-plugin.sh \
+            --nim-version latest:2.2 \
+            --commit "${GITHUB_REF_NAME}"
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
@@ -190,66 +172,20 @@ jobs:
 
       # Install & run tests on non-x86
       - uses: uraimo/run-on-arch-action@v3
-        name: Install Nim & run tests
+        name: Test plugin
         with:
           arch: ${{ matrix.arch }}
           distro: bookworm
-
           dockerRunArgs: |
             --volume "${HOME}/.cache:/root/.cache"
-
-          setup: mkdir -p "${HOME}/.cache"
-
           shell: /usr/bin/env bash
-
-          install: |
-            set -uexo pipefail
-
-            # Add Debian backports repository for newer Golang versions
-            cat > /etc/apt/sources.list.d/debian-backports.sources << EOF
-            Types: deb deb-src
-            URIs: http://deb.debian.org/debian
-            Suites: bookworm-backports
-            Components: main
-            Enabled: yes
-            Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
-            EOF
-
-            # Update the package list and install dependencies
-            apt-get update -q -y
-            apt-get -qq install -y curl git xz-utils build-essential ca-certificates
-            update-ca-certificates
-            apt-get -qq install -y -t bookworm-backports golang-go
-
-            # Install asdf
-            go install github.com/asdf-vm/asdf/cmd/asdf@master
-            echo 'export PATH="${HOME}/go/bin:${PATH}"' >> "${HOME}/.bashrc"
-
           env: |
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          setup: |
+            mkdir -p "${HOME}/.cache"
+          install: |
+            exec scripts/ci-install.sh
           run: |
-            set -uexo pipefail
-            update-ca-certificates
-
-            source "${HOME}/.bashrc"
-
-            if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
-              # Extract the part after "latest:"
-              version_prefix="${{ matrix.nim-version }}"
-              version_prefix=${version_prefix#latest:}
-
-              # Run asdf latest command to get the actual version
-              asdf plugin add nim .
-              tool_version=$(asdf latest nim "$version_prefix")
-            else
-              # Use the matrix version directly
-              tool_version="${{ matrix.nim-version }}"
-            fi
-
-            asdf plugin test nim . \
-              --asdf-tool-version \
-              "${tool_version}" \
-              --asdf-plugin-gitref \
-              "${GITHUB_SHA}" \
-              nim -v
+            exec scripts/ci-test-plugin.sh \
+              --nim-version "${{ matrix.nim-version }}" \
+              --commit "${GITHUB_REF_NAME}"

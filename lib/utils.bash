@@ -610,13 +610,6 @@ asdf_nim_fetch() {
     esac
   fi
 
-  # Debian ARMv7 at least seem to have out-of-date ca certs, so use a newer
-  # one from Mozilla.
-  case "$(asdf_nim_normalize_arch)" in
-    armv*)
-      curl_args+=("--cacert" "${ASDF_DATA_DIR}/plugins/nim/share/cacert.pem")
-      ;;
-  esac
   local archive_name
   archive_name="$(basename "$url")"
   local archive_path
