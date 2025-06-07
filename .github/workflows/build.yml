@@ -110,10 +110,21 @@ jobs:
       - name: Install asdf-nim & test
         shell: bash
         run: |
-          set -ueo pipefail
+          set -uexo pipefail
+          if [[ "${{ matrix.nim-version }}" == latest:* ]]; then
+            # Extract the part after "latest:"
+            version_prefix="${{ matrix.nim-version }}"
+            version_prefix=${version_prefix#latest:}
+            # Run asdf latest command to get the actual version
+            tool_version=$(asdf latest nim "$version_prefix")
+          else
+            # Use the matrix version directly
+            tool_version="${{ matrix.nim-version }}"
+          fi
+
           asdf plugin test nim . \
             --asdf-tool-version \
-            "${{ matrix.nim-version }}" \
+            "${tool_version}" \
             --asdf-plugin-gitref \
             "${GITHUB_SHA}" \
             nim -v
