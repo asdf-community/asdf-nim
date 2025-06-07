@@ -112,7 +112,7 @@ jobs:
       - name: Test plugin
         shell: bash
         run: |
-          exec scripts/ci-test-plugin.sh \
+          exec ./scripts/ci-test-plugin.sh \
             --nim-version ${{ matrix.nim-version }} \
             --commit "${GITHUB_REF_NAME}"
 
@@ -133,10 +133,18 @@ jobs:
       - name: Install dependencies
         run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep build-base
 
+      - name: Install asdf
+        uses: asdf-vm/actions/setup@v4
+        with:
+          asdf_branch: master
+
+      - name: Checkout plugin
+        uses: actions/checkout@v4
+
       - name: Test plugin
         shell: bash
         run: |
-          exec scripts/ci-test-plugin.sh \
+          exec ./scripts/ci-test-plugin.sh \
             --nim-version latest:2.2 \
             --commit "${GITHUB_REF_NAME}"
 
@@ -184,8 +192,8 @@ jobs:
           setup: |
             mkdir -p "${HOME}/.cache"
           install: |
-            exec scripts/ci-install.sh
+            exec ./scripts/ci-install.sh
           run: |
-            exec scripts/ci-test-plugin.sh \
+            exec ./scripts/ci-test-plugin.sh \
               --nim-version "${{ matrix.nim-version }}" \
               --commit "${GITHUB_REF_NAME}"
