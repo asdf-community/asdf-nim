@@ -38,7 +38,7 @@ if [[ -z ${COMMIT} ]]; then
   exit 1
 fi
 
-#update-ca-certificates
+update-ca-certificates
 
 export PATH="${HOME}/go/bin:${PATH}"
 
@@ -50,7 +50,6 @@ if [[ ${NIM_VERSION} == latest:* ]]; then
   # Run asdf latest command to get the actual version
   asdf plugin add nim .
   tool_version=$(asdf latest nim "$version_prefix")
-  expected_version=$(echo "${tool_version}" | sed 's/^v//') # Remove leading 'v' if present
 else
   # Use the matrix version directly
   tool_version="${NIM_VERSION}"
@@ -58,9 +57,13 @@ fi
 
 asdf plugin remove asdf-test-nim || true
 
+rm -rf /tmp/asdf-test-nim || true
+git clone . /tmp/asdf-test-nim
+cd /tmp/asdf-test-nim || exit 1
+git checkout -b tmp-test-branch "${COMMIT}" || true
 asdf plugin test nim "${PWD}" \
   --asdf-tool-version \
   "${tool_version}" \
   --asdf-plugin-gitref \
-  "${COMMIT}" \
+  tmp-test-branch \
   nim -v
