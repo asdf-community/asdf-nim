@@ -8,7 +8,6 @@ regenerate() {
     echo "  asdf-nim: regenerated shims"
   else
     echo "  asdf-nim: failed to regenerate shims"
-    exit 1
   fi
   echo
 }
@@ -17,12 +16,15 @@ trap 'trap - HUP; SIGNAL=SIGHUP; regenerate; kill -HUP $$' HUP
 trap 'trap - INT; SIGNAL=SIGINT; regenerate; kill -INT $$' INT
 trap 'trap - TERM; SIGNAL=SIGTERM; regenerate; kill -TERM $$' TERM
 
-if "$(dirname "$(asdf which nim)")/nimble" "$@"; then
-  case "${1-}" in
-    install | develop | uninstall)
-      regenerate
-      ;;
-  esac
-else
-  exit $?
+exit_code=0
+"$(dirname "$(asdf which nim)")/nimble" "$@" || exit_code=$?
+if [ $exit_code -eq 0 ]; then
+  if [ -z "${SIGNAL:-}" ]; then
+    case "${1-}" in
+      install | develop | uninstall)
+        regenerate
+        ;;
+    esac
+  fi
 fi
+exit $exit_code
