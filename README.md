@@ -164,7 +164,7 @@ jobs:
 
           install: |
             set -uexo pipefail
-            
+
             # Add Debian backports repository for newer Golang versions
             cat >/etc/apt/sources.list.d/debian-backports.sources <<EOF
             Types: deb deb-src
