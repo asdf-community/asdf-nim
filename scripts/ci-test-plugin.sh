@@ -14,7 +14,7 @@ WORKSPACE="${PWD}"
 usage() {
   echo "Usage: $0 --nim-version VERSION --commit COMMIT --workspace WORKSPACE"
   echo "  --nim-version VERSION   Specify the Nim version to test (e.g., latest:1.4.8)"
-  echo "  --commit COMMIT         Specify the commit hash to test"
+  echo "  --commit COMMIT         Specify the commit hash to test (default: current branch HEAD)"
   echo "  --workspace WORKSPACE   Specify the workspace directory containing the plugin (default: current directory)"
 }
 
@@ -47,7 +47,7 @@ if [[ -z ${NIM_VERSION} ]]; then
 fi
 
 if [[ -z ${COMMIT} ]]; then
-  echo "Error: --commit parameter is required"
+  COMMIT="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}"
   usage
   exit 1
 fi
@@ -80,7 +80,9 @@ git config --global --add safe.directory "${WORKSPACE}"/.git
 git clone "${WORKSPACE}" /tmp/asdf-test-nim
 cd /tmp/asdf-test-nim || exit 1
 git checkout -b tmp-test-branch || true
-git reset --hard "${COMMIT}" || true
+if [[ -n ${COMMIT} ]]; then
+  git reset --hard "${COMMIT}" || true
+fi
 asdf plugin test nim "${PWD}" \
   --asdf-tool-version \
   "${tool_version}" \
