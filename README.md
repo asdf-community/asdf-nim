@@ -55,7 +55,7 @@ asdf install nim ref:v2.2.0
 ### To set the default version of Nim for your user:
 
 ```sh
-asdf global nim latest:2.2
+asdf set --home nim latest:2.2
 ```
 
 This creates a `.tool-versions` file in your home directory specifying the Nim version.
