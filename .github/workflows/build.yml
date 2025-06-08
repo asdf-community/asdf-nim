@@ -4,6 +4,8 @@ name: build
 
 # yamllint disable rule:truthy
 on:
+  # yamllint enable rule:truthy
+  workflow_dispatch: {}
   pull_request:
     branches: ["*"]
     paths:
@@ -25,7 +27,6 @@ on:
       - shims/** # changes to shim scripts
       - test/** # changes to tests
       - package*.json # bats upgrade
-# yamllint enable rule:truthy
 
 jobs:
   # Run tests with bats
