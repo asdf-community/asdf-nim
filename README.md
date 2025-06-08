@@ -71,7 +71,7 @@ This creates a `.tool-versions` file in the current directory specifying the Nim
 
 ## Nimble packages
 
-In addition to global nimble package installation, asdf-nim works as expected with [`nimbledeps`](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) and [atlas](https://github.com/nim-lang/atlas).
+In addition to global nimble package installation, asdf-nim works as expected with a[`nimbledeps`](https://github.com/nim-lang/nimble/issues/131#issuecomment-676624533) directory and the [atlas](https://github.com/nim-lang/atlas) package cloner.
 
 ## Continuous Integration
 
