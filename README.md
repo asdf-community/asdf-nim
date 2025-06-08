@@ -64,16 +64,14 @@ This creates a `.tool-versions` file in your home directory specifying the Nim v
 
 ```sh
 cd my-project
-asdf local nim latest:2.2
+asdf set nim latest:2.2
 ```
 
 This creates a `.tool-versions` file in the current directory specifying the Nim version. For additional plugin usage see the [asdf documentation](https://asdf-vm.com/#/core-manage-asdf).
 
 ## Nimble packages
 
-Nimble packages are installed in `~/.asdf/installs/nim/<nim-version>/nimble/pkgs`, unless a `nimbledeps` directory exists in the directory where `nimble install` is run from.
-
-See the [nimble documentation](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) for more information about nimbledeps.
+In addition to global nimble package installation, asdf-nim works as expected with [`nimbledeps`](https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages) and [atlas](https://github.com/nim-lang/atlas).
 
 ## Continuous Integration
 
@@ -110,7 +108,7 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
       - name: Install Nim
-        uses: asdf-vm/actions/install@v1
+        uses: asdf-vm/actions/install@v4
         with:
           tool_versions: |
             nim ${{ matrix.nim-version }}
@@ -150,14 +148,15 @@ jobs:
       - name: Checkout Nim project
         uses: actions/checkout@v4
 
-      - uses: uraimo/run-on-arch-action@v2
+      - uses: uraimo/run-on-arch-action@v3
         name: Install Nim & run tests
         with:
           arch: ${{ matrix.arch }}
-          distro: buster
+          distro: bookworm
 
           dockerRunArgs: |
             --volume "${HOME}/.cache:/root/.cache"
+            --volume "${GITHUB_WORKSPACE}:/workspace"
 
           setup: mkdir -p "${HOME}/.cache"
 
@@ -165,26 +164,39 @@ jobs:
 
           install: |
             set -uexo pipefail
-            # Install asdf and dependencies
+            
+            # Add Debian backports repository for newer Golang versions
+            cat >/etc/apt/sources.list.d/debian-backports.sources <<EOF
+            Types: deb deb-src
+            URIs: http://deb.debian.org/debian
+            Suites: bookworm-backports
+            Components: main
+            Enabled: yes
+            Signed-By: /usr/share/keyrings/debian-archive-keyring.gpg
+            EOF
+
+            # Install dependencies
             apt-get update -q -y
-            apt-get -qq install -y build-essential curl git
-            git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf" --branch v0.14.1
+            apt-fast install -qq -y curl git xz-utils build-essential
+            apt-fast install -qq -y -t bookworm-backports golang-go
+            go install github.com/asdf-vm/asdf/cmd/asdf@master
+
+            # Install asdf-nim
+            export PATH="/root/go/bin:${PATH}"
+            asdf plugin add nim
+            asdf nim install-deps -y
 
           env: |
             GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
           run: |
             set -uexo pipefail
-            . "${HOME}/.asdf/asdf.sh"
 
-            # Install asdf-nim and dependencies
-            git clone https://github.com/asdf-community/asdf-nim.git ~/asdf-nim --branch main --depth 1
-            asdf plugin add nim ~/asdf-nim
-            asdf nim install-deps -y
+            cd /workspace
 
             # Install Nim
             asdf install nim ${{ matrix.nim-version }}
-            asdf local nim ${{ matrix.nim-version }}
+            asdf set nim ${{ matrix.nim-version }}
 
             # Run tests
             nimble develop -y
