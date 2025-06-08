@@ -4,7 +4,7 @@
 
 asdf-nim allows you to quickly install any version of [Nim](https://nim-lang.org).
 
-asdf-nim is intended for end-users and continuous integration. Whether macOS or Linux, x86 or ARM - all you'll need to install Nim is bash.
+asdf-nim works for both personal development and continuous integration. It runs on macOS and Linux, supporting x86, ARM, and other architectures.
 
 ## Installation
 
