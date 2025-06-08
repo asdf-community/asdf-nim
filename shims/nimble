@@ -2,16 +2,12 @@
 
 set -ueo pipefail
 
-ASDF_BIN="${ASDF_DIR:-$HOME/.asdf}/bin/"
-ASDF_INSTALL_BIN_PATH=$(dirname "$("${ASDF_BIN}/asdf" which nim)")
-
 regenerate() {
   # After a nimble operation, regenerate nim shims to find new package binaries
-  if "${ASDF_BIN}/asdf" reshim nim; then
+  if "$(command -v asdf)" reshim nim; then
     echo "  asdf-nim: regenerated shims"
   else
     echo "  asdf-nim: failed to regenerate shims"
-    exit 1
   fi
   echo
 }
@@ -20,12 +16,15 @@ trap 'trap - HUP; SIGNAL=SIGHUP; regenerate; kill -HUP $$' HUP
 trap 'trap - INT; SIGNAL=SIGINT; regenerate; kill -INT $$' INT
 trap 'trap - TERM; SIGNAL=SIGTERM; regenerate; kill -TERM $$' TERM
 
-if "${ASDF_INSTALL_BIN_PATH}/nimble" "$@"; then
-  case "${1-}" in
-    install | develop | uninstall)
-      regenerate
-      ;;
-  esac
-else
-  exit $?
+exit_code=0
+"$(dirname "$(asdf which nim)")/nimble" "$@" || exit_code=$?
+if [ $exit_code -eq 0 ]; then
+  if [ -z "${SIGNAL:-}" ]; then
+    case "${1-}" in
+      install | develop | uninstall)
+        regenerate
+        ;;
+    esac
+  fi
 fi
+exit $exit_code

@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.1.0 - 2025-06-07
+
+- fixes and workarounds for asdf >= 0.17.0
+- remove docker files
+- build action improvements
+
 ## v2.0.2 - 2024-11-06
 
 - test against newer nims

@@ -22,3 +22,5 @@ jobs:
 
       - name: Run lintball
         uses: elijahr/run-lintball@v2
+        with:
+          default-branch: main

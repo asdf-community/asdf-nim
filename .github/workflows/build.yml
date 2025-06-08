@@ -97,26 +97,26 @@ jobs:
           path: ~/.cache
           key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
 
-      - name: Upgrade bash
+      - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
-        run: brew install bash parallel
+        run: brew install bash parallel golang
+
+      - name: Install dependencies (Linux)
+        if: runner.os != 'macOS'
+        uses: actions/setup-go@v5
 
       - name: Install asdf
-        uses: asdf-vm/actions/setup@v3
+        run: go install github.com/asdf-vm/asdf/cmd/asdf@master
 
       - name: Checkout plugin
         uses: actions/checkout@v4
 
-      - name: Install asdf-nim & test
+      - name: Test plugin
         shell: bash
         run: |
-          set -ueo pipefail
-          asdf plugin test nim . \
-            --asdf-tool-version \
-            "${{ matrix.nim-version }}" \
-            --asdf-plugin-gitref \
-            "${GITHUB_SHA}" \
-            nim -v
+          exec ./scripts/ci-test-plugin.sh \
+            --nim-version ${{ matrix.nim-version }} \
+            --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
 
   # Test musl installation
   plugin_test_x86_musl:
@@ -130,16 +130,23 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/.cache
-          key: cache-ubuntu-latest-${{ matrix.nim-version }}
+          key: cache-ubuntu-latest-2.2.4
 
       - name: Install dependencies
-        run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep build-base
+        run: apk add --update --no-cache --upgrade bash git curl coreutils tar xz grep build-base go
+
+      - name: Install asdf
+        run: go install github.com/asdf-vm/asdf/cmd/asdf@master
+
+      - name: Checkout plugin
+        uses: actions/checkout@v4
 
       - name: Test plugin
-        uses: asdf-vm/actions/plugin-test@v3
-        with:
-          command: nim -v
-          version: "latest:2.2"
+        shell: bash
+        run: |
+          exec ./scripts/ci-test-plugin.sh \
+            --nim-version latest:2.2 \
+            --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
@@ -173,33 +180,20 @@ jobs:
 
       # Install & run tests on non-x86
       - uses: uraimo/run-on-arch-action@v3
-        name: Install Nim & run tests
+        name: Test plugin
         with:
           arch: ${{ matrix.arch }}
-          distro: buster
-
+          distro: bookworm
           dockerRunArgs: |
             --volume "${HOME}/.cache:/root/.cache"
-
-          setup: mkdir -p "${HOME}/.cache"
-
+            --volume "${GITHUB_WORKSPACE}:/workspace"
           shell: /usr/bin/env bash
-
-          install: |
-            apt-get update -q -y
-            apt-get -qq install -y curl git xz-utils build-essential
-            git clone https://github.com/asdf-vm/asdf.git "${HOME}/.asdf"
-
-          env: |
-            GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
+          setup: |
+            mkdir -p "${HOME}/.cache"
           run: |
-            set -exo pipefail
-            set +u
-            . "${HOME}/.asdf/asdf.sh"
-            asdf plugin test nim . \
-              --asdf-tool-version \
-              "${{ matrix.nim-version }}" \
-              --asdf-plugin-gitref \
-              "${GITHUB_SHA}" \
-              nim -v
+            set -uexo pipefail
+            cd /workspace
+            ./scripts/ci-install.sh
+            ./scripts/ci-test-plugin.sh \
+              --nim-version "${{ matrix.nim-version }}" \
+              --commit "${GITHUB_HEAD_REF:-${GITHUB_REF_NAME}}"
