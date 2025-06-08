@@ -48,8 +48,6 @@ fi
 
 if [[ -z ${COMMIT} ]]; then
   COMMIT="${GITHUB_HEAD_REF:-${GITHUB_REF_NAME:-}}"
-  usage
-  exit 1
 fi
 
 if [[ -z ${WORKSPACE} ]]; then
