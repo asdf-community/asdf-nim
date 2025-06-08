@@ -1,4 +1,4 @@
-![build](https://github.com/asdf-community/asdf-nim/workflows/build/badge.svg) [![lint](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml/badge.svg)](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml)
+[![build](https://github.com/asdf-community/asdf-nim/actions/workflows/build.yml/badge.svg)](https://github.com/asdf-community/asdf-nim/actions/workflows/build.yml) [![Lint](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml/badge.svg)](https://github.com/asdf-community/asdf-nim/actions/workflows/lint.yml)
 
 # asdf-nim
 
