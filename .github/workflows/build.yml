@@ -104,7 +104,7 @@ jobs:
 
       - name: Install dependencies (Linux)
         if: runner.os != 'macOS'
-        uses: actions/setup-go@v5
+        uses: actions/setup-go@v6
 
       - name: Install asdf
         run: go install github.com/asdf-vm/asdf/cmd/asdf@master
