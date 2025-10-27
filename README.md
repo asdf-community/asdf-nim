@@ -263,8 +263,9 @@ npm run test
 
 ### Linting
 
-This project uses [lintball](https://github.com/elijahr/lintball) to auto-format code. Please ensure your changeset passes linting. Enable the githooks with:
+This project uses [pre-commit](https://pre-commit.com/) to auto-format code. Please ensure your changeset passes linting. Install and enable pre-commit with:
 
 ```sh
-git config --local core.hooksPath .githooks
+pip install pre-commit
+pre-commit install
 ```

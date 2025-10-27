@@ -4,6 +4,11 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## Unreleased
+
+- Workaround for bug in asdf where ASDF_INSTALL_VERSION is empty when exec-env is invoked for custom shims
+- migrate from lintball to pre-commit for code formatting and linting
+
 ## v2.1.0 - 2025-06-07
 
 - fixes and workarounds for asdf >= 0.17.0
