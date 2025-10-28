@@ -4,6 +4,12 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.2.1 - 2025-10-28
+
+- Update actions/setup-python action to v6
+- Update dependency go to v1.25.3
+- Update dependency node to v24
+
 ## v2.2.0 - 2025-10-28
 
 - Workaround for bug in asdf where ASDF_INSTALL_VERSION is empty when exec-env is invoked for custom shims
