@@ -126,9 +126,11 @@ info() {
   nimble install -y nimjson@1.2.8
   clear_lock git
   assert [ -x "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/bin/nimjson" ]
-  assert [ -f "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/pkgs/nimjson-1.2.8/nimjson.nimble" ]
+  # Nimble uses pkgs2/ directory structure with git hash suffix in newer versions
+  nimble_file=$(find "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/pkgs2" -name "nimjson.nimble" -path "*/nimjson-1.2.8*/nimjson.nimble" | head -1)
+  assert [ -n "$nimble_file" ]
+  assert [ -f "$nimble_file" ]
   assert [ ! -x "./nimbledeps/bin/nimjson" ]
-  assert [ ! -f "./nimbledeps/pkgs/nimjson-1.2.8/nimjson.nimble" ]
 
   # Assert that shim was created for package binary
   assert [ -f "${ASDF_DATA_DIR}/shims/nimjson" ]
@@ -159,14 +161,16 @@ info() {
   nimble install -y nimjson@1.2.8
   clear_lock git
   assert [ -x "./nimbledeps/bin/nimjson" ]
-  assert [ -f "./nimbledeps/pkgs/nimjson-1.2.8/nimjson.nimble" ]
+  # Nimble uses pkgs2/ directory structure with git hash suffix in newer versions
+  nimble_file=$(find "./nimbledeps/pkgs2" -name "nimjson.nimble" -path "*/nimjson-1.2.8*/nimjson.nimble" | head -1)
+  assert [ -n "$nimble_file" ]
+  assert [ -f "$nimble_file" ]
   assert [ ! -x "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/bin/nimjson" ]
-  assert [ ! -f "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/pkgs/nimjson-1.2.8/nimjson.nimble" ]
 
   # Assert that nim finds nimble packages
   echo "import nimjson" >"${ASDF_NIM_TEST_TEMP}/testnimble.nim"
-  info "nim c --nimblePath:./nimbledeps/pkgs -r \"${ASDF_NIM_TEST_TEMP}/testnimble.nim\""
-  nim c --nimblePath:./nimbledeps/pkgs -r "${ASDF_NIM_TEST_TEMP}/testnimble.nim"
+  info "nim c --nimblePath:./nimbledeps/pkgs2 -r \"${ASDF_NIM_TEST_TEMP}/testnimble.nim\""
+  nim c --nimblePath:./nimbledeps/pkgs2 -r "${ASDF_NIM_TEST_TEMP}/testnimble.nim"
 
   rm -rf nimbledeps
 }
