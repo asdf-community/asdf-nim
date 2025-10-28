@@ -448,7 +448,7 @@ asdf_nim_fetch_nightly_releases() {
 
     # shellcheck disable=SC2046
     local page_result
-    page_result=$(eval curl $(printf ' "%s" ' "${curl_args[@]}") 2>/dev/null) || return 1
+    page_result=$(eval curl "$(printf ' "%s" ' "${curl_args[@]}")" 2>/dev/null) || return 1
 
     # Check if we got an empty array (no more releases)
     if [ "$page_result" = "[]" ]; then
@@ -557,7 +557,7 @@ asdf_nim_find_nightly_release_url() {
         fi
       fi
     fi
-  done <<< "$releases"
+  done <<<"$releases"
 
   # No match found
   return 0
@@ -628,7 +628,7 @@ asdf_nim_get_version_commit_info() {
 
   if [ -n "$commit_date" ]; then
     # Store in cache
-    echo "${version} ${commit_hash} ${commit_date}" >> "$cache_file"
+    echo "${version} ${commit_hash} ${commit_date}" >>"$cache_file"
     echo "${commit_hash} ${commit_date}"
     return 0
   fi

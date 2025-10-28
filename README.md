@@ -233,6 +233,7 @@ asdf install nim 2.2.4
 ```
 
 The plugin will:
+
 1. Check for official stable binaries (x86_64/x86 Linux only)
 2. If none available, search for exact nightly builds matching the version's commit hash
 3. Use the matching nightly build (typically built within 1-2 days of the release)
@@ -261,6 +262,7 @@ asdf install nim 2.2.4
 [nim-lang/nightlies](https://github.com/nim-lang/nightlies) supplies pre-compiled unstable binaries of Nim. This plugin automatically detects available nightly releases via the GitHub API.
 
 When installing a nightly version (e.g., `ref:devel` or `ref:version-2-2`), the plugin will:
+
 1. Query the GitHub releases API to find available nightly builds (checks up to 4 pages of releases)
 2. Select the most recent nightly that matches your platform and desired version
 3. Fall back to building from source if no matching prebuilt nightly is found
@@ -268,12 +270,14 @@ When installing a nightly version (e.g., `ref:devel` or `ref:version-2-2`), the 
 Common platforms with nightly support:
 
 Linux:
+
 - `x86_64`
 - `x86`
 - `aarch64`
 - `armv7l`
 
 macOS:
+
 - `x86_64`
 - `arm64`
 
@@ -327,6 +331,7 @@ npm run test
 ```
 
 **Test Types:**
+
 - **Unit tests** (`test/utils.bats`): Fast, mocked, test individual functions
 - **Integration tests** (`test/integration.bats`): Slow, install real Nim versions
 
