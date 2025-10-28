@@ -17,18 +17,25 @@ if [ "${ASDF_NIM_MACOS_M1_HOMEBREW_WORKAROUND:-yes}" = "yes" ] &&
   DYLD_LIBRARY_PATH=/opt/homebrew/lib
 fi
 
+# Workaround for bug in asdf where ASDF_INSTALL_VERSION is empty when exec-env is invoked for custom shims
+if [ -z "${ASDF_INSTALL_VERSION:-}" ]; then
+  export ASDF_INSTALL_PATH
+  ASDF_INSTALL_PATH="$(dirname "$(dirname "$(asdf which nim)")")"
+  export ASDF_INSTALL_VERSION
+  ASDF_INSTALL_VERSION="$(basename $ASDF_INSTALL_PATH)"
+fi
+
 # Override PATH so this nim is found first
 export PATH
 PATH="${ASDF_INSTALL_PATH}/bin:${PATH}"
-
-export NIMBLE_DIR
 
 # Tell Nim where to find nimble package metadata and packages.
 # If a user has a custom NIMBLE_DIR, use that.
 # Otherwise if the current working directory has a nimbledeps directory, use that.
 # Otherwise, use the nimble directory within ASDF_INSTALL_PATH.
 # see https://github.com/nim-lang/nimble#nimbles-folder-structure-and-packages
-if [ "${NIMBLE_DIR-}" = "" ] &&
+if [ -z "${NIMBLE_DIR:-}" ] &&
   [ ! -d "${PWD}/nimbledeps" ]; then
+  export NIMBLE_DIR
   NIMBLE_DIR="${ASDF_INSTALL_PATH}/nimble"
 fi

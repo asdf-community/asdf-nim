@@ -6,12 +6,6 @@
 SOURCE_REPO="https://github.com/nim-lang/Nim.git"
 SOURCE_URL="https://nim-lang.org/download/nim-VERSION.tar.xz"
 
-LINUX_X64_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_x64.tar.xz"
-LINUX_X32_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_x32.tar.xz"
-LINUX_ARM64_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_arm64.tar.xz"
-LINUX_ARMV7L_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/linux_armv7l.tar.xz"
-MACOS_X64_NIGHTLY_URL="https://github.com/nim-lang/nightlies/releases/download/latest-BRANCH/macosx_x64.tar.xz"
-
 LINUX_X64_URL="https://nim-lang.org/download/nim-VERSION-linux_x64.tar.xz"
 LINUX_X32_URL="https://nim-lang.org/download/nim-VERSION-linux_x32.tar.xz"
 
@@ -395,38 +389,16 @@ asdf_nim_install_deps() {
   echo
 }
 
-# Detect if the standard C library on the system is musl or not.
-# Echoes "yes" or "no"
-asdf_nim_is_musl() {
-  if [ -n "${ASDF_NIM_MOCK_IS_MUSL-}" ]; then
-    echo "$ASDF_NIM_MOCK_IS_MUSL"
-  else
-    if [ -n "$(command -v ldd)" ]; then
-      if (ldd --version 2>&1 || true) | grep -qF "musl"; then
-        echo "yes"
-      else
-        echo "no"
-      fi
-    else
-      echo "no"
-    fi
-  fi
-}
-
 # Echo the official binary archive URL (from nim-lang.org) for the current
 # architecture.
 asdf_nim_official_archive_url() {
   if [ "${ASDF_INSTALL_TYPE}" = "version" ] && [[ ${ASDF_INSTALL_VERSION} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     case "$(asdf_nim_normalize_os)" in
       linux)
-        case "$(asdf_nim_is_musl)" in
-          no)
-            # Official Linux builds are only available for glibc x86_64 and x86
-            case "$(asdf_nim_normalize_arch)" in
-              x86_64) echo "${LINUX_X64_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
-              i686) echo "${LINUX_X32_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
-            esac
-            ;;
+        # Official Linux builds are available for x86_64 and x86
+        case "$(asdf_nim_normalize_arch)" in
+          x86_64) echo "${LINUX_X64_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
+          i686) echo "${LINUX_X32_URL//VERSION/$ASDF_INSTALL_VERSION}" ;;
         esac
         ;;
     esac
@@ -434,37 +406,308 @@ asdf_nim_official_archive_url() {
 }
 
 # Echo the nightly url for arch/os
+# Dynamically detects available nightly releases from GitHub
 asdf_nim_nightly_url() {
   if [ "${ASDF_INSTALL_TYPE}" != "ref" ]; then
     return 0
   fi
   if [[ $ASDF_INSTALL_VERSION =~ ^version-[0-9]+-[0-9]+$ ]] || [ "$ASDF_INSTALL_VERSION" = "devel" ]; then
-    case "$(asdf_nim_normalize_os)" in
-      linux)
-        case "$(asdf_nim_is_musl)" in
-          no)
-            # Nightly Linux builds are only available for glibc and a few archs
-            case "$(asdf_nim_normalize_arch)" in
-              x86_64) echo "${LINUX_X64_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
-              i686) echo "${LINUX_X32_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
-              aarch64) echo "${LINUX_ARM64_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
-              armv7) echo "${LINUX_ARMV7L_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
-            esac
-            ;;
-        esac
-        ;;
-      macos)
-        case "$(asdf_nim_normalize_arch)" in
-          # Nightly macos builds are only available for x86_64
-          x86_64) echo "${MACOS_X64_NIGHTLY_URL//BRANCH/$ASDF_INSTALL_VERSION}" ;;
-        esac
-        ;;
-    esac
+    # Try to find a nightly release for this branch and platform
+    local url
+    url="$(asdf_nim_find_nightly_release_url "$ASDF_INSTALL_VERSION")"
+    if [ -n "$url" ]; then
+      echo "$url"
+    fi
+    # If no URL found, return nothing and let the download fallback to git
   fi
 }
 
 asdf_nim_github_token() {
   echo "${GITHUB_TOKEN:-${GITHUB_API_TOKEN-}}"
+}
+
+# Fetch GitHub releases from nim-lang/nightlies repo
+# Fetches up to MAX_PAGES pages (default 4) with 100 releases per page
+# Returns JSON array of releases
+asdf_nim_fetch_nightly_releases() {
+  local max_pages="${1:-4}"
+  local releases_repo="https://api.github.com/repos/nim-lang/nightlies/releases"
+  local all_releases=""
+
+  for page in $(seq 1 "$max_pages"); do
+    local url="${releases_repo}?per_page=100&page=${page}"
+
+    declare -a curl_args
+    curl_args=("-fsSL" "--connect-timeout" "10")
+
+    if [ -n "$(asdf_nim_github_token)" ]; then
+      curl_args+=("-H" "Authorization: token $(asdf_nim_github_token)")
+    fi
+
+    curl_args+=("$url")
+
+    # shellcheck disable=SC2046
+    local page_result
+    page_result=$(eval curl "$(printf ' "%s" ' "${curl_args[@]}")" 2>/dev/null) || return 1
+
+    # Check if we got an empty array (no more releases)
+    if [ "$page_result" = "[]" ]; then
+      break
+    fi
+
+    # Append to all_releases
+    if [ -z "$all_releases" ]; then
+      all_releases="$page_result"
+    else
+      # Merge JSON arrays (remove closing ] from first, opening [ from second)
+      local page_without_bracket
+      page_without_bracket="${page_result#\[}"
+      all_releases="${all_releases%]},${page_without_bracket}"
+    fi
+  done
+
+  echo "$all_releases"
+}
+
+# Extract branch name from release tag (e.g., "latest-devel" -> "devel", "latest-version-2-2" -> "version-2-2")
+asdf_nim_extract_branch_from_tag() {
+  local tag="$1"
+  echo "$tag" | sed 's/^latest-//'
+}
+
+# Get platform filename from normalized OS and arch
+# Returns the expected filename pattern in nightly releases (e.g., "linux_x64.tar.xz", "macosx_arm64.tar.xz")
+asdf_nim_get_platform_filename() {
+  local os
+  os="$(asdf_nim_normalize_os)"
+  local arch
+  arch="$(asdf_nim_normalize_arch)"
+
+  case "$os" in
+    linux)
+      case "$arch" in
+        x86_64) echo "linux_x64.tar.xz" ;;
+        i686) echo "linux_x32.tar.xz" ;;
+        aarch64) echo "linux_arm64.tar.xz" ;;
+        armv7) echo "linux_armv7l.tar.xz" ;;
+      esac
+      ;;
+    macos)
+      case "$arch" in
+        x86_64) echo "macosx_x64.tar.xz" ;;
+        arm64) echo "macosx_arm64.tar.xz" ;;
+      esac
+      ;;
+  esac
+}
+
+# Find the best matching nightly release URL for the given branch and platform
+# Args: $1 = desired branch (e.g., "devel", "version-2-2")
+# Returns: URL to download, or empty string if not found
+asdf_nim_find_nightly_release_url() {
+  local desired_branch="$1"
+  local platform_filename
+  platform_filename="$(asdf_nim_get_platform_filename)"
+
+  # If we don't have a platform filename, this platform isn't supported for nightlies
+  if [ -z "$platform_filename" ]; then
+    return 0
+  fi
+
+  # Fetch releases
+  local releases
+  releases="$(asdf_nim_fetch_nightly_releases 4)" || return 1
+
+  # Parse releases to find matching branch with desired platform
+  # Simple JSON parsing using grep and sed (works without jq)
+  # Strategy: Find lines with tag_name matching our branch, then find browser_download_url
+  # lines with our platform filename within the same release
+
+  local desired_tag="latest-${desired_branch}"
+
+  # Find the browser_download_url for our platform within the release with our tag
+  # We'll process the entire JSON, tracking when we're in the right release
+  local in_target_release=0
+
+  while IFS= read -r line; do
+    # Check if this line has a tag_name
+    if echo "$line" | grep -q '"tag_name"'; then
+      local tag
+      tag=$(echo "$line" | sed -n 's/.*"tag_name"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+
+      # Are we entering the target release?
+      if [ "$tag" = "$desired_tag" ]; then
+        in_target_release=1
+      else
+        # If we were in the target release and now see a different tag, we're done
+        if [ "$in_target_release" -eq 1 ]; then
+          break
+        fi
+      fi
+    fi
+
+    # If we're in the target release, look for our platform filename in browser_download_url
+    if [ "$in_target_release" -eq 1 ]; then
+      if echo "$line" | grep -q "\"browser_download_url\".*${platform_filename}"; then
+        local url
+        url=$(echo "$line" | sed -n 's/.*"browser_download_url"[[:space:]]*:[[:space:]]*"\([^"]*\)".*/\1/p')
+        if [ -n "$url" ]; then
+          echo "$url"
+          return 0
+        fi
+      fi
+    fi
+  done <<<"$releases"
+
+  # No match found
+  return 0
+}
+
+# Convert a version number to a branch name
+# Args: $1 = version (e.g., "2.2.4", "1.6.20")
+# Returns: branch name (e.g., "version-2-2", "version-1-6")
+asdf_nim_version_to_branch() {
+  local version="$1"
+  # Extract major and minor version numbers
+  local major minor
+  major=$(echo "$version" | cut -d. -f1)
+  minor=$(echo "$version" | cut -d. -f2)
+  echo "version-${major}-${minor}"
+}
+
+# Get commit hash and date for a version tag
+# Args: $1 = version (e.g., "2.2.4")
+# Returns: "commit_hash commit_date" or empty string if not found
+asdf_nim_get_version_commit_info() {
+  local version="$1"
+  local tag="v${version}"
+  local cache_dir="${HOME}/.cache/asdf-nim"
+  local cache_file="${cache_dir}/version-commits.txt"
+
+  # Create cache directory if it doesn't exist
+  mkdir -p "$cache_dir"
+
+  # Check cache first
+  if [ -f "$cache_file" ]; then
+    local cached_info
+    cached_info=$(grep "^${version} " "$cache_file" 2>/dev/null | head -1)
+    if [ -n "$cached_info" ]; then
+      # Extract commit_hash and commit_date from cached line
+      echo "$cached_info" | awk '{print $2, $3}'
+      return 0
+    fi
+  fi
+
+  # Not in cache, fetch from git
+  # Get commit hash for the tag
+  local commit_line
+  commit_line=$(git ls-remote --tags "$SOURCE_REPO" "refs/tags/${tag}^{}" 2>/dev/null | head -1)
+
+  if [ -z "$commit_line" ]; then
+    return 1
+  fi
+
+  local commit_hash
+  commit_hash=$(echo "$commit_line" | awk '{print $1}')
+
+  # Get commit date using git show with a shallow fetch
+  # We'll use a temporary directory to avoid polluting the current repo
+  local temp_dir
+  temp_dir=$(mktemp -d)
+  local commit_date
+  commit_date=$(
+    cd "$temp_dir" || exit 1
+    git init --quiet
+    git remote add origin "$SOURCE_REPO"
+    if git fetch --depth 1 origin "$commit_hash" 2>/dev/null; then
+      git show -s --format=%ci "$commit_hash" 2>/dev/null | cut -d' ' -f1
+    fi
+  ) 2>/dev/null
+
+  rm -rf "$temp_dir"
+
+  if [ -n "$commit_date" ]; then
+    # Store in cache
+    echo "${version} ${commit_hash} ${commit_date}" >>"$cache_file"
+    echo "${commit_hash} ${commit_date}"
+    return 0
+  fi
+
+  return 1
+}
+
+# Find exact nightly build matching a specific version
+# Args: $1 = version (e.g., "2.2.4")
+# Returns: URL to download, or empty string if not found
+asdf_nim_find_exact_nightly_url() {
+  local version="$1"
+
+  # Skip if opt-out is enabled
+  if [ "${ASDF_NIM_NO_NIGHTLY_FALLBACK:-0}" = "1" ] || [ "${ASDF_NIM_NO_NIGHTLY_FALLBACK:-0}" = "true" ]; then
+    return 0
+  fi
+
+  # Get platform filename
+  local platform_filename
+  platform_filename="$(asdf_nim_get_platform_filename)"
+
+  if [ -z "$platform_filename" ]; then
+    return 0
+  fi
+
+  # Get branch name from version
+  local branch
+  branch=$(asdf_nim_version_to_branch "$version")
+
+  # Get commit info
+  local commit_info commit_hash commit_date
+  commit_info=$(asdf_nim_get_version_commit_info "$version")
+
+  if [ -z "$commit_info" ]; then
+    return 0
+  fi
+
+  commit_hash=$(echo "$commit_info" | awk '{print $1}')
+  commit_date=$(echo "$commit_info" | awk '{print $2}')
+
+  # Search for nightly with matching commit hash
+  # Try dates in order: +1, +0, +2, -1, -2 (based on testing, +1 is most common)
+  local offsets="1 0 2 -1 -2"
+  local check_date
+
+  for offset in $offsets; do
+    # Calculate date with offset
+    if [[ "$OSTYPE" == "darwin"* ]]; then
+      # macOS date needs explicit + for positive offsets
+      local offset_arg="${offset}d"
+      if [[ ! "$offset" =~ ^- ]]; then
+        offset_arg="+${offset}d"
+      fi
+      check_date=$(date -j -v"${offset_arg}" -f "%Y-%m-%d" "$commit_date" "+%Y-%m-%d" 2>/dev/null)
+    else
+      check_date=$(date -d "$commit_date $offset days" "+%Y-%m-%d" 2>/dev/null)
+    fi
+
+    if [ -z "$check_date" ]; then
+      continue
+    fi
+
+    # Construct potential nightly tag
+    local nightly_tag="${check_date}-${branch}-${commit_hash}"
+    local nightly_url="https://github.com/nim-lang/nightlies/releases/download/${nightly_tag}/nim-${version}-${platform_filename}"
+
+    # Check if this URL exists
+    if curl -fsSL -I "$nightly_url" 2>/dev/null | head -1 | grep -q "200\|302"; then
+      # Store the nightly tag for informational message later
+      echo "$nightly_url"
+      export ASDF_NIM_EXACT_NIGHTLY_TAG="$nightly_tag"
+      export ASDF_NIM_EXACT_NIGHTLY_VERSION="$version"
+      return 0
+    fi
+  done
+
+  # No match found
+  return 0
 }
 
 # Echo the source archive URL (from nim-lang.org).
@@ -484,9 +727,13 @@ asdf_nim_needs_download() {
 }
 
 asdf_nim_download_urls() {
-  # Official binaries
+  # Official binaries (x86_64 Linux only)
   asdf_nim_official_archive_url
-  # Nightly binaries
+  # Exact nightly match for stable versions (all platforms)
+  if [ "${ASDF_INSTALL_TYPE}" = "version" ] && [[ ${ASDF_INSTALL_VERSION} =~ ^[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+    asdf_nim_find_exact_nightly_url "$ASDF_INSTALL_VERSION"
+  fi
+  # Generic nightly binaries (ref: versions only)
   asdf_nim_nightly_url
   # Fall back to building from source
   asdf_nim_source_url
@@ -496,14 +743,34 @@ asdf_nim_download_via_git() {
   step_start "git clone"
   rm -rf "$ASDF_NIM_DOWNLOAD_PATH"
   mkdir -p "$ASDF_NIM_DOWNLOAD_PATH"
+  local exit_code=0
   (
     cd "$ASDF_NIM_DOWNLOAD_PATH" || exit
     git init
     git remote add origin "$SOURCE_REPO"
-    git fetch origin "$ASDF_INSTALL_VERSION" --depth 1
+    if ! git fetch origin "$ASDF_INSTALL_VERSION" --depth 1 2>&1; then
+      if [[ $ASDF_INSTALL_VERSION =~ ^version-[0-9]+-[0-9]+$ ]]; then
+        exit 2
+      fi
+      exit 1
+    fi
     git reset --hard FETCH_HEAD
     chmod -R 700 . # For asdf cleanup
-  )
+  ) || exit_code=$?
+
+  if [ $exit_code -eq 2 ]; then
+    step_end "✗"
+    {
+      echo ""
+      echo "Error: Branch '${ASDF_INSTALL_VERSION}' not found in ${SOURCE_REPO}"
+      echo ""
+    } 1>&"${ASDF_NIM_STDERR:-2}"
+    return 1
+  elif [ $exit_code -ne 0 ]; then
+    step_end "✗"
+    return 1
+  fi
+
   step_end "✓"
 }
 
@@ -576,10 +843,33 @@ asdf_nim_download() {
     # but if none is available, fallback to git
     if ! asdf_nim_download_via_url; then
       if [ "${ASDF_INSTALL_TYPE}" = "ref" ]; then
+        # Show warning if this looks like a nightly branch but we couldn't find a release
+        if [[ $ASDF_INSTALL_VERSION =~ ^version-[0-9]+-[0-9]+$ ]] || [ "$ASDF_INSTALL_VERSION" = "devel" ]; then
+          {
+            echo ""
+            echo "⚠️  No prebuilt nightly release found for ${ASDF_INSTALL_VERSION} on $(asdf_nim_normalize_os)/$(asdf_nim_normalize_arch)"
+            echo "    (searched first 4 pages of https://github.com/nim-lang/nightlies/releases)"
+            echo ""
+            echo "    Falling back to building from source branch..."
+            echo ""
+          } 1>&"${ASDF_NIM_STDOUT:-1}"
+        fi
         asdf_nim_download_via_git
       else
         die "No download method available for ${ASDF_INSTALL_TYPE} ${ASDF_INSTALL_VERSION}"
         return 1
+      fi
+    else
+      # Show informational message if we used an exact nightly match
+      if [ -n "${ASDF_NIM_EXACT_NIGHTLY_TAG:-}" ]; then
+        {
+          echo ""
+          echo "ℹ️  Using nightly build for exact version ${ASDF_NIM_EXACT_NIGHTLY_VERSION}"
+          echo "    (nightly: ${ASDF_NIM_EXACT_NIGHTLY_TAG})"
+          echo ""
+        } 1>&"${ASDF_NIM_STDOUT:-1}"
+        unset ASDF_NIM_EXACT_NIGHTLY_TAG
+        unset ASDF_NIM_EXACT_NIGHTLY_VERSION
       fi
     fi
 

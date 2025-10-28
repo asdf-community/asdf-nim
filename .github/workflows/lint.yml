@@ -18,9 +18,12 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v5
         with:
-          fetch-depth: 0 # This is necessary for linting only recent changes
+          fetch-depth: 0
 
-      - name: Run lintball
-        uses: elijahr/run-lintball@v2
+      - name: Set up Python
+        uses: actions/setup-python@v5
         with:
-          default-branch: main
+          python-version: "3.x"
+
+      - name: Run pre-commit
+        uses: pre-commit/action@v3.0.1

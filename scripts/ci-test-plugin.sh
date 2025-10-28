@@ -75,11 +75,13 @@ asdf plugin remove asdf-test-nim || true
 
 rm -rf /tmp/asdf-test-nim || true
 git config --global --add safe.directory "${WORKSPACE}"/.git
-git clone "${WORKSPACE}" /tmp/asdf-test-nim
+git clone --quiet "${WORKSPACE}" /tmp/asdf-test-nim
 cd /tmp/asdf-test-nim || exit 1
 git checkout -b tmp-test-branch || true
 if [[ -n ${COMMIT} ]]; then
-  git reset --hard "${COMMIT}" || true
+  # Try to reset to commit/branch from origin
+  git fetch --quiet origin "${COMMIT}:${COMMIT}" 2>/dev/null || true
+  git reset --hard "${COMMIT}" 2>/dev/null || true
 fi
 asdf plugin test nim "${PWD}" \
   --asdf-tool-version \

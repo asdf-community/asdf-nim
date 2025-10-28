@@ -4,6 +4,30 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.2.0 - 2025-10-28
+
+- Workaround for bug in asdf where ASDF_INSTALL_VERSION is empty when exec-env is invoked for custom shims
+- migrate from lintball to pre-commit for code formatting and linting
+- **feature**: Exact version matching via nightly builds
+  - Automatically finds exact nightly builds matching stable version requests (e.g., `asdf install nim 2.2.4`)
+  - Searches for nightlies with matching commit hash within ±2 days of release date
+  - Enables ARM Linux and macOS ARM64 users to get exact stable versions in seconds instead of minutes building from source
+  - Works for versions going back to 2022 (tested: v2.2.x, v2.0.x, v1.6.x)
+  - Caches version→commit mappings in `~/.cache/asdf-nim/version-commits.txt` for faster subsequent installs
+  - Shows informational message when using exact nightly match
+  - Opt-out available via `ASDF_NIM_NO_NIGHTLY_FALLBACK=1` environment variable
+  - Fully backward compatible: no changes to existing workflows
+- **improve**: Dynamic nightly release detection via GitHub API
+  - Automatically detects available nightly versions by querying GitHub releases API (up to 4 pages)
+  - Finds the most recent nightly that supports the desired version/platform combination
+  - Falls back to building from source branch with a warning if no matching nightly is found
+  - Removes hardcoded nightly version list
+  - Improves error messages when branch doesn't exist
+- **fix**: All Nim binaries (stable and nightly) now work on musl-based systems (e.g., Alpine Linux)
+  - Removes `asdf_nim_is_musl()` function and all musl checks
+  - Simplifies code by removing musl/glibc distinction entirely
+  - Reduces CI build matrix duplication
+
 ## v2.1.0 - 2025-06-07
 
 - fixes and workarounds for asdf >= 0.17.0
