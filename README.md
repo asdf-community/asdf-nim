@@ -32,12 +32,21 @@ asdf install nim 2.2.0
 
 ### To install a nightly build of Nim:
 
+Pre-built nightly binaries are available for some platforms and branches:
+
 ```sh
-# nightly unstable build of devel branch
+# nightly unstable build of devel branch (pre-built binaries available for most platforms)
 asdf install nim ref:devel
-# or nightly unstable build of version-2-2 branch, i.e. the 2.2.x release + any recent backports from devel
+# or nightly unstable build of version-2-2 branch (pre-built binaries available for most platforms)
 asdf install nim ref:version-2-2
-# or nightly unstable build of version-1-6 branch, i.e. the latest 1.6.x release + any recent backports from devel
+# or nightly unstable build of version-2-0 branch (pre-built binaries available for most platforms)
+asdf install nim ref:version-2-0
+```
+
+For older versions, the plugin will build from source (no pre-built nightly binaries):
+
+```sh
+# build from version-1-6 branch source (no pre-built nightlies available)
 asdf install nim ref:version-1-6
 ```
 
@@ -210,23 +219,67 @@ jobs:
 
 Linux:
 
-- `x86_64` (gnu libc)
-- `x86` (gnu libc)
+- `x86_64`
+- `x86`
+
+## Exact version matching via nightly builds
+
+For platforms without official stable binaries (ARM Linux, macOS ARM64, etc.), the plugin automatically finds and uses exact nightly builds matching the requested stable version.
+
+When you install a specific version like `2.2.4` on a platform without official binaries:
+
+```sh
+asdf install nim 2.2.4
+```
+
+The plugin will:
+1. Check for official stable binaries (x86_64/x86 Linux only)
+2. If none available, search for exact nightly builds matching the version's commit hash
+3. Use the matching nightly build (typically built within 1-2 days of the release)
+4. Fall back to building from source if no exact nightly found
+
+This means **ARM users get exact stable versions in seconds instead of minutes** building from source.
+
+### Benefits
+
+- **ARM Linux** (aarch64, armv7l): Get exact stable versions without building from source
+- **macOS ARM64**: Get older stable versions that predate official ARM64 support
+- **Faster CI/CD**: Consistent, fast installations across all platforms
+- **Exact versions**: Same version across x86 and ARM platforms
+
+### Opt-out
+
+To always build from source instead of using exact nightly matches:
+
+```sh
+export ASDF_NIM_NO_NIGHTLY_FALLBACK=1
+asdf install nim 2.2.4
+```
 
 ## Unstable nightly binaries
 
-[nim-lang/nightlies](https://github.com/nim-lang/nightlies) supplies pre-compiled unstable binaries of Nim for:
+[nim-lang/nightlies](https://github.com/nim-lang/nightlies) supplies pre-compiled unstable binaries of Nim. This plugin automatically detects available nightly releases via the GitHub API.
+
+When installing a nightly version (e.g., `ref:devel` or `ref:version-2-2`), the plugin will:
+1. Query the GitHub releases API to find available nightly builds (checks up to 4 pages of releases)
+2. Select the most recent nightly that matches your platform and desired version
+3. Fall back to building from source if no matching prebuilt nightly is found
+
+Common platforms with nightly support:
 
 Linux:
-
-- `x86_64` (gnu libc)
-- `x86` (gnu libc)
-- `aaarch64` (gnu libc)
-- `armv7l` (gnu libc)
+- `x86_64`
+- `x86`
+- `aarch64`
+- `armv7l`
 
 macOS:
-
 - `x86_64`
+- `arm64`
+
+**Note**: All Nim binaries (stable and nightly) are portable and work on both glibc-based (Ubuntu, Debian, etc.) and musl-based (Alpine Linux, etc.) systems.
+
+**Note**: To avoid GitHub API rate limits (60 requests/hour without authentication), set the `GITHUB_TOKEN` environment variable with a personal access token. The plugin will automatically use it for API requests.
 
 ## Updating asdf and asdf-nim
 
@@ -260,6 +313,24 @@ Run tests with:
 ```sh
 npm run test
 ```
+
+#### Test Performance Optimization
+
+For faster local development, you can skip slow integration tests:
+
+```sh
+# Run only fast unit tests (~60s)
+ASDF_NIM_SKIP_INTEGRATION=1 npm run test
+
+# Run all tests including integration tests (~5-10 min)
+npm run test
+```
+
+**Test Types:**
+- **Unit tests** (`test/utils.bats`): Fast, mocked, test individual functions
+- **Integration tests** (`test/integration.bats`): Slow, install real Nim versions
+
+**CI Caching:** Integration tests cache Nim installations between runs for speed.
 
 ### Linting
 

@@ -45,6 +45,19 @@ jobs:
         with:
           node-version: "22"
 
+      - name: Install Go
+        uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
+
+      - name: Cache test dependencies
+        uses: actions/cache@v4
+        with:
+          path: .test-cache
+          key: test-cache-${{ runner.os }}-asdf-v0.18.0-nim-ref-version-2-2
+          restore-keys: |
+            test-cache-${{ runner.os }}-asdf-v0.18.0-
+
       - name: Run tests
         run: |
           npm install --include=dev
@@ -62,17 +75,17 @@ jobs:
           # Stable binary
           - os: ubuntu-latest
             nim-version: "latest:1.6"
-            platform: linux-glibc
+            platform: linux
 
           # Stable binary
           - os: ubuntu-latest
             nim-version: "latest:2.2"
-            platform: linux-glibc
+            platform: linux
 
           # Unstable binary
           - os: ubuntu-latest
             nim-version: "ref:version-2-0"
-            platform: linux-glibc
+            platform: linux
 
           # Unstable binary
           - os: macos-latest
@@ -82,10 +95,11 @@ jobs:
           # Build from source
           - os: ubuntu-latest
             nim-version: "ref:HEAD"
-            platform: linux-glibc
+            platform: linux
 
           # Build from source
           - os: macos-latest
+            asdf_nim_no_nightly_fallback: 1
             nim-version: "latest:2.2"
             platform: macOS
 
@@ -98,6 +112,11 @@ jobs:
           path: ~/.cache
           key: cache-${{ matrix.os }}-${{ matrix.nim-version }}
 
+      - name: Set environment variables
+        if: ${{ matrix.asdf_nim_no_nightly_fallback }}
+        run: |
+          echo "ASDF_NIM_NO_NIGHTLY_FALLBACK=${{ matrix.asdf_nim_no_nightly_fallback }}" >> $GITHUB_ENV
+
       - name: Install dependencies (macOS)
         if: runner.os == 'macOS'
         run: brew install bash parallel golang
@@ -105,6 +124,8 @@ jobs:
       - name: Install dependencies (Linux)
         if: runner.os != 'macOS'
         uses: actions/setup-go@v5
+        with:
+          go-version: 'stable'
 
       - name: Install asdf
         run: go install github.com/asdf-vm/asdf/cmd/asdf@master
@@ -118,9 +139,9 @@ jobs:
           exec ./scripts/ci-test-plugin.sh \
             --nim-version ${{ matrix.nim-version }}
 
-  # Test musl installation
+  # Test on Alpine Linux (musl)
   plugin_test_x86_musl:
-    name: 👑2.2.x/linux-musl/x86_64
+    name: 👑2.2.x/linux-alpine/x86_64
     runs-on: ubuntu-latest
     container: alpine:latest
 
@@ -149,7 +170,7 @@ jobs:
 
   # Test installation for a few non-x86 architectures
   plugin_test_non_x86:
-    name: 👑${{ matrix.nim-version }}/linux-glibc/${{ matrix.arch }}
+    name: 👑${{ matrix.nim-version }}/linux/${{ matrix.arch }}
     runs-on: ubuntu-latest
 
     strategy:

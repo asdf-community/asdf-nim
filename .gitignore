@@ -5,3 +5,4 @@ testnimble*
 package-lock.json
 /.tmp
 /nimbledeps
+/.test-cache
