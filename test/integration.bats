@@ -201,3 +201,34 @@ info() {
   assert_success
   assert_output --regexp "^v[0-9]+"
 }
+
+@test "latest_installs_binary_when_available" {
+  # Install a specific version using latest: syntax
+  info "asdf install nim latest:2.0"
+  get_lock git
+  run asdf install nim latest:2.0
+  clear_lock git
+  assert_success
+
+  # Verify it downloaded a pre-built binary (not built from source)
+  # Look for download indicators in output
+  assert_output --partial "Download"
+  assert_output --partial "already built"
+
+  # Verify it did NOT compile from source
+  refute_output --partial "build_all.sh"
+  refute_output --partial "make -C csources"
+
+  # Verify nim was installed and works
+  info "asdf list nim"
+  run asdf list nim
+  assert_success
+  assert_output --partial "2.0"
+
+  # Set and verify the version works
+  asdf set nim latest:2.0
+  info "nim --version"
+  run nim --version
+  assert_success
+  assert_output --regexp "Nim Compiler Version 2\.0\.[0-9]+"
+}
