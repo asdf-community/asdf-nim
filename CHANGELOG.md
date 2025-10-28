@@ -4,11 +4,10 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## Unreleased
+## v2.2.0 - 2025-10-28
 
 - Workaround for bug in asdf where ASDF_INSTALL_VERSION is empty when exec-env is invoked for custom shims
 - migrate from lintball to pre-commit for code formatting and linting
-- add support for macOS ARM64 nightly builds (e.g., `asdf install nim ref:version-2-2`)
 - **feature**: Exact version matching via nightly builds
   - Automatically finds exact nightly builds matching stable version requests (e.g., `asdf install nim 2.2.4`)
   - Searches for nightlies with matching commit hash within ±2 days of release date
