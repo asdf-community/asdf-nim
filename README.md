@@ -123,7 +123,7 @@ jobs:
             nim ${{ matrix.nim-version }}
       - name: Run tests
         run: |
-          asdf local nim ${{ matrix.nim-version }}
+          asdf set nim ${{ matrix.nim-version }}
           nimble develop -y
           nimble test
           nimble examples
