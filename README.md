@@ -224,7 +224,7 @@ Linux:
 
 ## Exact version matching via nightly builds
 
-For platforms without official stable binaries (ARM Linux, macOS ARM64, etc.), the plugin automatically finds and uses exact nightly builds matching the requested stable version.
+For platforms without official stable binaries (ARM Linux, macOS, etc.), the plugin automatically finds and uses exact nightly builds matching the requested stable version.
 
 When you install a specific version like `2.2.4` on a platform without official binaries:
 
@@ -240,13 +240,6 @@ The plugin will:
 4. Fall back to building from source if no exact nightly found
 
 This means **ARM users get exact stable versions in seconds instead of minutes** building from source.
-
-### Benefits
-
-- **ARM Linux** (aarch64, armv7l): Get exact stable versions without building from source
-- **macOS ARM64**: Get older stable versions that predate official ARM64 support
-- **Faster CI/CD**: Consistent, fast installations across all platforms
-- **Exact versions**: Same version across x86 and ARM platforms
 
 ### Opt-out
 
