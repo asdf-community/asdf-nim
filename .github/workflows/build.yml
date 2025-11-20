@@ -39,7 +39,7 @@ jobs:
 
     steps:
       - name: Checkout plugin
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - uses: actions/setup-node@v6
         with:
@@ -131,7 +131,7 @@ jobs:
         run: go install github.com/asdf-vm/asdf/cmd/asdf@master
 
       - name: Checkout plugin
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Test plugin
         shell: bash
@@ -160,7 +160,7 @@ jobs:
         run: go install github.com/asdf-vm/asdf/cmd/asdf@master
 
       - name: Checkout plugin
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       - name: Test plugin
         shell: bash
@@ -196,7 +196,7 @@ jobs:
           key: cache-${{ matrix.arch }}-${{ matrix.nim-version }}
 
       - name: Checkout plugin
-        uses: actions/checkout@v5
+        uses: actions/checkout@v6
 
       # Install & run tests on non-x86
       - uses: uraimo/run-on-arch-action@v3
