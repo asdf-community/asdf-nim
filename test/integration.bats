@@ -167,10 +167,22 @@ info() {
   assert [ -f "$nimble_file" ]
   assert [ ! -x "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/bin/nimjson" ]
 
-  # Assert that nim finds nimble packages
+  # Assert that nim finds nimble packages.
+  # --nimblePath adds each <pkg>-<ver>-<hash> directory itself, not that
+  # package's srcDir. In nimbledeps (local-deps) mode nimble preserves the
+  # package's repository layout, so the modules sit under <pkgdir>/src and
+  # --nimblePath alone cannot resolve them. `nimble setup` emits both <pkgdir>
+  # and <pkgdir>/<srcDir> for this reason; do the same.
+  nimjson_dir="$(dirname "$nimble_file")"
+  nimjson_src="$nimjson_dir"
+  if [ -d "${nimjson_dir}/src" ]; then
+    nimjson_src="${nimjson_dir}/src"
+  fi
+  info "nimble --version: $(nimble --version 2>&1 | head -1)"
+  info "nimjson package layout: $(find "$nimjson_dir" -maxdepth 2 -name 'nimjson.nim' | tr '\n' ' ')"
   echo "import nimjson" >"${ASDF_NIM_TEST_TEMP}/testnimble.nim"
-  info "nim c --nimblePath:./nimbledeps/pkgs2 -r \"${ASDF_NIM_TEST_TEMP}/testnimble.nim\""
-  nim c --nimblePath:./nimbledeps/pkgs2 -r "${ASDF_NIM_TEST_TEMP}/testnimble.nim"
+  info "nim c --path:${nimjson_src} -r \"${ASDF_NIM_TEST_TEMP}/testnimble.nim\""
+  nim c --path:"$nimjson_src" -r "${ASDF_NIM_TEST_TEMP}/testnimble.nim"
 
   rm -rf nimbledeps
 }
@@ -186,7 +198,7 @@ info() {
   assert [ -x "${ASDF_NIM_VERSION_INSTALL_PATH}/nimble/bin/nph" ]
 
   # Assert shim was created
-  assert [ -f "${ASDF_DATA_DIR}/shims/nph" ]
+  assert [ -x "${ASDF_DATA_DIR}/shims/nph" ]
 
   # Assert nph shim is in PATH and is the test's asdf shim (not system install)
   # The test's ASDF_DATA_DIR/shims should be first in PATH
@@ -195,11 +207,22 @@ info() {
   assert [ -n "$nph_path" ]
   assert [ "$nph_path" = "${ASDF_DATA_DIR}/shims/nph" ]
 
-  # Assert nph runs successfully via the test's shim
-  info "nph --version"
-  run nph --version
+  # Assert nph runs via the test's shim.
+  # nph reports `git describe --long --dirty --always --tags` verbatim, so its
+  # --version string tracks upstream's tag layout and is not stable here.
+  # Assert on nph-owned behavior instead.
+  info "nph --help"
+  run nph --help
   assert_success
-  assert_output --regexp "^v[0-9]+"
+  assert_output --partial "nph - Nim formatter"
+
+  # Assert the shimmed binary actually formats, not merely exits 0
+  printf 'echo   "hi"\n' >"${ASDF_NIM_TEST_TEMP}/fmt_test.nim"
+  info "nph \"${ASDF_NIM_TEST_TEMP}/fmt_test.nim\""
+  run nph "${ASDF_NIM_TEST_TEMP}/fmt_test.nim"
+  assert_success
+  run cat "${ASDF_NIM_TEST_TEMP}/fmt_test.nim"
+  assert_output --partial 'echo "hi"'
 }
 
 @test "latest_installs_binary_when_available" {
