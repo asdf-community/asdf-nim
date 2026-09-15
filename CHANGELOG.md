@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.2.2 - 2026-09-15
+
+- Fix bats integration tests for nimbledeps package layout and nph version output
+- Test Nim 2.4 in CI via `ref:version-2-4`
+- Run emulated aarch64 and armv7 jobs on pushes to main, tags, a weekly schedule and manual dispatch, not on pull requests
+- Fix CI cache keys so caches refresh and restore
+- Label macOS CI jobs as arm64
+- Cancel superseded CI runs
+- Move PR template to a path GitHub reads
+- Update actions/checkout action to v7
+- Update actions/cache action to v6
+- Update actions/setup-go action to v7
+- Update actions/setup-node action to v7
+- Update actions/setup-python action to v7
+- Update dependency go to v1.27.1
+- Update bats-assert digest to 697471b
+- Update README for nightly builds
+
 ## v2.2.1 - 2025-10-28
 
 - Update actions/setup-python action to v6
