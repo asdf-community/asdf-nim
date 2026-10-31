@@ -87,5 +87,4 @@ asdf plugin test nim "${PWD}" \
   --asdf-tool-version \
   "${tool_version}" \
   --asdf-plugin-gitref \
-  tmp-test-branch \
-  nim -v
+  tmp-test-branch
