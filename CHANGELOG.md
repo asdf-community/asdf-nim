@@ -4,6 +4,13 @@ All notable changes to this project will be documented in this file.
 
 This project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## v2.2.3 - 2026-10-30
+
+- Fix `asdf plugin test` CI compatibility with `asdf` / `urfave/cli/v3` v3.13+
+- Update dependency go to v1.27.3
+- Update dependency node to v26
+- Update bats-assert digest to dc1aa63
+
 ## v2.2.2 - 2026-09-15
 
 - Fix bats integration tests for nimbledeps package layout and nph version output
